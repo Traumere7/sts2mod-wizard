@@ -1,0 +1,81 @@
+<Project Sdk="Godot.NET.Sdk/4.5.1">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>true</ImplicitUsings>
+        <LangVersion>14.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RootNamespace>Wizard</RootNamespace>
+
+        <!-- 杀戮尖塔2 正式版安装目录 -->
+        <Sts2Dir>D:\SteamLibrary\steamapps\common\Slay the Spire 2</Sts2Dir>
+        <Sts2DataDir>$(Sts2Dir)\data_sts2_windows_x86_64</Sts2DataDir>
+
+        <!-- Godot 控制台版可执行文件（用于 headless 导出 pck，能正确回传输出与退出码） -->
+        <GodotExe>D:\Godot\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64_console.exe</GodotExe>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 原版游戏程序集 -->
+        <Reference Include="sts2">
+            <HintPath>$(Sts2DataDir)\sts2.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="0Harmony">
+            <HintPath>$(Sts2DataDir)\0Harmony.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <!--
+          BaseLib：本地引用优先（与创意工坊已安装版本严格一致，避免 NuGet 版本漂移）。
+          若想改用 NuGet，注释掉下面的 Reference，改用
+          <PackageReference Include="Alchyr.Sts2.BaseLib" Version="3.4.7" />
+        -->
+        <Reference Include="BaseLib">
+            <HintPath>$(BaseLibDir)\BaseLib.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <!-- 创意工坊安装的 BaseLib（版本以创意工坊为准，可覆盖） -->
+        <BaseLibDir Condition="'$(BaseLibDir)' == ''">D:\SteamLibrary\steamapps\workshop\content\2868840\3737335127\BaseLib</BaseLibDir>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!--
+          ⚠️⚠️ 部署目标 = 游戏目录下的 **mods\Wizard**。⚠️⚠️
+
+          为什么是这里（三处都试过）：
+            * mods\Wizard  —— 游戏**确实加载**，且优先级**高于工坊**；
+                              又是普通本地目录，**Steam 不会覆盖**。✅
+            * workshop\content\2868840\3807136195
+                           —— Steam 管理的缓存，写进去几分钟后被覆盖回已发布版本。❌
+            * ModUploader\WizardWorkspace\content
+                           —— 只是"上传素材源"，写了游戏也看不到，还要手动上传。❌
+
+          实测依据（godot.log，两份同时存在）：
+            Loading assembly DLL ...\common\Slay the Spire 2\mods\Wizard\Wizard.dll
+
+          build.ps1 会用 -p:WorkshopDir=... 覆盖本值，保持单一事实来源
+          （参数名沿用 WorkshopDir 以免改动构建链，语义是"mod 输出目录"）。
+        -->
+        <WorkshopDir Condition="'$(WorkshopDir)' == ''">$(Sts2Dir)\mods\Wizard</WorkshopDir>
+    </PropertyGroup>
+
+    <!-- 编译后自动复制 dll + json 到 mods\Wizard -->
+    <Target Name="CopyMod" AfterTargets="PostBuildEvent">
+        <Message Text="复制 mod 到 $(WorkshopDir)..." Importance="high" />
+        <MakeDir Directories="$(WorkshopDir)" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(WorkshopDir)" />
+        <Copy SourceFiles="Wizard.json" DestinationFolder="$(WorkshopDir)" />
+    </Target>
+
+    <!-- 发布时导出 pck（需要已安装 Godot 导出模板） -->
+    <Target Name="ExportPck" AfterTargets="Publish">
+        <Message Text="导出 pck 到 $(WorkshopDir)..." Importance="high" />
+        <Exec Command="&quot;$(GodotExe)&quot; --headless --export-pack &quot;Windows Desktop&quot; &quot;$(WorkshopDir)/$(MSBuildProjectName).pck&quot;"
+              EnvironmentVariables="IsInnerGodotExport=true;MSBUILDDISABLENODEREUSE=1"
+              ContinueOnError="WarnAndContinue" />
+    </Target>
+</Project>

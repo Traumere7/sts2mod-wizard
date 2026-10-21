@@ -1,0 +1,114 @@
+[gd_scene load_steps=5 format=3 uid="uid://bwiz0energy001"]
+
+[ext_resource type="Script" path="res://src/Core/Nodes/Combat/NEnergyCounter.cs" id="1_wiznc"]
+[ext_resource type="Texture2D" path="res://Wizard/images/ui/energy_wizard_counter.png" id="2_wizenergy"]
+[ext_resource type="Script" path="res://addons/mega_text/MegaLabel.cs" id="3_wizlabel"]
+[ext_resource type="FontVariation" path="res://themes/kreon_bold_shared.tres" id="4_wizfont"]
+[ext_resource type="Script" path="res://src/Core/Nodes/Vfx/Utilities/NParticlesContainer.cs" id="5_wizparticles"]
+
+; ── 能量表盘的三个类型要求（都踩过坑）────────────────────────
+; 1. 根节点挂 NEnergyCounter.cs —— 否则 Instantiate<NEnergyCounter>() 转型失败 → 黑屏
+; 2. EnergyVfxBack / EnergyVfxFront 必须存在且挂 NParticlesContainer 脚本
+;    —— NEnergyCounter._Ready 用 GetNode<NParticlesContainer>("%...") 强制转型，
+;       节点不存在会报 "Node not found"，类型不对会 InvalidCastException
+; 3. Label 挂 MegaLabel.cs **且必须设 theme_override_fonts/font**
+;
+; ★★ 这两个 NParticlesContainer 的 _particles 字段必须被补上，否则会出恶性 bug：
+;   _particles 是 [Export] 字段、C# 里没有初始化式，而 Restart()/SetEmitting()
+;   无条件写 _particles.Count → 未赋值就抛 NRE。该 NRE 出现在
+;   CombatManager.SetupPlayerTurn 的 ResetEnergy() 里、**抽牌之前**，
+;   会掀掉整个 turn loop ⇒ **战斗开局不抽牌、永久卡死**。
+;   （注意 _backVfx?.Restart() 的 ?. 保护不了它：容器是好的，坏的是里面的数组。）
+;
+;   原版角色的场景自己序列化了 _particles；BaseLib 的 NEnergyCounterFactory
+;   有反射兜底 SetParticles —— 但我们的场景自带了这两个节点，
+;   工厂认为"节点已齐备"就不生成、也就不调 SetParticles，两条路都绕过。
+;
+;   兜底由 ParticlesContainerReadyPatch 统一处理（Harmony Postfix on _Ready），
+;   所以这里**不需要**给节点挂自定义脚本，脚本路径也就不会成为新的失败点。
+;   详见 src/Scripts/Patches/ParticlesContainerReadyPatch.cs。
+;
+; 早期版本曾把这些节点交给 BaseLib 的 NEnergyCounterFactory 生成，
+; 但实测工厂**不会**为已注册的场景补节点（GenerateNode 未被调用），
+; 导致 "Node not found: %EnergyVfxBack" 刷屏，因此改为显式提供。
+
+[node name="WizardEnergyCounter" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 128.0
+offset_bottom = 128.0
+pivot_offset = Vector2(64, 64)
+script = ExtResource("1_wiznc")
+metadata/_edit_lock_ = true
+
+[node name="EnergyVfxBack" type="Node2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(64, 64)
+script = ExtResource("5_wizparticles")
+
+[node name="Layers" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Layer1" type="TextureRect" parent="Layers"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_wizenergy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="RotationLayers" type="Control" parent="Layers"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="EnergyVfxFront" type="Node2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(64, 64)
+script = ExtResource("5_wizparticles")
+
+; Label 必须挂 MegaLabel 脚本，且**必须设置 theme_override_fonts/font**，
+; 否则 MegaLabel._Ready 会报 "has no theme font override"。
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = -29.0
+offset_right = -16.0
+offset_bottom = 29.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.9647059, 0.8862745, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.1882353)
+theme_override_colors/font_outline_color = Color(0.227451, 0.1176471, 0.4784314, 1)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/outline_size = 16
+theme_override_constants/shadow_outline_size = 16
+theme_override_fonts/font = ExtResource("4_wizfont")
+theme_override_font_sizes/font_size = 36
+text = "3/3"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("3_wizlabel")
+MinFontSize = 32
+MaxFontSize = 36

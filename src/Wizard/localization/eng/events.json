@@ -1,0 +1,23 @@
+{
+  "WIZARD-RULES_HORROR.loss": "{character}'s mind was destroyed by the magic of the Rules Horror...",
+  "WIZARD-RULES_HORROR.pages.ABUNDANT.description": "The Spire seems to [gold]acknowledge[/gold] your spirit, and you reap [gold]an abundance of treasure[/gold] (?)",
+  "WIZARD-RULES_HORROR.pages.BALANCED.description": "You receive a small [gold]blessing[/gold]. Then the notice and the voice both vanish.",
+  "WIZARD-RULES_HORROR.pages.INITIAL.description": "As you wander the [gold]resplendent atrium[/gold], a notice of [purple]rules[/purple] scrawled across the corner wall catches your eye. Some [red]irresistible force[/red] draws you to it.\n\nAn [gold]unknown voice[/gold] asks you: [sine]What [purple]principle[/purple] do you hold?[/sine]",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT.description": "Heal [green]{Heal}[/green] HP. Gain [blue]3[/blue] random [gold]relics[/gold].",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT.title": "I revere abundance",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT_LOCKED.description": "Requires a deck of more than [blue]35[/blue] cards.",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT_LOCKED.title": "Locked",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED.description": "[gold]Upgrade[/gold] [blue]2[/blue] cards.",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED.title": "I believe in balance",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED_LOCKED.description": "Requires a deck of [blue]20-35[/blue] cards.",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED_LOCKED.title": "Locked",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN.description": "Lose [red]{HpLoss}[/red] HP. Remove [blue]1[/blue] card from your [gold]deck[/gold].",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN.title": "I pursue refinement",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN_LOCKED.description": "Requires a deck of fewer than [blue]20[/blue] cards.",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN_LOCKED.title": "Locked",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAVE.description": "Randomly [purple]downgrade[/purple] [blue]2[/blue] cards.",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAVE.title": "Leave",
+  "WIZARD-RULES_HORROR.pages.LEAN.description": "The voice gives a cold laugh and departs without a word.\n\nIt seems you have deeply displeased [red]someone[/red]?",
+  "WIZARD-RULES_HORROR.pages.LEAVE.description": "You [sine][red]struggle[/red][/sine] free of the [purple]binding magic[/purple] and escape, your heart still racing.",
+  "WIZARD-RULES_HORROR.title": "Rules Horror"
+}

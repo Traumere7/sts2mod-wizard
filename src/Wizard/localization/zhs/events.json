@@ -1,0 +1,23 @@
+{
+  "WIZARD-RULES_HORROR.loss": "{character}被规则怪谈的魔力摧毁了意识...",
+  "WIZARD-RULES_HORROR.pages.ABUNDANT.description": "尖塔似乎[gold]认可[/gold]了你的精神，你也收获了[gold]丰盈的财宝[/gold]（？）",
+  "WIZARD-RULES_HORROR.pages.BALANCED.description": "你获得了小小的[gold]赐福[/gold]。随后公告和声音便都消失不见。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.description": "当你在[gold]辉煌的中庭[/gold]漫游时，不经意发现拐角的墙上赫然写着一张[purple]规则公告[/purple]。你被它因某种[red]不可抗力[/red]所吸引。\n\n[gold]未知的声音[/gold]向你发问：[sine]你信奉[purple]理念[/purple]为何？[/sine]",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT.description": "回复[green]{Heal}[/green]点生命，获得[blue]3[/blue]个随机[gold]遗物[/gold]。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT.title": "我崇尚丰盈",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT_LOCKED.description": "需要牌组数量多于[blue]35[/blue]张。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.ABUNDANT_LOCKED.title": "已锁定",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED.description": "[gold]升级[/gold][blue]2[/blue]张牌。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED.title": "我信奉均衡",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED_LOCKED.description": "需要牌组数量在[blue]20-35[/blue]之间。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.BALANCED_LOCKED.title": "已锁定",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN.description": "失去[red]{HpLoss}[/red]点生命，从你的[gold]牌组[/gold]中移除[blue]1[/blue]张牌。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN.title": "我追求精简",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN_LOCKED.description": "需要牌组数量少于[blue]20[/blue]张。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAN_LOCKED.title": "已锁定",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAVE.description": "随机[purple]降级[/purple][blue]2[/blue]张牌。",
+  "WIZARD-RULES_HORROR.pages.INITIAL.options.LEAVE.title": "离开",
+  "WIZARD-RULES_HORROR.pages.LEAN.description": "那声音冷笑一声，不发一言而去。\n\n你似乎令[red]某人[/red]深为不满？",
+  "WIZARD-RULES_HORROR.pages.LEAVE.description": "你[sine][red]拼命挣扎[/red][/sine]着从[purple]禁锢魔力[/purple]中逃脱，这令你心有余悸。",
+  "WIZARD-RULES_HORROR.title": "尖塔规则怪谈"
+}

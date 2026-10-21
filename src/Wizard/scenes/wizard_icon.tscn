@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwiz0icon00001"]
+
+; 游戏左上角头像 / 角色统计页头像 / 每日挑战头像。
+; ⚠️ 这里必须指向正式纹理，否则会显示 res://icon.svg 占位图
+;    （CharacterModel.CustomIconPath 的场景会覆盖 CustomIconTexturePath，
+;      所以只改 C# 属性是不够的）。
+; 尺寸 88x88，与原版 character_icon_<角色>.png 一致。
+
+[ext_resource type="Texture2D" path="res://Wizard/images/ui/char_icon_wizard.png" id="1_wizicon"]
+
+[node name="WizardIcon" type="TextureRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1_wizicon")
+expand_mode = 1
+stretch_mode = 5

@@ -1,0 +1,53 @@
+[gd_scene load_steps=3 format=3 uid="uid://bwiz0char0001"]
+
+[ext_resource type="Script" path="res://src/Core/Nodes/Combat/NCreatureVisuals.cs" id="1_wizncv"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_battle.png" id="2_wizchar"]
+
+; ── 立绘定位（改尺寸只需要动这几个数）────────────────────────
+; 立绘 512x768，人物实际内容包围盒 x 111..417 / y 108..670（307 x 563 px），
+; 包围盒中心 (264, 389)，相对贴图中心 (256, 384) 的偏移 SC = (8, 5)。
+;
+;   FIGURE_TARGET_H = 340     目标：人物在游戏内的高度（单位）
+;   scale = FIGURE_TARGET_H / 563 = 0.6039
+;
+; ⚠️ 坐标系：本节点挂在 NCreature 下，而 NCreature 的 y 是「脚下/地面线」。
+;    经实测，**Bounds 的 rect 中心恰好落在 (0,0)**，所以让「人物包围盒中心」
+;    对齐 (0,0)，血条才会出现在头顶而不是腰部。
+;
+; 位置 = -(人物中心的世界坐标) + 期望落点。
+;   期望落点 (+47, -170)：
+;     · 上下不动（保持 -170，即上移半个模型高）
+;     · 左右：再向右平移 0.75 个模型宽（190 * 0.75 ≈ 143）→ -95 + 143 ≈ +47
+;   position = -(SC * scale) + (+47, -170) = (-4.8 + 47, -3.0 - 170) = (42.2, -173.0)
+;
+;   结果：人物中心落在 (+47,-170)；脚底 ≈ +1（基本贴地）；
+;         头顶 ≈ -341，法杖尖 ≈ -405 → 全部落在 Bounds 的 y -360..+40 之内。
+;         横向占据 x -46..+140 → 落在 Bounds 的 x -95..+145 之内。
+;
+; ⚠️ Bounds.Size.X 会被 NCombatRoom 用来排布战斗站位，不要随手改大。
+
+[node name="WizardCharacter" type="Node2D"]
+script = ExtResource("1_wizncv")
+
+[node name="Visuals" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(42.2, -173)
+scale = Vector2(0.6039, 0.6039)
+texture = ExtResource("2_wizchar")
+
+[node name="Bounds" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = -95.0
+offset_top = -360.0
+offset_right = 145.0
+offset_bottom = 40.0
+
+[node name="IntentPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -380)
+
+[node name="CenterPos" type="Marker2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -170)

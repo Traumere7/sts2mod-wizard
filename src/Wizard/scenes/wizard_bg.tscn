@@ -1,0 +1,97 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwiz0bg000001"]
+
+[ext_resource type="Texture2D" path="res://Wizard/images/ui/char_select_bg_wizard.png" id="1_wizbg"]
+
+; ── 巫师：角色选择界面背景 ────────────────────────────────────
+; 布局参照原版 char_select_bg_ironclad.tscn 实测：
+;   根节点 Control 尺寸 2560 x 1200，pivot (1280, 600)
+;   可见窗口 = 中心向左 1280、向右 640、向上 600、向下 478  →  1920 x 1078
+;   即"窗口"整体偏左，右侧留给角色信息面板。
+;
+; 各层：
+;   BgImage    —— 宽背景图 2560x1200，KEEP_ASPECT_COVERED 铺满
+;   PanelShade —— 右侧信息面板的渐变压暗
+;   ash1/ash2  —— 飘落的奥术微粒
+;
+; ⚠️ **不要在这里再叠一个角色 Sprite**：
+;    `char_select_bg_wizard.png` **本身就是一张带角色的完整构图**
+;    （巫师站在中偏左、掌心托着发光符文）。
+;    曾经叠过一层 wizard_battle.png，结果画面上出现了两个巫师。
+;    若以后要换"背景+角色分离"的做法，再把这个节点加回来。
+
+[node name="WizardBg" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = -523.0
+offset_right = 1600.0
+offset_bottom = 677.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(1280, 600)
+
+[node name="BgImage" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("1_wizbg")
+expand_mode = 1
+stretch_mode = 6
+
+; ── 右侧渐变压暗（不是硬边色块）──────────────────────────────
+; 给右侧信息面板一点可读性，但**不能压到角色**。
+; 角色在背景图里约位于贴图 x 480..900（换算到根节点 ≈ x -780..-360），
+; 所以矩形从 x = -260 才开始，且左边缘用渐变淡入，避免出现一条竖线。
+; 用 6 段 stop 逼近线性渐变（Godot 默认每段线性插值，视觉上已是平滑渐变）。
+
+[node name="PanelShade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 0
+offset_left = -260.0
+offset_top = -600.0
+offset_right = 1600.0
+offset_bottom = 677.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.04313726, 0.02352941, 0.1019608, 0.36)
+
+[node name="ash1" type="CPUParticles2D" parent="."]
+position = Vector2(1832, -17)
+amount = 40
+lifetime = 15.0
+preprocess = 15.0
+local_coords = true
+emission_shape = 3
+emission_rect_extents = Vector2(2000, 1)
+gravity = Vector2(27, 27)
+orbit_velocity_max = 0.03
+angle_min = 45.0
+angle_max = 90.0
+scale_amount_min = 10.0
+scale_amount_max = 10.0
+color = Color(0.65, 0.45, 1, 1)
+
+[node name="ash2" type="CPUParticles2D" parent="."]
+position = Vector2(1832, -17)
+amount = 40
+lifetime = 15.0
+preprocess = 15.0
+local_coords = true
+emission_shape = 3
+emission_rect_extents = Vector2(2000, 1)
+gravity = Vector2(27, 27)
+orbit_velocity_max = 0.03
+angle_min = 45.0
+angle_max = 90.0
+scale_amount_min = 10.0
+scale_amount_max = 10.0
+color = Color(0.25, 0.15, 0.55, 1)

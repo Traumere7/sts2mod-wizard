@@ -1,0 +1,22 @@
+{
+  "WIZARD-WIZARD_CHARACTER.title": "The Wizard",
+  "WIZARD-WIZARD_CHARACTER.titleObject": "the Wizard",
+  "WIZARD-WIZARD_CHARACTER.description": "A spellcaster who studies forbidden arcane arts.\nHe trades life and sanity for [gold]world-rending[/gold] power.",
+
+  "WIZARD-WIZARD_CHARACTER.pronounSubject": "he",
+  "WIZARD-WIZARD_CHARACTER.pronounObject": "him",
+  "WIZARD-WIZARD_CHARACTER.pronounPossessive": "his",
+  "WIZARD-WIZARD_CHARACTER.possessiveAdjective": "his",
+
+  "WIZARD-WIZARD_CHARACTER.unlockText": "Play a run with [pink]{Prerequisite}[/pink] to unlock this character.",
+
+  "WIZARD-WIZARD_CHARACTER.cardsModifierTitle": "Wizard Cards",
+  "WIZARD-WIZARD_CHARACTER.cardsModifierDescription": "The Wizard's cards now appear in rewards and shops.",
+
+  "WIZARD-WIZARD_CHARACTER.goldMonologue": "[sine][purple]Gold... perhaps it can buy a few more pages of lost lore.[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.aromaPrinciple": "[sine][purple]...there is a trace of magic in this scent.[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.eventDeathPrevention": "No... my research is not finished...",
+
+  "WIZARD-WIZARD_CHARACTER.banter.alive.endTurnPing": "Your turn. Don't waste my time.",
+  "WIZARD-WIZARD_CHARACTER.banter.dead.endTurnPing": "...carry on for me."
+}

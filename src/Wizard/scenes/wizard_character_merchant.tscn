@@ -1,0 +1,90 @@
+[gd_scene load_steps=5 format=3 uid="uid://bwiz0merchant1"]
+
+[ext_resource type="Script" path="res://src/Core/Nodes/Screens/Shops/NMerchantCharacter.cs" id="1_wizmc"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_battle.png" id="2_wizmerchant"]
+
+; ══════════════════════════════════════════════════════════════════
+; ⚠️⚠️ 底部那个 AnimationPlayer + 名字叫 "die" 的动画 **不是装饰，是必需的**
+;      （2026-10-13 定位，修「商店点放弃游戏卡死」）
+; ══════════════════════════════════════════════════════════════════
+;
+; 【症状】商店里点「放弃游戏」→ 立绘变成战败图，但游戏卡死。
+;         正常逛商店完全没问题 —— 因为出问题的不是进入商店，是**结束游戏**。
+;
+; 【崩溃栈】实测日志：
+;     ERROR: InvalidOperationException: Expected BoundObject to be a SpineSprite,
+;            but it is a Sprite2D!
+;        at NMerchantCharacter.PlayAnimation_Patch1(NMerchantCharacter this, String anim, ...)
+;        at NGameOverScreen.MoveCreaturesToDifferentLayerAndDisableUi()
+;        at NGameOverScreen.AfterOverlayOpened()
+;        at NRun.ShowGameOverScreen(SerializableRun)
+;
+; 【根因】`NGameOverScreen` 在弹出结算界面时，会对商店里的角色播 `die`：
+;     NMerchantCharacter.PlayAnimation("die")
+;   而原版 `PlayAnimation` 内部是
+;     new MegaSprite(GetChild(0)).GetAnimationState().SetAnimation(...)
+;   —— **无条件**把第 0 个子节点当 SpineSprite 用。
+;   我们的第 0 个子节点是 Sprite2D（`Icon`），于是抛异常，
+;   结算流程中断 ⇒ 表现就是"卡死"。
+;
+; 【为什么 BaseLib 的守卫没救我们】`MerchantCharacterAnimPatch` 有两道守卫：
+;     ① if (!NodeFactory.CreatedFromFactory(__instance)) return true;
+;     ② if (CustomAnimation.HasCustomAnimation(__instance)) return false;
+;   —— 注意 ② 只保证"**有一个**动画播放器"，它**不保证播放器里有那个动画**！
+;   两道都放行后，`PlayAlternateAnimation` 还会再试一次：
+;         if (CustomAnimation.PlayCustomAnimation(__instance, "Die", "die")) return false;
+;   如果播放器里**没有**叫 "die" 的动画，这一句返回 false，
+;   于是**原始 PlayAnimation 照样执行** ⇒ 崩。
+;
+;   ⚠️ 所以一开始只放一个"空的" AnimationPlayer 是**不够的** ——
+;      空库下 `HasAnimation("die")` 为 false，等于没修。
+;      必须真的有一个**名为 "die" 的动画**，让 PlayCustomAnimation 返回 true
+;      （那条分支返回 false 表示"已处理，别跑原始方法"），
+;      原始 PlayAnimation 才会被**跳过**，spine 那条路根本不会被碰到。
+;
+; 【为什么动画可以是空的】`UseAnimationPlayer` 的委托只做
+;   `HasAnimation(name) → Play(name)`，播一个没有轨道的动画是无害的
+;   （我们的商人就是个静态立绘）。它存在**只为满足名字检查**。
+;   同时给 "relaxed_loop" 也占个位，满足引擎进店时想播的待机动画。
+;
+; 【为什么必须是根节点的直接子级】`CustomAnimation.FindNode<T>` 只看
+;   `root.GetChildren()`，**不做递归**（`CustomAnimation.cs`）。
+;
+; 【尺度备注】人物高 = 563 * 0.875 = 493 单位。
+;   位置以**脚部**为基准（脚固定在世界 y = 0）：
+;     包围盒中心相对贴图中心偏移 SC = (8, 5)；脚在贴图内 y = 670，贴图中心 y = 384
+;       position.y = -(670 - 384) * 0.875 = -250.25
+;       position.x = -8 * 0.875 = -7.0
+;     实算人物范围：x -134..+134，y -493..0
+;
+; 【节点名 Icon 不要改】`NMerchantCharacter._Ready` 用 `GetChild(0)` 取它；
+;   我们的战败立绘补丁也按 `Icon` 这个名字找它。
+
+[sub_resource type="Animation" id="Anim_merchant_die"]
+resource_name = "die"
+length = 0.1
+loop_mode = 0
+
+[sub_resource type="Animation" id="Anim_merchant_idle"]
+resource_name = "relaxed_loop"
+length = 0.1
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimLib_merchant"]
+_data = {
+&"die": SubResource("Anim_merchant_die"),
+&"relaxed_loop": SubResource("Anim_merchant_idle")
+}
+
+[node name="WizardMerchant" type="Node2D"]
+script = ExtResource("1_wizmc")
+
+[node name="Icon" type="Sprite2D" parent="."]
+position = Vector2(-7, -250.3)
+scale = Vector2(0.875, 0.875)
+texture = ExtResource("2_wizmerchant")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimLib_merchant")
+}

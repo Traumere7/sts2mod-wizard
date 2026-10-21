@@ -1,0 +1,22 @@
+{
+  "WIZARD-WIZARD_CHARACTER.title": "巫师",
+  "WIZARD-WIZARD_CHARACTER.titleObject": "巫师",
+  "WIZARD-WIZARD_CHARACTER.description": "一位钻研禁忌法术的施法者。\n以生命与理智为代价，换取[gold]毁天灭地[/gold]的奥术之力。",
+
+  "WIZARD-WIZARD_CHARACTER.pronounSubject": "他",
+  "WIZARD-WIZARD_CHARACTER.pronounObject": "他",
+  "WIZARD-WIZARD_CHARACTER.pronounPossessive": "他的",
+  "WIZARD-WIZARD_CHARACTER.possessiveAdjective": "他的",
+
+  "WIZARD-WIZARD_CHARACTER.unlockText": "用[pink]{Prerequisite}[/pink]进行一局游戏来解锁这个角色。",
+
+  "WIZARD-WIZARD_CHARACTER.cardsModifierTitle": "巫师卡牌",
+  "WIZARD-WIZARD_CHARACTER.cardsModifierDescription": "巫师的卡牌现在会出现在奖励和商店中。",
+
+  "WIZARD-WIZARD_CHARACTER.goldMonologue": "[sine][purple]这些金币……或许能换来几页失传的咒文。[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.aromaPrinciple": "[sine][purple]……气味里有魔力的痕迹。[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.eventDeathPrevention": "不……我的研究还没有完成……",
+
+  "WIZARD-WIZARD_CHARACTER.banter.alive.endTurnPing": "请快一点。",
+  "WIZARD-WIZARD_CHARACTER.banter.dead.endTurnPing": "……替我继续。"
+}

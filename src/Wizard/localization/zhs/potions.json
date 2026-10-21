@@ -1,0 +1,9 @@
+{
+  "WIZARD-FORBIDDEN_BLOOD.description": "回复[green]{Heal}[/green]点生命。当你的生命不足一半时，额外回复[green]{BonusHeal}[/green]点生命。",
+  "WIZARD-FORBIDDEN_BLOOD.title": "禁忌之血",
+  "WIZARD-MANA_POTION.description": "获得[blue]{SpellPowerPower}[/blue]点[purple]法术增益[/purple]。",
+  "WIZARD-MANA_POTION.title": "魔力药水",
+  "WIZARD-TRUTH_POTION.description": "抽[blue]{Cards}[/blue]张牌，选最多[blue]{MaxExhaust}[/blue]张牌[gold]消耗[/gold]。",
+  "WIZARD-TRUTH_POTION.selectionScreenPrompt": "选择至多[blue]{Amount}[/blue]张牌来[gold]消耗[/gold]。",
+  "WIZARD-TRUTH_POTION.title": "真理药水"
+}

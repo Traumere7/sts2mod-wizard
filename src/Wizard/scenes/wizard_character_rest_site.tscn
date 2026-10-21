@@ -1,0 +1,125 @@
+[gd_scene load_steps=5 format=3 uid="uid://bwiz0rest0001"]
+
+[ext_resource type="Script" path="res://src/Core/Nodes/RestSite/NRestSiteCharacter.cs" id="1_wizrsc"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_rest_site.png" id="2_wizrest"]
+[ext_resource type="PackedScene" path="res://scenes/ui/selection_reticle.tscn" id="3_wizreticle"]
+
+; ★ 素材是「一张图两个坐姿」，用 AtlasTexture 切成两半：
+;   画布 2048x1536，两姿势之间的空白列在 x=973。
+;   左 区域 x 0..972   （休息 / 捧书研读）  → 实测包围盒 58..972  / y 62..1498
+;   右 区域 x 973..2047（锻造 / 对书施法）  → 实测包围盒 1052..1974 / y 62..1497
+;   两者底部只差 1px、顶部齐平，所以可以用**同一个 scale 与 y**。
+
+[sub_resource type="AtlasTexture" id="Atlas_rest_left"]
+atlas = ExtResource("2_wizrest")
+region = Rect2(0, 0, 973, 1536)
+
+[sub_resource type="AtlasTexture" id="Atlas_rest_right"]
+atlas = ExtResource("2_wizrest")
+region = Rect2(973, 0, 1075, 1536)
+
+; ⚠️ NRestSiteCharacter._Ready 按名字硬查这 5 个节点，**不能改名/删除**：
+;    ControlRoot / %Hitbox / %SelectionReticle / %ThoughtBubbleLeft / %ThoughtBubbleRight
+;    （%NecroFire / %OstyFire 只在 Player.Character is Necrobinder 分支里查，我们不进）
+;
+; ⚠️⚠️ **%SelectionReticle 不只要名字对，类型也必须对** —— 它是
+;    `GetNode<NSelectionReticle>("%SelectionReticle")`，而 _Ready 里**没有 try/catch**：
+;    类型不符会抛 InvalidCastException 并**中止整个 _Ready**，
+;    于是排在它后面的 %ThoughtBubbleLeft / %ThoughtBubbleRight 两行赋值**根本没执行**，
+;    两个锚点保持 null。
+;    后果只在**多人局**显现：单人局 OnAfterPlayerSelectedRestSiteOption 直接 return，
+;    而多人局会走 `GetRestSiteOptionAnchor().GlobalPosition` → NullReferenceException，
+;    报在 ShowSelectedRestSiteOption，**与真正的出错点（_Ready 的 SelectionReticle 转换）相距很远**。
+;
+;    正确写法是**实例化原版场景**（类型才是 NSelectionReticle），
+;    原版 5 个角色场景全都是这么写的：
+;        [ext_resource type="PackedScene" path="res://scenes/ui/selection_reticle.tscn" ...]
+;        [node name="SelectionReticle" parent="ControlRoot" instance=ExtResource("3_wizreticle")]
+;    ⚠️ 引用时**不要带 uid**。原版那条写的是
+;       `uid="uid://bgy88bk44xxvk" path="res://scenes/ui/selection_reticle.tscn"`，
+;       但那个 uid 的映射存在**原版 pck** 里，本 mod 的 pck 里没有 ——
+;       Godot 解析 ExtResource 时 uid 优先于 path，跨 pck 很可能解析失败。
+;       观者 mod 引用同一个场景时也是**纯 path、不带 uid**，照它写最稳。
+;
+;    ❌ 曾经写成 `[node name="SelectionReticle" type="Control" ...]`（裸 Control），
+;       单机一直没暴露，联机进火堆必崩且**选项不消耗 → 可无限选**。
+;
+; ★ 只显示**一个**立绘。实测 NRestSiteRoom 是
+;     for (i in Players) { Create(player, i); ... }
+;   单人局 Players.Count == 1，所以只会创建一个角色节点。
+;   之前放两个 Sprite 是多余的（会同时出现两个巫师）。
+;   多人局由引擎创建多个 NRestSiteCharacter 实例，与场景内的节点数量无关。
+;
+; ★ 为什么用左半（休息/研读）那一半：
+;   单人局 characterIndex == 0 → 角色站在画面**左侧**（0/3 为左，1/2 为右），
+;   镜像后朝右 = 面向中间的火堆。
+;
+; ★ 翻转说明：NRestSiteRoom 只在多人局对奇数索引调用 FlipX()，
+;   而 FlipX() 只翻 `GetChildSpineNodes()`（class == "SpineSprite" 的子节点），
+;   **不会**碰到我们的 Sprite2D。所以这里直接在 scale.x 上做镜像，
+;   单人局（i=0，不调用 FlipX）下就是最终朝向。
+;
+; 定位算法（同 scene_asset_spec.md §6.1）：
+;   Atlas 区域 x 0..972，中心 486.5；图内包围盒 x 58..972 / y 62..1498（915 x 1437）
+;
+;   映射公式（注意 y 也要带上 position；scale.x 为负表示水平镜像）：
+;     worldX = position.x - (imgX - 486.5) * scale
+;     worldY = position.y + (imgY - 768)   * scale
+;
+;   ① 基准态：scale = 0.2505（坐姿高 360），position = (-68, 31)
+;        人物 x -189.6..39.3   y -145.9..213.9   宽 229.0
+;   ② 向右、向上各移动「一个当前宽度」= 229.0
+;        position = (-68 + 229, 31 - 229) = (161, -198)
+;        人物 x 39.3..268.3    y -374.8..-15.1
+;   ③ 比例乘 1.75：scale = 0.2505 * 1.75 = 0.4384（坐姿高 630）
+;        保持「人物中心 x = 153.8」与「脚部 y = 214」不变，只放大：
+;          position.x = 153.8 + (515 - 486.5) * 0.4384 = 166.3
+;          position.y = 214 - (1498 - 768) * 0.4384 = -106.0
+;        人物 x -46.5..354.1   y -415.5..214.0
+;
+;   ⚠️ 高 630 单位已经接近选择框（Reticle 高 670）的整体高度，
+;      人物会明显超出 Hitbox（y -165..166）。若嫌太大，调小 scale 即可。
+
+[node name="WizardRestSite" type="Node2D"]
+script = ExtResource("1_wizrsc")
+
+[node name="Visuals" type="Sprite2D" parent="."]
+position = Vector2(166.3, -106)
+scale = Vector2(-0.4384, 0.4384)
+texture = SubResource("Atlas_rest_left")
+
+[node name="ControlRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="SelectionReticle" parent="ControlRoot" instance=ExtResource("3_wizreticle")]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = -153.0
+offset_top = -350.0
+offset_right = 267.0
+offset_bottom = 320.0
+
+[node name="Hitbox" type="Control" parent="ControlRoot"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = -155.0
+offset_top = -165.0
+offset_right = 154.0
+offset_bottom = 166.0
+
+[node name="ThoughtBubbleRight" type="Control" parent="ControlRoot"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = 121.0
+offset_top = -125.0
+offset_right = 121.0
+offset_bottom = -125.0
+
+[node name="ThoughtBubbleLeft" type="Control" parent="ControlRoot"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_left = -113.0
+offset_top = -95.0
+offset_right = -113.0
+offset_bottom = -95.0

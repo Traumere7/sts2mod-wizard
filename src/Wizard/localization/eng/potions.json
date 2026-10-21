@@ -1,0 +1,9 @@
+{
+  "WIZARD-FORBIDDEN_BLOOD.description": "Heal [green]{Heal}[/green] HP. If you are below half HP, heal an additional [green]{BonusHeal}[/green] HP.",
+  "WIZARD-FORBIDDEN_BLOOD.title": "Forbidden Blood",
+  "WIZARD-MANA_POTION.description": "Gain [blue]{SpellPowerPower}[/blue] [purple]Spell Power[/purple].",
+  "WIZARD-MANA_POTION.title": "Mana Potion",
+  "WIZARD-TRUTH_POTION.description": "Draw [blue]{Cards}[/blue] cards. Choose up to [blue]{MaxExhaust}[/blue] cards to [gold]Exhaust[/gold].",
+  "WIZARD-TRUTH_POTION.selectionScreenPrompt": "Choose up to [blue]{Amount}[/blue] cards to [gold]Exhaust[/gold].",
+  "WIZARD-TRUTH_POTION.title": "Truth Potion"
+}
