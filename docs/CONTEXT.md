@@ -2846,3 +2846,31 @@ dll `BBCF409E` / json `0EA48CCB` / pck `12A4D7C7`。
 
 ⚠️ **每次构建 dll/pck 的哈希都会变**（编译与打包含时间戳），
 所以「工坊上那份是旧版本」的提示在没发版的构建里必然出现，属正常现象。
+
+### 11.7 ⚠️ HTTPS 推送被网络阻断 ⇒ remote 改用 SSH（2026-10-21 实测）
+
+构建时自动提交后推送失败，报错：
+```
+fatal: unable to access 'https://github.com/...':
+  TLS connect error: error:0A000126:SSL routines::unexpected eof while reading
+```
+**排查结论**：
+| 检查 | 结果 |
+|---|---|
+| `gh api`（Go 的 TLS 栈） | ✅ 正常 |
+| `Invoke-WebRequest https://github.com` | ✅ HTTP 200 |
+| `git push` HTTPS（OpenSSL） | ❌ TLS connect error |
+| `git push` HTTPS（`http.sslBackend=schannel`） | ❌ schannel: failed to receive handshake |
+| `ssh -T git@github.com` | ✅ `Hi Traumere7!` |
+
+⇒ 是**网络层对 git 的 HTTPS 连接**做了干扰（其他客户端的 TLS 都正常），
+不是 git 配置问题，重试 3 次均失败。**SSH key 已注册在 GitHub 上，可用**。
+
+**解决办法**：
+```powershell
+git remote set-url origin git@github.com:Traumere7/sts2mod-wizard.git
+git push --set-upstream origin main      # 已设为跟踪分支
+```
+已把 remote 永久改成 SSH。`build.ps1` 的推送失败提示里也加了这个兜底提示。
+
+> 📌 以后若再遇到 `git push` 失败，**先试 SSH**，不要浪费时间调 `http.version` / `sslBackend`。

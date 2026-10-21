@@ -377,6 +377,8 @@ if ($NoCommit) {
                         Write-Host "   ✔ 已提交并推送：$head" -ForegroundColor Green
                     } else {
                         Write-Host '   ⚠ 已提交，但推送失败（本地已留档，稍后手动 git push）' -ForegroundColor Yellow
+                        Write-Host '     若 HTTPS 被网络阻断（TLS connect error），把 remote 换成 SSH 再推：' -ForegroundColor DarkGray
+                        Write-Host '       git remote set-url origin git@github.com:Traumere7/sts2mod-wizard.git' -ForegroundColor DarkGray
                     }
                 } else {
                     Write-Host "   ✔ 已提交（无远端，未推送）：$head" -ForegroundColor Green
