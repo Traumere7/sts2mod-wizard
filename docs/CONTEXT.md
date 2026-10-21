@@ -2770,7 +2770,7 @@ re.findall(r"\[blue\]\d", cards_json_text)
 
 ## 11. 线上仓库（2026-10-21 建立）
 
-**https://github.com/Traumere7/sts2mod-wizard**（**private**，默认分支 `main`）
+**https://github.com/Traumere7/sts2mod-wizard**（**public**，默认分支 `main`）
 
 首个提交 `9a310fb`「chore: 初始存档（v0.3.6）」，**607 个文件**
 （src 594 / docs 10 / build.ps1 / design.md / .gitignore）。
@@ -2802,3 +2802,44 @@ re.findall(r"\[blue\]\d", cards_json_text)
 
 > 📌 根目录**没有 README.md** —— 所有原根目录文档（含 `README.md`）都已收进 `docs/`。
 > 用户原本的说法是"readme 以外收进 docs"，若希望 README 回到根目录，把它移出来即可。
+
+### 11.4 目录调整（2026-10-21 用户操作）
+
+· `design.md` 移入 `docs/`（内容权威来源不变，路径变为 `docs/design.md`）
+· `README.md` 放在**仓库根目录**（GitHub 首页渲染），已按项目现状重写
+
+### 11.5 构建产物走 GitHub Release 附件（二进制不进仓库）
+
+| | git 仓库 | Release 附件 |
+|---|---|---|
+| 单文件上限 | **100 MB**（硬限制，超了推送直接失败） | **2 GiB** |
+| 克隆成本 | 计入 `git clone` | 不计入 |
+
+⇒ `Wizard.pck`（~106 MB）**只能**作为 Release 附件分发。
+
+**发布流程**（每次发版）：
+1. 构建并部署（`build.ps1` 会自动提交源码）
+2. 从 `…\Slay the Spire 2\mods\Wizard\` 取 `Wizard.dll` / `Wizard.json` / `Wizard.pck`
+3. 打包：`Compress-Archive -Path <三件> -DestinationPath Wizard-v<ver>.zip`
+4. 说明写到 `docs/releases/v<ver>.md`
+5. `gh release create v<ver> Wizard-v<ver>.zip --title "v<ver>" --notes-file docs/releases/v<ver>.md`
+
+⚠️ `gh release create --target <sha>` 会报 `Release.target_commitish is invalid` ——
+**省略 `--target`** 即可（默认取默认分支当前提交）。
+
+首个 release：**v0.3.6**，附件 `Wizard-v0.3.6.zip`（104.7 MB），
+dll `BBCF409E` / json `0EA48CCB` / pck `12A4D7C7`。
+已实测：下载回读 → 解压 → 三个文件 MD5 与部署目录完全一致。
+
+### 11.6 build.ps1 第 5 步：自动提交
+
+构建完成后自动 `git add -A` → `commit` → `push`：
+· 参数 `-NoCommit` 可跳过
+· 工作区干净则跳过
+· 不是 git 仓库则跳过
+· **commit/push 失败只打警告，绝不让构建失败**（`$ErrorActionPreference` 临时降为 Continue），
+  因为 `$ErrorActionPreference = 'Stop'` 会把 git 的 stderr 包装成终止性错误
+· 提交信息格式：`build: v<版本>（dll <8位> / pck <8位>）` + 变更清单
+
+⚠️ **每次构建 dll/pck 的哈希都会变**（编译与打包含时间戳），
+所以「工坊上那份是旧版本」的提示在没发版的构建里必然出现，属正常现象。
