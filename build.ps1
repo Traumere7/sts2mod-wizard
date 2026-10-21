@@ -12,7 +12,8 @@
 [CmdletBinding()]
 param(
     [string]$Configuration = 'Debug',
-    [switch]$SkipPck
+    [switch]$SkipPck,
+    [switch]$NoCommit
 )
 
 $ErrorActionPreference = 'Stop'
@@ -110,7 +111,7 @@ function Invoke-NativeCapture {
 }
 
 # ─────────────────────────────────────────────────────────────
-Write-Step '1/4 编译 C#'
+Write-Step '1/5 编译 C#'
 
 # 把工坊目录**传给 csproj**：csproj 的 CopyMod 目标负责复制 dll + json，
 # 它的默认值与这里一致，但显式传参可保证"改一处就够"，不会两边漂移。
@@ -118,7 +119,7 @@ dotnet build $ProjectFile -c $Configuration -v minimal "-p:WorkshopDir=$ModDir"
 if ($LASTEXITCODE -ne 0) { throw "dotnet build 失败（退出码 $LASTEXITCODE）" }
 
 # ─────────────────────────────────────────────────────────────
-Write-Step '2/4 让 Godot 导入/刷新资源'
+Write-Step '2/5 让 Godot 导入/刷新资源'
 
 # 说明：独立运行 Godot 时，游戏本体的 PCK 没有挂载，所以场景里指向原版资源的引用
 # （res://src/Core/Nodes/... 、res://addons/mega_text/... 、res://themes/... 等）
@@ -182,9 +183,9 @@ if ($realErrors) {
 
 # ─────────────────────────────────────────────────────────────
 if ($SkipPck) {
-    Write-Step '3/4 已跳过 pck 打包'
+    Write-Step '3/5 已跳过 pck 打包'
 } else {
-    Write-Step '3/4 打包 pck（GDRE，无需导出模板）'
+    Write-Step '3/5 打包 pck（GDRE，无需导出模板）'
     New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
 
     # ⚠️⚠️ 必须**先删掉旧的 pck**。⚠️⚠️
@@ -227,7 +228,7 @@ if ($SkipPck) {
 }
 
 # ─────────────────────────────────────────────────────────────
-Write-Step '4/4 部署到游戏目录 mods\Wizard'
+Write-Step '4/5 部署到游戏目录 mods\Wizard'
 
 # 目标目录先做一次存在性校验：路径写错会静默创建出一个没人读的目录，
 # 而哈希校验依然"通过"（MakeDir 成功 + Copy 成功 ⇒ 一路绿灯，实际却写错了地方）。
@@ -314,6 +315,79 @@ if ((Test-Path $wsDll) -and (Test-Path $wsPck)) {
         Write-Host '     要让订阅者/联机队友拿到同一份，才需要走发布流程：' -ForegroundColor DarkGray
         Write-Host "       1) 把产物复制到 $UploaderDir" -ForegroundColor DarkGray
         Write-Host "       2) 运行 $UploaderRoot\ModUploader.exe（item id $WorkshopItemId）" -ForegroundColor DarkGray
+    }
+}
+
+
+# ─────────────────────────────────────────────────────────────
+# === 5/5 自动提交 ===
+# ─────────────────────────────────────────────────────────────
+# 构建完成后把源码 / 资源 / 文档的改动提交并推送到线上仓库，避免攒成一大坨。
+# · build/ 与 src/.godot/ 已在 .gitignore 里，不会被提交
+# · 提交或推送失败**不影响构建结果**，只打印警告
+# · 用 -NoCommit 关闭本次自动提交
+if ($NoCommit) {
+    Write-Host ''
+    Write-Step '5/5 自动提交（-NoCommit，跳过）'
+} elseif (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
+    Write-Host ''
+    Write-Step '5/5 自动提交（非 git 仓库，跳过）'
+} else {
+    Write-Host ''
+    Write-Step '5/5 自动提交'
+
+    $savedEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        Push-Location $RepoRoot
+
+        $dirty = @(& git status --porcelain 2>&1)
+        if ($dirty.Count -eq 0) {
+            Write-Host '   工作区干净，无需提交' -ForegroundColor DarkGray
+        } else {
+            $changed = $dirty.Count
+            $manifestPath = Join-Path $ProjectDir 'Wizard.json'
+            $version = (Get-Content $manifestPath -Raw | ConvertFrom-Json).version
+            $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm'
+
+            $msgLines = @(
+                "build: v$version（dll $($builtDllHash.Substring(0,8)) / pck $($srcHash.Substring(0,8))）"
+                ''
+                "自动提交于 $stamp，共 $changed 项变更："
+            ) + @($dirty | Select-Object -First 20 | ForEach-Object { "  $_" })
+            if ($changed -gt 20) { $msgLines += "  …（其余 $($changed - 20) 项略）" }
+
+            $msgFile = [System.IO.Path]::GetTempFileName()
+            Set-Content -Path $msgFile -Value ($msgLines -join "`n") -Encoding UTF8
+
+            & git add -A 2>&1 | Out-Null
+            $commitOut = & git commit -q -F $msgFile 2>&1
+            $commitCode = $LASTEXITCODE
+            Remove-Item $msgFile -Force -ErrorAction SilentlyContinue
+
+            if ($commitCode -ne 0) {
+                Write-Host "   ⚠ commit 失败（退出码 $commitCode），改动已 add 但未提交" -ForegroundColor Yellow
+                $commitOut | Select-Object -First 5 | ForEach-Object { Write-Host "     $_" -ForegroundColor DarkGray }
+            } else {
+                $head = (& git log --oneline -1 2>&1 | Out-String).Trim()
+                $remote = (& git remote 2>&1 | Out-String).Trim()
+                if ($remote) {
+                    & git push 2>&1 | Out-Null
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Host "   ✔ 已提交并推送：$head" -ForegroundColor Green
+                    } else {
+                        Write-Host '   ⚠ 已提交，但推送失败（本地已留档，稍后手动 git push）' -ForegroundColor Yellow
+                    }
+                } else {
+                    Write-Host "   ✔ 已提交（无远端，未推送）：$head" -ForegroundColor Green
+                }
+            }
+        }
+    } catch {
+        Write-Host "   ⚠ 自动提交异常（不影响构建结果）：$($_.Exception.Message)" -ForegroundColor Yellow
+    } finally {
+        Pop-Location
+        $ErrorActionPreference = $savedEap
     }
 }
 
