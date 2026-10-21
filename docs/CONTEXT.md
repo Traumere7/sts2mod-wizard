@@ -2765,3 +2765,40 @@ re.findall(r"\[blue\]\d", cards_json_text)
 
 > 📌 经验：**内容正确性靠多重集合比对**；关键字断言只用来抽查语义，
 > 别把不确定的**标点样式**写死进断言（中文弯引号 / 直角引号 / 全角括号都可能）。
+
+---
+
+## 11. 线上仓库（2026-10-21 建立）
+
+**https://github.com/Traumere7/sts2mod-wizard**（**private**，默认分支 `main`）
+
+首个提交 `9a310fb`「chore: 初始存档（v0.3.6）」，**607 个文件**
+（src 594 / docs 10 / build.ps1 / design.md / .gitignore）。
+
+### 11.1 未纳入版本库的内容
+
+| 路径 | 原因 |
+|---|---|
+| `art/` `logs/` `reference/` | 用户指定排除（reference 有 3.2 GB） |
+| `build/` | 内含 `Wizard.pck` **~106 MB**，**超过 GitHub 单文件 100 MB 硬上限**，推送必失败 |
+| `src/.godot/` | Godot 导入缓存（~46 MB），可完全重新生成 |
+| `*.pck` | 打包产物 |
+
+### 11.2 ⚠️ 仓库级 `core.autocrlf=false` 是刻意设的
+
+系统级 gitconfig（`C:/Program Files/Git/etc/gitconfig`）设了 `core.autocrlf=true`，
+会把换行统一转换。而本工程**换行本来就混用**：
+`.cs`/`.json`/`.md`(docs 里新建的) 是 LF，`build.ps1`/`design.md` 是 CRLF。
+开着 autocrlf 会导致**每次 checkout 后一堆文件显示"已修改"**（假改动）。
+
+⇒ 已设 `git config --local core.autocrlf false`，**存档保字节原样**。
+验证方法：`git ls-files --eol <file>`，应满足 `i/…` 与 `w/…` 相同。
+
+### 11.3 推送工具链
+
+`gh` CLI 已登录（账号 **Traumere7**，token scope 含 `repo`），
+走 HTTPS 推送，**不需要 SSH key、也不需要输入密码**。
+仓库创建命令：`gh repo create sts2mod-wizard --private --source . --remote origin --push`
+
+> 📌 根目录**没有 README.md** —— 所有原根目录文档（含 `README.md`）都已收进 `docs/`。
+> 用户原本的说法是"readme 以外收进 docs"，若希望 README 回到根目录，把它移出来即可。
