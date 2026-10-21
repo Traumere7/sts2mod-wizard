@@ -2,7 +2,7 @@
 
 为 **Slay the Spire 2** 添加一名全新角色「巫师」：以生命与理智为代价，换取毁天灭地的奥术之力。
 
-基于 [**BaseLib**](https://steamcommunity.com/sharedfiles/filedetails/?id=3737335127) 开发。
+基于 [**BaseLib**](https://github.com/Alchyr/BaseLib-StS2/) 开发。
 
 | | |
 |---|---|

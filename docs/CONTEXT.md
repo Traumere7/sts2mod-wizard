@@ -2817,6 +2817,9 @@ re.findall(r"\[blue\]\d", cards_json_text)
 
 ⇒ `Wizard.pck`（~106 MB）**只能**作为 Release 附件分发。
 
+> 📌 **发版刻意不自动化**（用户 2026-10-21 明确否决把它加进 `build.ps1`）：
+> 代码通常要迭代好几次才打包发布一次，发版是**独立的一环**，
+> 只由人判断时机后手动执行。**不要再提议给 `build.ps1` 加 `-Release` 之类的参数。**
 **发布流程**（每次发版）：
 1. 构建并部署（`build.ps1` 会自动提交源码）
 2. 从 `…\Slay the Spire 2\mods\Wizard\` 取 `Wizard.dll` / `Wizard.json` / `Wizard.pck`
