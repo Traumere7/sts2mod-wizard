@@ -13,16 +13,29 @@ using Wizard.Scripts.Powers;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 净罪 / PurifySin - 1 费 - 技能 - 稀有
-/// 消耗你所有的状态牌和诅咒牌。每消耗 1 张牌，获得 1(2) 层[purple]法术增益[/purple]和 1(2) 层[gold]敏捷[/gold]。消耗。
+/// 净罪 / PurifySin - 1(0) 费 - 技能 - 稀有
+/// 消耗你所有的状态牌和诅咒牌。每消耗 1 张牌，获得 2 点[purple]法术增益[/purple]和 2 点[gold]敏捷[/gold]。消耗。
 ///
 /// <para>
-/// ⚠️ <b>2026-10-21 升级口径改过</b>（<c>docs/design.md:130</c>）：
-/// 旧版写的是 <c>1（0）</c> —— <b>升级降费</b> 1 → 0，每张给的层数固定 1；
-/// 新版写 <c>1-</c>（<b>费用不随升级变化</b>）+ <c>1（2）</c> 层 ——
-/// <b>升级改为加数值</b>：法术增益与敏捷各 1 → 2。
-/// ⇒ <c>OnUpgrade</c> 里<b>不再有 <c>EnergyCost.UpgradeBy(-1)</c></b>，
-/// 改为对两个 <c>PowerVar</c> 各调一次 <c>UpgradeValueBy(1)</c>。
+/// ⚠️ <b>升级口径在 2026-10-21 改过两轮，当前是"降费 + 固定 2 点"</b>
+/// （<c>docs/design.md:130</c> 现为 <c>1（0）</c> + <c>2点法术增益和2点敏捷</c>）：
+/// <list type="bullet">
+///   <item>第 1 版：<c>1（0）</c> + 固定 1 层 ⇒ 升级<b>降费</b>，数值固定 1。</item>
+///   <item>第 2 版：<c>1-</c> + <c>1（2）</c> 层 ⇒ 费用不变，升级<b>加数值</b>。</item>
+///   <item><b>现版</b>：<c>1（0）</c> + <b>固定 2 点</b> ⇒ 升级<b>降费</b>，
+///         数值固定 2（<b>不随升级变化</b>）。</item>
+/// </list>
+/// ⇒ <c>OnUpgrade</c> 里是 <c>EnergyCost.UpgradeBy(-1)</c>，
+/// <b>两个 <c>PowerVar</c> 都不调 <c>UpgradeValueBy</c></b>。
+/// </para>
+///
+/// <para>
+/// 📌 <b>为什么不干脆去掉 PowerVar、直接在文案里写 "2"：</b>
+/// 保留 <c>PowerVar</c> 有两个好处 ——
+/// ① 卡面数字会走 <c>PowerVar.UpdateCardPreview</c> 的
+/// <c>Hook.ModifyPowerAmountGiven</c>，受"给予能力层数额外 +N"这类修正影响；
+/// ② 与本 mod 其它卡（如「镇静」<see cref="CalmMind"/> 的
+/// <c>PowerVar&lt;SpellPowerPower&gt;(1m)</c> 同样不随升级变化）保持一致。
 /// </para>
 ///
 /// <para>
@@ -70,14 +83,11 @@ public class PurifySin : WizardCardModel
 {
     private const int Cost = 1;
 
-    /// <summary>每消耗 1 张牌给予的法术增益层数（升级 +1）。</summary>
-    private const int SpellPowerPerCard = 1;
+    /// <summary>每消耗 1 张牌给予的法术增益层数（<b>固定值，不随升级变化</b>）。</summary>
+    private const int SpellPowerPerCard = 2;
 
-    /// <summary>每消耗 1 张牌给予的敏捷层数（升级 +1）。</summary>
-    private const int DexterityPerCard = 1;
-
-    /// <summary>升级时两个数值各 +1。</summary>
-    private const int UpgradeAmount = 1;
+    /// <summary>每消耗 1 张牌给予的敏捷层数（<b>固定值，不随升级变化</b>）。</summary>
+    private const int DexterityPerCard = 2;
 
     private const string SpellKey = nameof(SpellPowerPower);
     private const string DexKey = nameof(DexterityPower);
@@ -90,8 +100,10 @@ public class PurifySin : WizardCardModel
     ];
 
     /// <summary>
-    /// 两个数值变量：每消耗 1 张牌给多少层法术增益 / 敏捷。
+    /// 两个数值变量：每消耗 1 张牌给多少点法术增益 / 敏捷。
     /// 卡面文案用 <c>{SpellPowerPower:diff()}</c> / <c>{DexterityPower:diff()}</c>。
+    /// ⚠️ <b>升级不改这两个变量</b>（升级只降费），所以 <c>OnUpgrade</c> 里
+    /// 没有 <c>UpgradeValueBy</c> —— 卡面在升级前后都显示 2。
     /// </summary>
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
@@ -99,7 +111,7 @@ public class PurifySin : WizardCardModel
         new PowerVar<DexterityPower>(DexterityPerCard),
     ];
 
-    /// <summary>初始就有「消耗」（升级**不再降费**，只加数值）。</summary>
+    /// <summary>初始就有「消耗」（升级**降费** 1 → 0，数值不变）。</summary>
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
     [
         CardKeyword.Exhaust,
@@ -129,7 +141,7 @@ public class PurifySin : WizardCardModel
         {
             await CardCmd.Exhaust(choiceContext, card);
 
-            // 每消耗 1 张，各给 DynamicVars 里的层数（基础 1，升级后 2）。
+            // 每消耗 1 张，各给 DynamicVars 里的点数（固定 2，升级不变）。
             await PowerCmd.Apply<SpellPowerPower>(
                 choiceContext, Owner.Creature, DynamicVars[SpellKey].BaseValue, Owner.Creature, this);
 
@@ -139,12 +151,11 @@ public class PurifySin : WizardCardModel
     }
 
     /// <summary>
-    /// 升级<b>加数值</b>（法术增益 1 → 2、敏捷 1 → 2），
-    /// <b>不再降费</b> —— design.md 的写法是 <c>1-</c> + <c>1（2）</c>。
+    /// 升级<b>降费</b> 1 → 0（<c>design.md</c> 写的是 <c>1（0）</c>）。
+    /// <b>两个数值变量都不动</b> —— 升级前后都是「每张 2 点法术增益 + 2 点敏捷」。
     /// </summary>
     protected override void OnUpgrade()
     {
-        DynamicVars[SpellKey].UpgradeValueBy(UpgradeAmount);
-        DynamicVars[DexKey].UpgradeValueBy(UpgradeAmount);
+        EnergyCost.UpgradeBy(-1);
     }
 }
