@@ -16,7 +16,7 @@
 
 框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**60 张卡全部实现并已构建部署**；
 26 个能力、**9 个遗物**、**3 瓶药水**、**60 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
-已发布 **v0.3.6** 到创意工坊（item 3807136195）。
+已发布 **v0.3.7** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
 
@@ -2874,3 +2874,31 @@ git push --set-upstream origin main      # 已设为跟踪分支
 已把 remote 永久改成 SSH。`build.ps1` 的推送失败提示里也加了这个兜底提示。
 
 > 📌 以后若再遇到 `git push` 失败，**先试 SSH**，不要浪费时间调 `http.version` / `sslBackend`。
+
+### 11.8 发版记录
+
+| 版本 | 日期 | 主要改动 | 附件 |
+|---|---|---|---|
+| v0.3.6 | 2026-10-21 | 「决心」重做；「全知形态」记忆在敌人回合也重置 | `Wizard-v0.3.6.zip` |
+| v0.3.7 | 2026-10-21 | 「净罪」每张给 2 点法术增益 + 2 点敏捷；升级改为降费 1→0 | `Wizard-v0.3.7.zip` |
+
+每个版本的说明归档在 `docs/releases/v<版本>.md`（同时用作 `gh release create --notes-file`）。
+
+#### 📌 附件校验：用 API 的 `digest` 代替“下载回来比对”
+
+本机网络对 github 的 HTTPS **大文件下载**会中途断
+（`wsarecv: An established connection was aborted by the software in your host machine`），
+104 MB 的附件经常只下到 20 MB 左右。
+
+⇒ 更稳的校验方式（**无需下载**）：
+
+```powershell
+gh api repos/<owner>/<repo>/releases/tags/v<ver> --jq '.assets[] | "\(.name) \(.size) \(.digest)"'
+Get-FileHash <本地 zip> -Algorithm SHA256
+```
+
+GitHub 会返回附件的 `sha256:<hex>`；与本地哈希 + **精确字节数**一并比对，
+即可证明远端与本地字节完全一致。v0.3.7 实测一致：
+`sha256:0465552384…f036`，109,753,922 B。
+
+> 小文件（如通过 `gh api .../contents/...` 取源码）不受影响，只有大附件下载会断。
