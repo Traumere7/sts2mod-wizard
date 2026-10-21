@@ -13,8 +13,17 @@ using Wizard.Scripts.Powers;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 净罪 / PurifySin - 1(0) 费 - 技能 - 稀有
-/// 消耗你所有的状态牌和诅咒牌。每消耗 1 张牌，获得 1 层[purple]法术增益[/purple]和 1 层[gold]敏捷[/gold]。消耗。
+/// 净罪 / PurifySin - 1 费 - 技能 - 稀有
+/// 消耗你所有的状态牌和诅咒牌。每消耗 1 张牌，获得 1(2) 层[purple]法术增益[/purple]和 1(2) 层[gold]敏捷[/gold]。消耗。
+///
+/// <para>
+/// ⚠️ <b>2026-10-21 升级口径改过</b>（<c>docs/design.md:130</c>）：
+/// 旧版写的是 <c>1（0）</c> —— <b>升级降费</b> 1 → 0，每张给的层数固定 1；
+/// 新版写 <c>1-</c>（<b>费用不随升级变化</b>）+ <c>1（2）</c> 层 ——
+/// <b>升级改为加数值</b>：法术增益与敏捷各 1 → 2。
+/// ⇒ <c>OnUpgrade</c> 里<b>不再有 <c>EnergyCost.UpgradeBy(-1)</c></b>，
+/// 改为对两个 <c>PowerVar</c> 各调一次 <c>UpgradeValueBy(1)</c>。
+/// </para>
 ///
 /// <para>
 /// <b>「消耗所有状态牌和诅咒牌」照抄原版「散射炮」<c>FlakCannon</c>：</b>
@@ -61,6 +70,18 @@ public class PurifySin : WizardCardModel
 {
     private const int Cost = 1;
 
+    /// <summary>每消耗 1 张牌给予的法术增益层数（升级 +1）。</summary>
+    private const int SpellPowerPerCard = 1;
+
+    /// <summary>每消耗 1 张牌给予的敏捷层数（升级 +1）。</summary>
+    private const int DexterityPerCard = 1;
+
+    /// <summary>升级时两个数值各 +1。</summary>
+    private const int UpgradeAmount = 1;
+
+    private const string SpellKey = nameof(SpellPowerPower);
+    private const string DexKey = nameof(DexterityPower);
+
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
         HoverTipFactory.FromPower<SpellPowerPower>(),
@@ -69,12 +90,16 @@ public class PurifySin : WizardCardModel
     ];
 
     /// <summary>
-    /// 无卡面数值变量 —— 给多少完全取决于场上有几张状态/诅咒牌，
-    /// 卡面文案也就没有占位符（与「魔力凝聚」同一情形）。
+    /// 两个数值变量：每消耗 1 张牌给多少层法术增益 / 敏捷。
+    /// 卡面文案用 <c>{SpellPowerPower:diff()}</c> / <c>{DexterityPower:diff()}</c>。
     /// </summary>
-    protected override IEnumerable<DynamicVar> CanonicalVars => [];
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new PowerVar<SpellPowerPower>(SpellPowerPerCard),
+        new PowerVar<DexterityPower>(DexterityPerCard),
+    ];
 
-    /// <summary>初始就有「消耗」（升级只降费）。</summary>
+    /// <summary>初始就有「消耗」（升级**不再降费**，只加数值）。</summary>
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
     [
         CardKeyword.Exhaust,
@@ -104,18 +129,22 @@ public class PurifySin : WizardCardModel
         {
             await CardCmd.Exhaust(choiceContext, card);
 
-            // 每消耗 1 张，各给 1 层。
+            // 每消耗 1 张，各给 DynamicVars 里的层数（基础 1，升级后 2）。
             await PowerCmd.Apply<SpellPowerPower>(
-                choiceContext, Owner.Creature, 1m, Owner.Creature, this);
+                choiceContext, Owner.Creature, DynamicVars[SpellKey].BaseValue, Owner.Creature, this);
 
             await PowerCmd.Apply<DexterityPower>(
-                choiceContext, Owner.Creature, 1m, Owner.Creature, this);
+                choiceContext, Owner.Creature, DynamicVars[DexKey].BaseValue, Owner.Creature, this);
         }
     }
 
-    /// <summary>升级 1 费 → 0 费（设计写的是「1（0）」）。</summary>
+    /// <summary>
+    /// 升级<b>加数值</b>（法术增益 1 → 2、敏捷 1 → 2），
+    /// <b>不再降费</b> —— design.md 的写法是 <c>1-</c> + <c>1（2）</c>。
+    /// </summary>
     protected override void OnUpgrade()
     {
-        EnergyCost.UpgradeBy(-1);
+        DynamicVars[SpellKey].UpgradeValueBy(UpgradeAmount);
+        DynamicVars[DexKey].UpgradeValueBy(UpgradeAmount);
     }
 }

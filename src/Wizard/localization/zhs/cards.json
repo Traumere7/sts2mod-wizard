@@ -88,7 +88,7 @@
   "WIZARD-PONDER.title": "思索",
   "WIZARD-PUNCTURE.description": "去除敌人身上所有[gold]格挡[/gold]。\n造成{Damage:diff()}点[blue]雷电伤害[/blue]。\n给予{VulnerablePower:diff()}层[gold]易伤[/gold]。",
   "WIZARD-PUNCTURE.title": "击穿",
-  "WIZARD-PURIFY_SIN.description": "[gold]消耗[/gold]所有状态牌和诅咒牌。\n每[gold]消耗[/gold]1张牌，获得1点[purple]法术增益[/purple]和1点[gold]敏捷[/gold]。",
+  "WIZARD-PURIFY_SIN.description": "[gold]消耗[/gold]所有状态牌和诅咒牌。\n每[gold]消耗[/gold]1张牌，获得{SpellPowerPower:diff()}点[purple]法术增益[/purple]和{DexterityPower:diff()}点[gold]敏捷[/gold]。",
   "WIZARD-PURIFY_SIN.title": "净罪",
   "WIZARD-PYROMANIAC.description": "[gold]免疫燃烧[/gold]。\n每当你给予[gold]燃烧[/gold]时，获得{PyromaniacPower:diff()}点[gold]活力[/gold]。",
   "WIZARD-PYROMANIAC.title": "纵火狂",

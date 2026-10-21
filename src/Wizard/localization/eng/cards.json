@@ -88,7 +88,7 @@
   "WIZARD-PONDER.title": "Ponder",
   "WIZARD-PUNCTURE.description": "Remove all [gold]Block[/gold] from the enemy. Deal {Damage:diff()} [blue]Lightning damage[/blue] and apply {VulnerablePower:diff()} [gold]Vulnerable[/gold].",
   "WIZARD-PUNCTURE.title": "Puncture",
-  "WIZARD-PURIFY_SIN.description": "[gold]Exhaust[/gold] all Status and Curse cards.\nFor each card [gold]Exhausted[/gold], gain 1 [purple]Spell Power[/purple] and 1 [gold]Dexterity[/gold].",
+  "WIZARD-PURIFY_SIN.description": "[gold]Exhaust[/gold] all Status and Curse cards.\nFor each card [gold]Exhausted[/gold], gain {SpellPowerPower:diff()} [purple]Spell Power[/purple] and {DexterityPower:diff()} [gold]Dexterity[/gold].",
   "WIZARD-PURIFY_SIN.title": "Purify Sin",
   "WIZARD-PYROMANIAC.description": "[gold]Immune to Burn[/gold]. Whenever you apply [gold]Burn[/gold], gain {PyromaniacPower:diff()} [gold]Vigor[/gold].",
   "WIZARD-PYROMANIAC.title": "Pyromaniac",
