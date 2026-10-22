@@ -3244,3 +3244,60 @@ public override BackgroundAssets? CustomEncounterBackground(ActModel parentAct, 
 `queen_boss` `soul_fysh_boss` `test_subject_boss` `the_insatiable_boss` `the_kin_boss`
 `vantom_boss` `waterfall_giant_boss` `underdocks` `factory` `glory` `hive` `overgrowth`
 `fake_merchant_event_encounter` `the_architect_event_encounter`
+
+### 12.18 ⚠️ build.ps1 必须能在 **Windows PowerShell 5.1** 下跑（编码坑）
+
+**现象**（用户每次构建第 5/5 步都出现）：
+```
+⚠ 自动提交异常（不影响构建结果）：传入的对象无效，应为“:”或“}”。 (143):
+```
+
+**根因**：`Get-Content $path -Raw` 在 **Windows PowerShell 5.1** 里**默认按 ANSI/GBK 解码**，
+UTF-8 的中文变乱码，字节层面把 JSON 字符串搞坏 ⇒ `ConvertFrom-Json` 抛
+`Invalid object passed in, ':' or '}' expected. (143)`。
+（已用 `powershell.exe` 5.1 完整复现；同一行在 pwsh 7 下正常 —— 所以之前一直没暴露。）
+
+**修法**：
+1. `Get-Content` 显式 `-Encoding UTF8`；
+2. 干脆不用 `ConvertFrom-Json`，直接正则取版本：
+   `[regex]::Match($text, '"version"\s*:\s*"([^"]+)"').Groups[1].Value`；
+3. 提交信息文件改用 `[System.IO.File]::WriteAllText(..., UTF8Encoding($false))` ——
+   5.1 的 `Set-Content -Encoding UTF8` **会写 BOM**，BOM 会混进 git 提交信息。
+
+📌 **两条通用纪律**：
+- 读写任何含中文的文件，**永远显式 `-Encoding UTF8`**；
+- `build.ps1` 本身必须**存成 UTF-8 with BOM**（5.1 靠 BOM 识别脚本编码，否则连
+  脚本里的中文都会乱码）。本项目实测就是这么存的，改动时别把 BOM 弄丢。
+
+✅ 修完后已用 `powershell.exe`（5.1）跑完整构建验证：
+第 5/5 步正常输出 `✔ 已提交并推送`，提交信息首字节 `98,117,105`（无 BOM）。
+
+### 12.19 自制战斗背景的完整三层结构
+
+`BackgroundAssets(title, rng)` 只认 `res://scenes/backgrounds/{title}/`，
+**不是** `res://Wizard/…`。所以自制背景要按下面三层放（本项目 `volcanic_beast` 为实例）：
+
+```
+src/scenes/backgrounds/volcanic_beast/volcanic_beast_background.tscn
+    └─ 根 Control + 脚本 res://src/Core/Nodes/Rooms/NCombatBackground.cs（原版脚本，按路径引用）
+    └─ 子节点 Layer_00 / Layer_01 / …（Control，unique_name_in_owner）
+    └─ （可选）子节点 Foreground（只有提供 _fg_ 层时才需要）
+
+src/scenes/backgrounds/volcanic_beast/layers/volcanic_beast_bg_00_a.tscn
+    └─ 根节点直接是 TextureRect：锚点居中(anchors_preset=8, 四个 anchor=0.5)，
+       offset 设为 ±1450 × ±700（≈2900×1400，对齐原版背景画布），
+       texture = 贴图，expand_mode = 1，stretch_mode = 6（KEEP_ASPECT_COVERED）
+
+src/Wizard/images/backgrounds/volcanic_beast/volcanic_beast_bg_00_a.png
+    └─ 用户提供的 art/VolcanicBackground.png（2560×1200）
+```
+
+要点：
+- **层场景的根节点必须是 Control 的子类**（`NCombatBackground.AddLayer` 做
+  `Instantiate<Control>()`），所以直接拿 `TextureRect` 当根最省事；
+- 层文件名必须含 `_bg_` 或 `_fg_`（`BackgroundAssets` 靠这个分类，否则抛异常）；
+- 同一 `_bg_XX` 前缀的多个文件会被**随机选一个**（想做图层变体就加 `_b`/`_c`）；
+- 不提供 `_fg_` 是安全的：`Rng.NextItem` 对空集合返回 `default`（null），
+  `SetForegroundLayer(null)` 直接跳过 —— 此时背景场景里也就别放 `Foreground` 节点。
+
+📌 实测日志：`[INFO] [Wizard] 火山巨兽使用自定义战斗背景：volcanic_beast`。

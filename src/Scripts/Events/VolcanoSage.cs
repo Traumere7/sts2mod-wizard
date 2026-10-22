@@ -67,11 +67,11 @@ namespace Wizard.Scripts.Events;
 /// 固定奖励（design.md 逐项写死）
 /// ══════════════════════════════════════════════════════════════════
 /// <code>
-/// 100 金币
-/// + 一件随机商店遗物（若角色为巫师且尚未拥有「三原素」⇒ 固定给「三原素」）
-/// + 一件随机稀有遗物
-/// + 一次普通卡牌奖励
+/// 掉落固定奖励：100金币
+/// + 一件随机商店遗物（如果角色为巫师且尚未拥有遗物“三原素”，则固定获得遗物“三原素”）
+/// + 精英战斗奖励（1件任意遗物 + 1次精英权重选牌）
 /// </code>
+/// <i>（上面是 <c>docs/design.md</c> 的现行原文，2026-10-22 用户已按本实现更新过。）</i>
 ///
 /// <para>
 /// ⚠️ <b>2026-10-22 修订</b>：为了让战斗音乐是「第 2 幕的精英战斗音乐」，
@@ -89,8 +89,10 @@ namespace Wizard.Scripts.Events;
 /// </para>
 ///
 /// <para>
-/// <b>「普通卡牌奖励」</b>用 <c>CardCreationOptions.ForRoom(Owner, RoomType.Monster)</c>
-/// —— 即按普通战斗的稀有度权重抽 3 张选 1，与原版战斗奖励口径一致。
+/// <b>「精英战斗奖励」由 Elite 房间自动给出</b>（卡牌用
+/// <c>CardCreationOptions.ForRoom(player, RoomType.Elite)</c> 的精英权重，
+/// 遗物是 <c>new RelicReward(player)</c> 的任意稀有度）。
+/// 事件侧<b>不再</b>重复给金币/卡牌/遗物，只补「随机商店遗物」那一项。
 /// </para>
 /// </summary>
 public sealed class VolcanoSage : CustomEventModel
