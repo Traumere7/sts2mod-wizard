@@ -72,9 +72,20 @@ namespace Wizard.Scripts.Events;
 /// + 一件随机稀有遗物
 /// + 一次普通卡牌奖励
 /// </code>
-/// 通过 <c>EnterCombatWithoutExitingEvent</c> 的 <c>extraRewards</c> 一次性给出，
-/// 同时把遭遇战的默认奖励关掉（<c>VolcanicBeastEncounter.ShouldGiveRewards => false</c>），
-/// 否则会多出一份精英奖励。
+///
+/// <para>
+/// ⚠️ <b>2026-10-22 修订</b>：为了让战斗音乐是「第 2 幕的精英战斗音乐」，
+/// 遭遇战必须用 <c>RoomType.Elite</c>（音乐由房间类型决定，见
+/// <see cref="VolcanicBeastEncounter"/> 的类注释），
+/// 而 Elite 房间会**无条件**自带「金币 + 一次卡牌奖励 + 一件随机遗物」。
+/// 所以现在的分工是：
+/// <list type="bullet">
+///   <item>100 金币 —— 房间发（<c>Min/MaxGoldReward = 100</c>）</item>
+///   <item>一次卡牌奖励 —— 房间发（权重为精英档）</item>
+///   <item>一件随机遗物 —— 房间发（**任意稀有度**，不保证稀有）</item>
+///   <item>一件随机商店遗物（或「三原素」）—— 本事件通过 <c>extraRewards</c> 补</item>
+/// </list>
+/// 合计仍是 <b>100 金币 + 2 件遗物 + 一次卡牌奖励</b>，件数与 design.md 一致。
 /// </para>
 ///
 /// <para>
@@ -96,9 +107,8 @@ public sealed class VolcanoSage : CustomEventModel
     private const int DebateCurseCount = 1;
 
     // ── 选项 3：战斗奖励 ──
-    private const int FightGold = 100;
-    /// <summary>普通卡牌奖励给几张候选（原版战斗奖励是 3 选 1）。</summary>
-    private const int FightCardChoices = 3;
+    // 100 金币 / 一次卡牌奖励 / 一件随机遗物 都由 Elite 房间的默认奖励给出，
+    // 事件只额外补一件随机商店遗物（见 Fight()）。
 
     public override string? CustomInitialPortraitPath => "res://Wizard/images/events/volcano_sage.png";
 
@@ -215,7 +225,12 @@ public sealed class VolcanoSage : CustomEventModel
             return Task.CompletedTask;
         }
 
-        List<Reward> rewards = [new GoldReward(FightGold, player)];
+        // ⚠️ 2026-10-22 改：房间类型是 Elite（为了第 2 幕的精英战斗音乐），
+        //    Elite 的默认奖励已包含「100 金币 + 一次卡牌奖励 + 一件随机遗物」
+        //    （RewardsSet.cs:232-238，金币由 VolcanicBeastEncounter.Min/MaxGoldReward 定成 100）。
+        //    所以这里**只补 design 里房间不会给的那一项**：随机商店遗物。
+        //    ⇒ 合计：100 金币 + 2 件遗物 + 一次卡牌奖励，件数与 design.md 一致。
+        List<Reward> rewards = [];
 
         // ── 随机商店遗物；巫师且没有「三原素」时固定给「三原素」──
         if (player.Character is WizardCharacter
@@ -223,22 +238,12 @@ public sealed class VolcanoSage : CustomEventModel
         {
             // ⚠️ 必须 ToMutable()：RelicReward(RelicModel, Player) 内部会 AssertMutable()，
             //    直接传 canonical 模型会抛 CanonicalModelException（2026-10-22 实测踩到）。
-            //    与「规则怪谈」里 RelicCmd.Obtain(....ToMutable(), player) 同理。
             rewards.Add(new RelicReward(ModelDb.Relic<TriaPrima>().ToMutable(), player));
         }
         else
         {
             rewards.Add(new RelicReward(RelicRarity.Shop, player));
         }
-
-        // ── 随机稀有遗物 ──
-        rewards.Add(new RelicReward(RelicRarity.Rare, player));
-
-        // ── 一次普通卡牌奖励（3 选 1）──
-        rewards.Add(new CardReward(
-            CardCreationOptions.ForRoom(player, RoomType.Monster),
-            FightCardChoices,
-            player));
 
         EnterCombatWithoutExitingEvent<VolcanicBeastEncounter>(
             rewards, shouldResumeAfterCombat: false);

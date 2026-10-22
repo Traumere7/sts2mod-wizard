@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using Godot;
 using BaseLib.Abstracts;
-using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Random;
 using MegaCrit.Sts2.Core.Rooms;
 using Wizard.Scripts.Monsters;
 
@@ -12,52 +13,88 @@ namespace Wizard.Scripts.Encounters;
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
-/// ⚠️ 2026-10-22 修：<b>绝不能把 <c>ShouldGiveRewards</c> 设成 false</b>
+/// ① 绝不会在常规战斗节点遭遇（2026-10-22 核实）
 /// ══════════════════════════════════════════════════════════════════
-/// 第一版为了让"奖励完全按 design 给"，把这里设成了 <c>false</c>，结果
-/// <b>打完 BOSS 什么都不弹、直接回地图</b>。原因在
-/// <c>RewardsCmd.cs:26</c>：
+/// BaseLib 把自定义遭遇战塞进某一幕的遭遇战池时，
+/// 唯一判据就是 <c>IsValidForAct</c>（<c>AddActContent.cs:49-52</c>）：
 /// <code>
-/// if (encounter != null &amp;&amp; !encounter.ShouldGiveRewards)
-///     rewardsSet = new RewardsSet(player).EmptyForRoom(room);   // 空集合
-/// else
-///     rewardsSet = new RewardsSet(player).WithRewardsFromRoom(room);
+/// foreach (CustomEncounterModel encounter in CustomContentDictionary.CustomEncounters)
+///     if (!origResult.Any(e => e.Id.Equals(encounter.Id)) &amp;&amp; encounter.IsValidForAct(__instance))
+///         yield return encounter;
 /// </code>
-/// 而事件通过 <c>EnterCombatWithoutExitingEvent</c> 传的 <c>extraRewards</c>
-/// 是挂在 <c>CombatRoom.ExtraRewards</c> 上、**只由 <c>WithRewardsFromRoom</c> 合并**的
-/// （<c>RewardsSet.cs:99-102</c>）。
-/// ⇒ <c>ShouldGiveRewards = false</c> 会把<b>连 extraRewards 一起</b>吃掉。
+/// 这里恒定返回 <c>false</c> ⇒ **任何一幕的池子里都不会有它**。
+/// 而 <c>VolcanicBeast</c> 只被本遭遇战的 <see cref="GenerateMonsters"/> 引用，
+/// <c>CustomMonsterModel</c> 也不会把自己登记进任何怪物池。
+/// ⇒ 唯一入口就是事件里的 <c>EnterCombatWithoutExitingEvent&lt;VolcanicBeastEncounter&gt;</c>。
 /// </para>
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
-/// 为什么房间类型是 <c>Monster</c> 而不是 <c>Elite</c>
+/// ② 房间类型必须是 <c>Elite</c>：音乐与它绑定
 /// ══════════════════════════════════════════════════════════════════
-/// design.md 写「类型：精英（事件限定）」，但它的**奖励清单**是
-/// 「100 金币 + 随机商店遗物 + 随机稀有遗物 + 一次<b>普通</b>卡牌奖励」——
-/// 而 <c>RoomType.Elite</c> 的默认奖励是
-/// <c>金币 + 药水? + 卡牌(精英权重) + 随机遗物</c>（<c>RewardsSet.cs:232-238</c>），
-/// 会**多一件随机遗物**、且卡牌用精英稀有度权重，与设计清单冲突。
+/// 战斗音乐不是"一首曲子"，而是<b>本幕曲目 + 一个 Progress 参数</b>：
+/// <c>NRunMusicController.UpdateTrack()</c> 读
+/// <c>GetTrack(_runState.CurrentRoom.RoomType)</c>，
+/// 再 <c>update_global_parameter("Progress", (float)track)</c>；
+/// 而 <c>RoomType.Elite</c> / <c>Boss</c> ⇒ <c>MusicProgressTrack.Elite</c>（<c>:226-229</c>）。
 ///
 /// <para>
-/// <c>RoomType.Monster</c> 的默认奖励只有
-/// <c>金币 + 药水? + 卡牌(普通权重)</c>，
-/// 正好对上设计的"一次普通卡牌奖励"；金币用
-/// <see cref="CalculateGoldProportion"/> 返回 0 抑制掉
-/// （Monster 分支有 <c>if (combatRoom.GoldProportion &gt; 0f)</c> 的判断，
-/// <c>RewardsSet.cs:225</c>），改由事件精确给 100。
+/// <c>NonInteractiveMode</c> 之外**没有**公开 API 能单独改这个全局参数
+/// （<c>UpdateMusicParameter</c> 走的是另一个 proxy 通道 <c>update_music_parameter</c>；
+/// <c>CustomBgm</c> 只会换整首曲子、丢掉本幕的 Progress 变体）。
+/// ⇒ 想要"第 2 幕的精英战斗音乐"，<b>只能把房间类型设成 <c>Elite</c></b>。
 /// </para>
 ///
 /// <para>
-/// ⇒ 最终奖励 = <b>100 金币（事件给）+ 一次普通卡牌奖励（房间给）+
-/// 随机商店遗物 + 随机稀有遗物（事件给）</b>，与 design.md 逐项一致。
-/// 唯一多出来的是**药水掉落判定**（普通战斗本来就有，没有按遭遇战关闭的开关）。
+/// ⚠️ 代价：<c>RewardsSet.GenerateRewardsFor</c> 的 Elite 分支
+/// （<c>RewardsSet.cs:232-238</c>）会**无条件**多给一件随机遗物、
+/// 且卡牌用精英稀有度权重。所以奖励改成：
+/// <list type="bullet">
+///   <item>100 金币 —— 由房间发（<see cref="MinGoldReward"/>=<see cref="MaxGoldReward"/>=100）</item>
+///   <item>一次卡牌奖励 —— 由房间发（权重是精英档）</item>
+///   <item>一件随机遗物 —— 由房间发（**任意稀有度**，不保证稀有）</item>
+///   <item>一件随机商店遗物（巫师且未拥有「三原素」时固定给三原素）—— 事件额外给</item>
+/// </list>
+/// 合计 **100 金币 + 2 件遗物 + 1 次卡牌**，件数与 design.md 一致；
+/// 与 design 的两点细微差异已在总结里说明。
+/// </para>
+///
+/// <para>
+/// ══════════════════════════════════════════════════════════════════
+/// ③ 自定义背景：换成「瀑布巨兽」的专属背景（实验）
+/// ══════════════════════════════════════════════════════════════════
+/// 机制（<c>EncounterModel.cs:288-308</c>）：
+/// <code>
+/// if (HasCustomBackground) _backgroundAssets = CreateBackgroundAssetsForCustom(rng);
+/// else                     _backgroundAssets = parentAct.GenerateBackgroundAssets(rng);
+/// // CreateBackgroundAssetsForCustom: new BackgroundAssets(Id.Entry.ToLowerInvariant(), rng)
+/// </code>
+/// 而 <c>BackgroundAssets(string title, Rng rng)</c> 会去读
+/// <c>res://scenes/backgrounds/{title}/layers/</c> 目录（按 <c>_bg_</c> 分组随机选层 + <c>_fg_</c> 前景）
+/// 与 <c>res://scenes/backgrounds/{title}/{title}_background.tscn</c>。
+///
+/// <para>
+/// ⇒ BaseLib 的 <see cref="CustomEncounterBackground"/> 直接返回
+/// <c>new BackgroundAssets("waterfall_giant_boss", rng)</c> 就能<b>复用原版资源的目录名</b>，
+/// 不需要把背景图搬进本 mod（原版目录里实测有
+/// <c>waterfall_giant_boss_background.tscn</c> + <c>layers/…_bg_00_a.tscn</c> + <c>…_fg_a.tscn</c>）。
+/// </para>
+/// <para>
+/// ⚠️ 目录不存在时 <c>BackgroundAssets</c> 的构造函数会**抛异常**，
+/// 所以先用 <c>DirAccess.DirExistsAbsolute</c> 挡一层，缺了就返回 <c>null</c>
+/// （= 回落本幕默认背景），不让整场战斗崩掉。
 /// </para>
 /// </summary>
 public class VolcanicBeastEncounter : CustomEncounterModel
 {
+    /// <summary>借用的原版背景目录名（= 原版遭遇战类名的小写形式）。</summary>
+    private const string BackgroundTitle = "waterfall_giant_boss";
+
+    /// <summary>design.md：固定 100 金币。</summary>
+    private const int GoldReward = 100;
+
     public VolcanicBeastEncounter()
-        : base(RoomType.Monster)
+        : base(RoomType.Elite)
     {
     }
 
@@ -67,16 +104,32 @@ public class VolcanicBeastEncounter : CustomEncounterModel
     ];
 
     /// <summary>
-    /// ⚠️ 永远返回 false —— 本遭遇战是**事件限定**的，不进常规遭遇战池。
+    /// ⚠️ 永远返回 false —— 本遭遇战是**事件限定**的，不进任何常规遭遇战池。
     /// （事件里由 <c>EnterCombatWithoutExitingEvent</c> 直接点名，不经过此筛选。）
     /// </summary>
     public override bool IsValidForAct(ActModel act) => false;
 
+    /// <summary>design.md：100 金币（由房间的 Elite 奖励发，避免事件再给一次重复）。</summary>
+    public override int MinGoldReward => GoldReward;
+
+    public override int MaxGoldReward => GoldReward;
+
     /// <summary>
-    /// 金币奖励比例设为 0 ⇒ 房间不再发默认金币，由事件精确给 100
-    /// （<c>RewardsSet.cs:225</c> 只有 Monster 分支检查这个值）。
+    /// 换成「瀑布巨兽」的专属战斗背景（实验）。
+    /// 目录不存在则返回 null ⇒ 回落本幕默认背景。
     /// </summary>
-    public override float CalculateGoldProportion(CombatState combatState) => 0f;
+    public override BackgroundAssets? CustomEncounterBackground(ActModel parentAct, Rng rng)
+    {
+        string layersDir = $"res://scenes/backgrounds/{BackgroundTitle}/layers";
+        if (!DirAccess.DirExistsAbsolute(layersDir))
+        {
+            Entry.Logger.Warn($"[{Entry.ModId}] 未找到背景目录 {layersDir}，回落本幕默认背景。");
+            return null;
+        }
+
+        Entry.Logger.Info($"[{Entry.ModId}] 火山巨兽使用自定义战斗背景：{BackgroundTitle}");
+        return new BackgroundAssets(BackgroundTitle, rng);
+    }
 
     protected override IReadOnlyList<(MonsterModel, string?)> GenerateMonsters() =>
     [
