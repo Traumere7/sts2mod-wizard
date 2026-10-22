@@ -3033,3 +3033,119 @@ localization/{zhs,eng}/encounters.json    {ENTRY}.title / {ENTRY}.loss
 事件仍在 `events.json`，键形如
 `{ENTRY}.title` / `.pages.INITIAL.description` / `.pages.INITIAL.options.{OPT}.{title|description}`
 / `.pages.{OPT}.description` / `.loss`。
+
+### 12.9 ⚠️ `ShouldGiveRewards = false` 会把事件的 `extraRewards` 一起吃掉
+
+**现象**：事件战斗打赢后**什么都不弹、直接回地图**。
+
+**根因**（`RewardsCmd.cs:20-36`）：
+
+```csharp
+if (encounter != null && !encounter.ShouldGiveRewards)
+    rewardsSet = new RewardsSet(player).EmptyForRoom(room);   // 空集合
+else
+    rewardsSet = new RewardsSet(player).WithRewardsFromRoom(room);
+```
+
+而 `EnterCombatWithoutExitingEvent` 的 `extraRewards` 是挂在
+`CombatRoom.ExtraRewards` 上、**只由 `WithRewardsFromRoom` 合并**的
+（`RewardsSet.cs:99-102`、`EventCombatSynchronizer.cs:154-160`）。
+⇒ 关掉 `ShouldGiveRewards` 等于**连自定义奖励一起关掉**。
+
+**正确做法**：`ShouldGiveRewards` 保持默认 `true`，
+改用下面的手段剔除不想要的默认奖励。
+
+### 12.10 事件战斗的默认奖励怎么"精确控制"
+
+`RewardsSet.GenerateRewardsFor`（`:206`）按 `RoomType` 决定默认奖励：
+
+| RoomType | 默认奖励 |
+|---|---|
+| Monster | 金币（**仅当 `GoldProportion > 0`**）+ 药水判定 + 卡牌（普通权重） |
+| Elite | 金币（**无条件**）+ 药水判定 + 卡牌（精英权重）+ **随机遗物** |
+| Boss | 金币 + 药水判定 + 卡牌 |
+
+⇒ 想要"事件精确给、不要默认遗物"时：
+- 用 **`RoomType.Monster`**（没有默认遗物；卡牌是普通权重，正好对上
+  design 的"一次普通卡牌奖励"）
+- 重写 **`CalculateGoldProportion(CombatState) => 0f`** 抑制默认金币
+  （只有 Monster 分支检查这个值，`:225`；原版 `GremlinMercNormal` 用过同一钩子）
+
+⚠️ **药水判定无法按遭遇战关闭**（用的是玩家全局 `PlayerOdds.PotionReward`），
+普通战斗本来就有，属于可接受残留。
+
+### 12.11 ⚠️ 怪物视觉必须**同时**实现两个钩子
+
+BaseLib 对 `MonsterModel` 有**两个** Harmony 补丁：
+
+| 补丁 | 目标 | 读的自定义成员 |
+|---|---|---|
+| `BaseLib.Abstracts.CreateVisuals` | `MonsterModel.CreateVisuals` | `CreateCustomVisuals()` |
+| `BaseLib.Abstracts.VisualsPath` | `MonsterModel.VisualsPath` | `CustomVisualPath` |
+
+只实现 `CreateCustomVisuals()` 时，**战斗内**能正常显示，
+但预加载/图鉴走 `VisualsPath` 会回落成默认路径
+`res://scenes/creature_visuals/{modid}-{entry}.tscn`，日志里刷
+`ERROR: Failed to load resource synchronously: ...`。
+
+⇒ **两个都指到同一个 tscn**：
+```csharp
+public override string? CustomVisualPath => VisualsScenePath;
+public override NCreatureVisuals? CreateCustomVisuals() =>
+    NodeFactory<NCreatureVisuals>.CreateFromScene(VisualsScenePath);
+```
+
+### 12.12 ⚠️ `PowerModel.Owner` 的 getter 会 `AssertMutable()` —— 不能靠它切文案
+
+**需求**：同一个「燃烧免疫」挂在玩家身上要写"你"，挂在怪物身上要写"火山巨兽"。
+
+**失败的做法**：重写 `Title` / `Description`，在里面判 `Owner.Player == null`。
+运行时直接崩：
+
+```
+CanonicalModelException: Canonical model of type BurnImmunityPower used in incorrect place
+  at PowerModel.get_Owner()          ← ★ Owner 的 getter 第一行就是 AssertMutable()
+  at BurnImmunityPower.get_Description()
+  at PowerModel.GetDumbHoverTip(...)
+  at HoverTipFactory.FromPower[BurnImmunityPower]()
+  at Pyromaniac.get_ExtraHoverTips()  ← 卡牌悬停读的是 canonical 实例
+```
+
+**可用的做法**：**开子类**（本项目用 `MonsterBurnImmunityPower : BurnImmunityPower`）。
+
+| 关注点 | 为什么子类可行 |
+|---|---|
+| 效果复用 | 全部继承，一行逻辑都不用重写 |
+| 拦截仍然生效 | `SpellCmd.cs:63` 判的是 `target.HasPower<BurnImmunityPower>()`，而 `Creature.HasPower<T>` 是 `_powers.Any(p => p is T)` ⇒ **子类实例命中** |
+| 文案自动独立 | `PowerModel.Description` 用 `Id.Entry + ".description"` 取键，子类有自己的 Entry ⇒ 天然另一套键，无需任何重写 |
+
+> 📌 若确实要"同一个类两种文案"，只能用 `AbstractModel.IsMutable` 挡一层
+> （canonical 时 `IsMutable == false`，不要去碰 `Owner`），但子类方案更干净。
+
+### 12.13 怪物往玩家牌堆塞牌要有"演出"
+
+裸 `AddGeneratedCardToCombat` 塞进去了但**玩家看不到**。参考原版：
+
+```csharp
+// 「史莱姆狂战士」SlimedBerserker.cs:70
+await CardPileCmd.AddToCombatAndPreview<Slimed>(targets, PileType.Discard, 10, null);
+```
+
+`AddToCombatAndPreview`（`CardPileCmd.cs:1214-1252`）内部会逐张
+`AddGeneratedCardToCombat` 后调 `CardCmd.PreviewCardPileAdd` + `Cmd.Wait(1f)`，
+即"牌飞进牌堆 + 停留展示"的完整演出。
+（「无厌沙虫」`TheInsatiable.cs:133-146` 是同一套做法的多目标手写版。）
+
+### 12.14 事件选项"只显示一行"的写法
+
+参考原版「灯火钥匙」`THE_LANTERN_KEY.pages.KEEP_THE_KEY.options.FIGHT`：
+
+- eng：`.title = 'Fight'`、`.description = ''`（**空串**）
+- zhs：只有 `.title = '战斗'`，**没有** description 键
+
+`NEventOptionButton._Ready` 的渲染是
+`[{gold|red}][b]{title}[/b][/…]\n{description}` ——
+**description 为空 ⇒ 只剩一行**（标题本身已被引擎上成金色加粗）。
+
+> 本项目在此基础上把标题也写成 `[gold]战斗[/gold]`（用户明确要求带 gold 修饰），
+> 效果等同于引擎自动着色，多余但无害。
