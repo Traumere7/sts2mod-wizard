@@ -56,45 +56,6 @@ public class BurnImmunityPower : CustomPowerModel
         HoverTipFactory.FromPower<BurnPower>(),
     ];
 
-    // ══════════════════════════════════════════════════════════════════
-    // 按"挂在谁身上"切换文案（2026-10-22 用户要求）
-    // ══════════════════════════════════════════════════════════════════
-    //
-    // 同一个能力既可能挂在**玩家**身上（「纵火狂」），也可能挂在**怪物**身上
-    // （「火山巨兽」）。默认文案是第二人称「你不会受到燃烧影响」，
-    // 出现在怪物身上就变成"你说怪物"了，读着很怪。
-    //
-    // ⇒ 重写 `PowerModel` 的两个 `virtual` 属性：
-    //      Title   (PowerModel.cs:49)
-    //      Description (PowerModel.cs:51)
-    //   以及 `SmartDescriptionLocKey`（`:87`，带 {Amount} 的那份），
-    //   在"拥有者是怪物"时换成 `.monster*` 前缀的另一套键。
-    //
-    // ⚠️ 判定必须写 `Owner is { Player: null }`（**Owner 非 null 且不是玩家**）：
-    //   · canonical 实例的 Owner 是 null —— 卡牌悬停提示
-    //     （`HoverTipFactory.FromPower<BurnImmunityPower>()`）走的是它，
-    //     必须仍然拿玩家版文案；
-    //   · 挂在玩家身上 → Owner.Player != null → 玩家版 ✓；
-    //   · 挂在怪物身上 → Owner != null 且 Owner.Player == null → 怪物版 ✓。
-
-    /// <summary>本能力是否挂在**怪物**身上（canonical 实例不算）。</summary>
-    private bool OwnedByMonster => Owner is { Player: null };
-
-    public override LocString Title =>
-        OwnedByMonster
-            ? new LocString("powers", Id.Entry + ".monsterTitle")
-            : base.Title;
-
-    public override LocString Description =>
-        OwnedByMonster
-            ? new LocString("powers", Id.Entry + ".monsterDescription")
-            : base.Description;
-
-    protected override string SmartDescriptionLocKey =>
-        OwnedByMonster
-            ? Id.Entry + ".monsterSmartDescription"
-            : base.SmartDescriptionLocKey;
-
     /// <summary>
     /// 获得本效果时，清除拥有者身上已有的燃烧。
     ///

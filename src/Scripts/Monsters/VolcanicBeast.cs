@@ -142,7 +142,8 @@ public class VolcanicBeast : CustomMonsterModel
     /// </summary>
     public override async Task AfterAddedToRoom()
     {
-        await MonsterActions.ApplySelf<BurnImmunityPower>(this, 1m);
+        // 用怪物版（子类）：效果与玩家版相同，但有一套自己的文案。
+        await MonsterActions.ApplySelf<MonsterBurnImmunityPower>(this, 1m);
         await MonsterActions.ApplySelf<FireSpitPower>(this, FireSpitInitial);
     }
 
