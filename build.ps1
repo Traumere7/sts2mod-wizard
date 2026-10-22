@@ -347,7 +347,13 @@ if ($NoCommit) {
         } else {
             $changed = $dirty.Count
             $manifestPath = Join-Path $ProjectDir 'Wizard.json'
-            $version = (Get-Content $manifestPath -Raw | ConvertFrom-Json).version
+            # ⚠️ 必须显式 -Encoding UTF8：Windows PowerShell 5.1 的 Get-Content
+            #    默认按 ANSI/GBK 解码 UTF-8 文件 ⇒ 中文变乱码 ⇒ JSON 解析报
+            #    "传入的对象无效，应为':'或'}'"（2026-10-22 实测复现）。
+            #    这里也刻意不用 ConvertFrom-Json，直接正则取 version，
+            #    少一层对编码与 JSON 格式的敏感性。
+            $manifestText = Get-Content $manifestPath -Raw -Encoding UTF8
+            $version = [regex]::Match($manifestText, '"version"\s*:\s*"([^"]+)"').Groups[1].Value
             $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm'
 
             $msgLines = @(
@@ -358,7 +364,12 @@ if ($NoCommit) {
             if ($changed -gt 20) { $msgLines += "  …（其余 $($changed - 20) 项略）" }
 
             $msgFile = [System.IO.Path]::GetTempFileName()
-            Set-Content -Path $msgFile -Value ($msgLines -join "`n") -Encoding UTF8
+            # ⚠️ 用 .NET 写 UTF-8 **无 BOM**：PS 5.1 的 Set-Content -Encoding UTF8 会写 BOM，
+            #    BOM 会跟着进 git 提交信息（首行出现看不见的字符）。
+            [System.IO.File]::WriteAllText(
+                $msgFile,
+                ($msgLines -join "`n"),
+                (New-Object System.Text.UTF8Encoding($false)))
 
             & git add -A 2>&1 | Out-Null
             $commitOut = & git commit -q -F $msgFile 2>&1

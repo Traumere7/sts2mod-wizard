@@ -61,7 +61,7 @@ namespace Wizard.Scripts.Encounters;
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
-/// ③ 自定义背景：换成「瀑布巨兽」的专属背景（实验）
+/// ③ 自定义战斗背景（本 mod 自带，不再是"借用原版目录"的实验）
 /// ══════════════════════════════════════════════════════════════════
 /// 机制（<c>EncounterModel.cs:288-308</c>）：
 /// <code>
@@ -74,10 +74,15 @@ namespace Wizard.Scripts.Encounters;
 /// 与 <c>res://scenes/backgrounds/{title}/{title}_background.tscn</c>。
 ///
 /// <para>
-/// ⇒ BaseLib 的 <see cref="CustomEncounterBackground"/> 直接返回
-/// <c>new BackgroundAssets("waterfall_giant_boss", rng)</c> 就能<b>复用原版资源的目录名</b>，
-/// 不需要把背景图搬进本 mod（原版目录里实测有
-/// <c>waterfall_giant_boss_background.tscn</c> + <c>layers/…_bg_00_a.tscn</c> + <c>…_fg_a.tscn</c>）。
+/// ⇒ BaseLib 的 <see cref="CustomEncounterBackground"/> 返回
+/// <c>new BackgroundAssets("volcanic_beast", rng)</c>，指向<b>本 mod 自带</b>的：
+/// <code>
+/// src/scenes/backgrounds/volcanic_beast/volcanic_beast_background.tscn   ← 根 Control + NCombatBackground
+/// src/scenes/backgrounds/volcanic_beast/layers/volcanic_beast_bg_00_a.tscn ← 居中的 TextureRect
+/// src/Wizard/images/backgrounds/volcanic_beast/volcanic_beast_bg_00_a.png  ← 用户提供的 2560×1200 贴图
+/// </code>
+/// ⚠️ 目录名必须与 <c>BackgroundAssets</c> 的第一个参数一致（它会去拼
+/// <c>res://scenes/backgrounds/{title}/…</c>），**不是** <c>res://Wizard/…</c>。
 /// </para>
 /// <para>
 /// ⚠️ 目录不存在时 <c>BackgroundAssets</c> 的构造函数会**抛异常**，
@@ -87,8 +92,12 @@ namespace Wizard.Scripts.Encounters;
 /// </summary>
 public class VolcanicBeastEncounter : CustomEncounterModel
 {
-    /// <summary>借用的原版背景目录名（= 原版遭遇战类名的小写形式）。</summary>
-    private const string BackgroundTitle = "waterfall_giant_boss";
+    /// <summary>
+    /// 自定义背景的目录名 —— 对应本 mod 自带的
+    /// <c>res://scenes/backgrounds/volcanic_beast/</c>（贴图来自用户提供的
+    /// <c>art/VolcanicBackground.png</c>，2560×1200）。
+    /// </summary>
+    private const string BackgroundTitle = "volcanic_beast";
 
     /// <summary>design.md：固定 100 金币。</summary>
     private const int GoldReward = 100;
