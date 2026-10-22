@@ -3149,3 +3149,98 @@ await CardPileCmd.AddToCombatAndPreview<Slimed>(targets, PileType.Discard, 10, n
 
 > 本项目在此基础上把标题也写成 `[gold]战斗[/gold]`（用户明确要求带 gold 修饰），
 > 效果等同于引擎自动着色，多余但无害。
+
+### 12.15 确认「事件限定怪物」不会出现在常规战斗节点
+
+BaseLib 把自定义遭遇战注入某一幕的池子时，**唯一**判据是 `IsValidForAct`
+（`AddActContent.cs:42-54`）：
+
+```csharp
+foreach (CustomEncounterModel encounter in CustomContentDictionary.CustomEncounters)
+    if (!origResult.Any(e => e.Id.Equals(encounter.Id)) && encounter.IsValidForAct(__instance))
+        yield return encounter;
+```
+
+⇒ 恒定返回 `false` 就等于**任何一幕都不会收录**。再确认两点：
+
+- `CustomContentDictionary.CustomEncounters` 全局只有这一处消费；
+- 怪物 `VolcanicBeast` 只被本遭遇战的 `GenerateMonsters()` 引用，
+  `CustomMonsterModel` 不会把自己登记进任何怪物池。
+
+⇒ 唯一入口是事件里的 `EnterCombatWithoutExitingEvent<VolcanicBeastEncounter>()`。
+
+### 12.16 ⚠️ 战斗音乐由 `RoomType` 决定 —— 没有独立开关
+
+音乐不是"换一首曲子"，而是**本幕曲目 + 一个 `Progress` 全局参数**：
+
+```csharp
+// NRunMusicController.cs:343-359
+public void UpdateTrack()
+{
+    MusicProgressTrack track = GetTrack(_runState.CurrentRoom.RoomType);
+    UpdateTrack("Progress", (float)track);      // update_global_parameter
+}
+
+// GetTrack(roomType):  Monster→Enemy(1)  Elite→Elite(6)  Boss→Elite(6)  Shop→Merchant(2) …
+```
+
+⇒ **想要"第 2 幕的精英战斗音乐"，只能把 `Encounter.RoomType` 设成 `Elite`。**
+
+不可行的替代路径：
+
+| 尝试 | 为什么不行 |
+|---|---|
+| `CustomBgm` | 只会 `update_music(整首曲子)`，丢掉本幕的 Progress 变体 |
+| `UpdateMusicParameter` | 走另一个 proxy 通道（`update_music_parameter`），不是全局 `Progress` |
+| `TriggerEliteSecondPhase` | 开头就 `if (RoomType != Elite) return`（`:387`） |
+| 反射改 `_proxy` | 太脏，且升级易碎 |
+
+⚠️ **代价**：`RoomType` 同时也是奖励开关。Elite 分支
+（`RewardsSet.cs:232-238`）会**无条件**给「金币 + 一次卡牌 + 一件随机遗物」，
+且卡牌用精英稀有度权重 ⇒ 事件侧只补"随机商店遗物"一项，
+最终 **100 金币 + 2 件遗物 + 一次卡牌**（件数与 design 一致，
+但第二件遗物不保证稀有、卡牌是精英权重）。
+
+### 12.17 ✅ 自定义战斗背景（实验成功）：直接复用原版背景目录
+
+**机制**（`EncounterModel.cs:288-308`）：
+
+```csharp
+if (HasCustomBackground) _backgroundAssets = CreateBackgroundAssetsForCustom(rng);  // 自己的
+else                     _backgroundAssets = parentAct.GenerateBackgroundAssets(rng); // 本幕默认
+// CreateBackgroundAssetsForCustom: new BackgroundAssets(Id.Entry.ToLowerInvariant(), rng)
+```
+
+`BackgroundAssets(string title, Rng rng)`（`Rooms/BackgroundAssets.cs`）读：
+
+```
+res://scenes/backgrounds/{title}/layers/                 ← 按 _bg_ 分组随机选层 + _fg_ 前景
+res://scenes/backgrounds/{title}/{title}_background.tscn
+```
+
+⇒ 自定义遭遇战只要重写 BaseLib 的 `CustomEncounterBackground`，
+**把 `title` 填成原版遭遇战的目录名**，就能直接借用原版背景资源 ——
+不需要把美术搬进本 mod：
+
+```csharp
+public override BackgroundAssets? CustomEncounterBackground(ActModel parentAct, Rng rng)
+{
+    const string title = "waterfall_giant_boss";   // 原版目录名 = 遭遇战类名的小写
+    if (!DirAccess.DirExistsAbsolute($"res://scenes/backgrounds/{title}/layers"))
+        return null;                                // 缺了就回落本幕默认，别让战斗崩
+    return new BackgroundAssets(title, rng);
+}
+```
+
+⚠️ **目录不存在时 `BackgroundAssets` 构造函数会抛 `InvalidOperationException`**
+（`"could not find directory " + text`），所以那层 `DirAccess` 判断是必须的。
+
+📌 实测（2026-10-22）：日志出现
+`[INFO] [Wizard] 火山巨兽使用自定义战斗背景：waterfall_giant_boss`，
+说明原版目录在运行时可达、`BackgroundAssets` 构造成功。
+
+原版可借用的背景目录（`res://scenes/backgrounds/` 下共 18 个）：
+`ceremonial_beast_boss` `kaiser_crab_boss` `knowledge_demon_boss` `lagavulin_matriarch_boss`
+`queen_boss` `soul_fysh_boss` `test_subject_boss` `the_insatiable_boss` `the_kin_boss`
+`vantom_boss` `waterfall_giant_boss` `underdocks` `factory` `glory` `hive` `overgrowth`
+`fake_merchant_event_encounter` `the_architect_event_encounter`

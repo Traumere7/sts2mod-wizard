@@ -123,11 +123,11 @@ public class VolcanicBeastEncounter : CustomEncounterModel
         string layersDir = $"res://scenes/backgrounds/{BackgroundTitle}/layers";
         if (!DirAccess.DirExistsAbsolute(layersDir))
         {
-            Entry.Logger.Warn($"[{Entry.ModId}] 未找到背景目录 {layersDir}，回落本幕默认背景。");
+            Entry.Logger.Warn("未找到背景目录 {layersDir}，回落本幕默认背景。");
             return null;
         }
 
-        Entry.Logger.Info($"[{Entry.ModId}] 火山巨兽使用自定义战斗背景：{BackgroundTitle}");
+        Entry.Logger.Info($"火山巨兽使用自定义战斗背景：{BackgroundTitle}");
         return new BackgroundAssets(BackgroundTitle, rng);
     }
 
