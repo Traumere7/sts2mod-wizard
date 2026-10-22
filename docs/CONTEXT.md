@@ -2902,3 +2902,134 @@ GitHub 会返回附件的 `sha256:<hex>`；与本地哈希 + **精确字节数**
 `sha256:0465552384…f036`，109,753,922 B。
 
 > 小文件（如通过 `gh api .../contents/...` 取源码）不受影响，只有大附件下载会断。
+
+---
+
+## 12. 怪物系统（2026-10-22 首次实现：火山巨兽 + 火山贤者）
+
+本项目第一个怪物与第一个"事件内战斗"。以下结论都经实测/IL 核实。
+
+### 12.1 三件套：Monster / Encounter / Event
+
+| 层 | BaseLib 基类 | 关键重写 |
+|---|---|---|
+| 怪物 | `CustomMonsterModel` | `MinInitialHp` / `MaxInitialHp` / `CreateCustomVisuals()` / `AfterAddedToRoom()` / `GenerateMoveStateMachine()` |
+| 遭遇战 | `CustomEncounterModel` | `AllPossibleMonsters` / `IsValidForAct` / `GenerateMonsters()` / `ShouldGiveRewards` |
+| 事件 | `CustomEventModel`（继承游戏 `EventModel`） | `GenerateInitialOptions()` / `IsShared` / `IsAllowed` |
+
+注册是**自动**的：`CustomMonsterModel` / `CustomEncounterModel` / `CustomEventModel`
+的构造函数都会往 `CustomContentDictionary` 注册，而
+`Entry.Initialize()` 里的 `ScriptManagerBridge.LookupScriptsInAssembly` 负责实例化扫描到它们。
+**不需要任何 `[Pool]` 之类的特性。**
+
+### 12.2 单贴图怪物：场景与贴图尺寸
+
+怪物视觉是一个 `.tscn`，**四个节点名必须完全一致且勾选 Access as Unique Name**：
+
+```
+VolcanicBeast (Node2D)
+├── Visuals    Sprite2D     ← 怪物本体贴图
+├── Bounds     Control      ← 命中框（宽度参与多怪排布：Sum(Bounds.Size.X)）
+├── CenterPos  Marker2D     ← 血条/特效锚点
+└── IntentPos  Marker2D     ← 意图图标位置
+```
+
+`CreateCustomVisuals()` 用 `NodeFactory<NCreatureVisuals>.CreateFromScene(path)`
+（若场景自带脚本则改用 `CustomVisualPath`）。
+
+⚠️ **`.tscn` 里不要写 `;` 注释** —— 原版 126 个怪物场景里一个都没有，
+`load_steps` / `format` 之外的注释没有可靠先例，不值得冒险。
+
+#### 贴图该多大（用户问过）
+
+- 游戏基准分辨率 **1920×1080**（`project.godot` 的 `window/size/viewport_*`），
+  且 `stretch/mode = canvas_items`
+- `Sprite2D` **默认 1:1 按贴图像素绘制**（不缩放）
+- 原版 **123 个怪物场景**的 `Bounds` 实测：
+  - 高度 **中位 300 px**、25% 分位 201、75% 分位 367、范围 94~642
+  - 宽度中位 274 px
+
+⇒ **只给一张贴图时，直接画成"最终屏幕尺寸"最省事**：
+**512×512 PNG**，怪物主体占画面 ~70–80%（≈360–400 px 高），四周留透明边，
+场景里 `scale = 1` 即可 —— 本项目的占位贴图就是这么做的。
+
+若要高分辨率源图：**1024×1024 + 场景里 `scale ≈ 0.4`**
+（原版 `the_spear` 就是 1000×1000 @ scale 0.2755）。
+
+Godot 4 不强制 2 的幂，但用 512/1024 对 mipmap 与压缩更友好。
+
+### 12.3 怪物 AI：意图 + 状态机
+
+```csharp
+MoveState claw = new("FLAME_CLAW", FlameClawMove,
+    new MultiAttackIntent(3, 4),   // 3 伤 × 4 段
+    new DebuffIntent());
+claw.FollowUpState = smash;
+return new MonsterMoveStateMachine([claw, smash, eruption], claw);
+```
+
+- 意图构造：`SingleAttackIntent(int)`、`MultiAttackIntent(int dmg, int repeat)`、
+  `DebuffIntent(bool strong=false)`、`BuffIntent()`、`StatusIntent(int count)`
+- 招式方法签名固定 `async Task XxxMove(IReadOnlyList<Creature> targets)`
+- 招式名进 `monsters.json` 的 `{ENTRY}.moves.{MOVE_ID}.title`
+
+**动态数值要现读**：本项目的「喷火」层数决定给玩家多少燃烧，
+出招时用 `Creature.GetPowerAmount<FireSpitPower>()`（`Creature.cs:596`），
+不要缓存 —— 第 3 招会把它 +2。
+
+### 12.4 战斗内塞状态牌进弃牌堆
+
+照抄原版「超频」`Overclock`：
+
+```csharp
+CardModel burn = CombatState.CreateCard<Burn>(player);
+await CardPileCmd.AddGeneratedCardToCombat(burn, PileType.Discard, player);
+```
+
+### 12.5 事件内触发战斗
+
+```csharp
+public override bool IsShared => true;              // ⚠️ 必须
+EnterCombatWithoutExitingEvent<VolcanicBeastEncounter>(extraRewards, shouldResumeAfterCombat: false);
+```
+
+- ⚠️ **`IsShared` 必须为 true**：`EventModel.cs:573-576` 在非共享事件里直接抛
+  `InvalidOperationException`。design.md 也写了"多人合作：是"。
+- ⚠️ **不要把 `LayoutType` 设成 `EventLayoutType.Combat`**：
+  `EventModel.cs:577-580` 禁止"Combat 布局 + 战后返回"，
+  而本事件前面还有 3 个选项要显示。保持默认布局。
+- 「后续文案 → 战斗按钮 → 进战斗」两步结构照抄 `DenseVegetation`：
+  `SetEventState(文案, [Option(Fight, ...)])`。
+- 关掉遭遇战自带奖励（`ShouldGiveRewards => false`），全部奖励走 `extraRewards`，
+  否则会多出一份精英奖励。
+
+### 12.6 ⚠️ `RelicReward(RelicModel, Player)` 必须传可变实例（2026-10-22 实测崩过）
+
+```csharp
+// ❌ 抛 CanonicalModelException: Canonical model of type TriaPrima used in incorrect place.
+new RelicReward(ModelDb.Relic<TriaPrima>(), player);
+
+// ✅
+new RelicReward(ModelDb.Relic<TriaPrima>().ToMutable(), player);
+```
+
+`RelicReward..ctor(RelicModel, Player)` 内部会 `AssertMutable()`。
+同一坑对 `RelicCmd.Obtain(...)` 也成立（`CONTEXT` 里「规则怪谈」已经是 `.ToMutable()`）。
+
+> 判据：**凡把 `ModelDb.Xxx<T>()` 的结果交给"运行期数据"接口，先 `.ToMutable()`。**
+> 但 `Monster<T>()` 在 `AllPossibleMonsters` 里**不要** ToMutable（那是静态声明），
+> 只在 `GenerateMonsters()` 里 ToMutable —— 两者容易看反。
+
+### 12.7 事件/怪物的本地化文件
+
+新增两个此前不存在的文件（与 `cards.json` 同级）：
+
+```
+localization/{zhs,eng}/monsters.json      {ENTRY}.name / .moves.{ID}.title / .moves.{ID}.banter
+localization/{zhs,eng}/encounters.json    {ENTRY}.title / {ENTRY}.loss
+```
+
+`{ENTRY}.loss` 是**死因文案**，`{character}` 由引擎注入。
+事件仍在 `events.json`，键形如
+`{ENTRY}.title` / `.pages.INITIAL.description` / `.pages.INITIAL.options.{OPT}.{title|description}`
+/ `.pages.{OPT}.description` / `.loss`。
