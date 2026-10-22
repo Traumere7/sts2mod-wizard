@@ -221,7 +221,10 @@ public sealed class VolcanoSage : CustomEventModel
         if (player.Character is WizardCharacter
             && !player.Relics.Any(r => r is TriaPrima))
         {
-            rewards.Add(new RelicReward(ModelDb.Relic<TriaPrima>(), player));
+            // ⚠️ 必须 ToMutable()：RelicReward(RelicModel, Player) 内部会 AssertMutable()，
+            //    直接传 canonical 模型会抛 CanonicalModelException（2026-10-22 实测踩到）。
+            //    与「规则怪谈」里 RelicCmd.Obtain(....ToMutable(), player) 同理。
+            rewards.Add(new RelicReward(ModelDb.Relic<TriaPrima>().ToMutable(), player));
         }
         else
         {
