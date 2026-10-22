@@ -114,12 +114,28 @@ public class VolcanicBeast : CustomMonsterModel
 
     public override int MaxInitialHp => MinInitialHp;
 
+    /// <summary>占位视觉场景（单张 Sprite2D 贴图）。</summary>
+    private const string VisualsScenePath = "res://Wizard/scenes/monsters/volcanic_beast.tscn";
+
     /// <summary>
-    /// 占位视觉：一个 <c>NCreatureVisuals</c> 场景，内部是**单张 Sprite2D 贴图**。
-    /// 场景路径见 <c>src/Wizard/scenes/monsters/volcanic_beast.tscn</c>。
+    /// ⚠️ <b>BaseLib 有两个补丁，两个都要给</b>：
+    /// <list type="bullet">
+    ///   <item><c>BaseLib.Abstracts.CreateVisuals</c> 打 <c>MonsterModel.CreateVisuals</c>，
+    ///         调的是 <see cref="CreateCustomVisuals"/>（战斗里真正用的就是这条）；</item>
+    ///   <item><c>BaseLib.Abstracts.VisualsPath</c> 打 <c>MonsterModel.VisualsPath</c>，
+    ///         读的是 <see cref="CustomVisualPath"/>。</item>
+    /// </list>
+    /// 只实现前者的后果（2026-10-22 实测）：
+    /// 游戏在**预加载/图鉴**阶段会走 <c>VisualsPath</c>，回落成默认路径
+    /// <c>res://scenes/creature_visuals/wizard-volcanic_beast.tscn</c>，
+    /// 日志里刷 <c>Failed to load resource synchronously</c>。
+    /// ⇒ 两个都指到同一个场景。
     /// </summary>
+    public override string? CustomVisualPath => VisualsScenePath;
+
+    /// <summary>同上 —— 战斗内实例化用。</summary>
     public override NCreatureVisuals? CreateCustomVisuals() =>
-        NodeFactory<NCreatureVisuals>.CreateFromScene("res://Wizard/scenes/monsters/volcanic_beast.tscn");
+        NodeFactory<NCreatureVisuals>.CreateFromScene(VisualsScenePath);
 
     /// <summary>
     /// 进战斗时挂上初始能力：免疫燃烧 + 喷火 3。
