@@ -208,21 +208,18 @@ public class VolcanicBeast : CustomMonsterModel
     // ══════════════════════════════════════════════════════════════════
     private async Task EruptionMove(IReadOnlyList<Creature> targets)
     {
-        // ① 给每个玩家的弃牌堆塞 3 张「灼伤」。
-        foreach (Creature target in targets)
-        {
-            Player? player = target.Player;
-            if (player == null)
-            {
-                continue;
-            }
-
-            for (int i = 0; i < BurnCardsAdded; i++)
-            {
-                CardModel burnCard = CombatState.CreateCard<BurnCard>(player);
-                await CardPileCmd.AddGeneratedCardToCombat(burnCard, PileType.Discard, player);
-            }
-        }
+        // ① 给每个玩家的弃牌堆塞 3 张「灼伤」，并播放"塞牌 + 展示"的演出。
+        //
+        // ⚠️ 2026-10-22 修：第一版用了裸的 AddGeneratedCardToCombat，牌是塞进去了，
+        //    但**玩家什么都看不到**。参考原版「史莱姆狂战士」SlimedBerserker.cs:70：
+        //        await CardPileCmd.AddToCombatAndPreview<Slimed>(targets, PileType.Discard, 10, null);
+        //    它会逐张塞入后调 CardCmd.PreviewCardPileAdd + Cmd.Wait(1f)，
+        //    即"牌飞进弃牌堆 + 停留展示"的完整演出（原版「无厌沙虫」
+        //    TheInsatiable.cs:133-146 是同一套做法的多目标手写版）。
+        // 音效：占位阶段没有自己的音源，先不播（借用别怪物的音效会显得很怪）。
+        // 等正式素材到位，可在这里 SfxCmd.Play(...) 或重写 CastSfx。
+        await CardPileCmd.AddToCombatAndPreview<BurnCard>(
+            targets, PileType.Discard, BurnCardsAdded, null, CardPilePosition.Bottom);
 
         // ② 自身 力量 +4、喷火 +2。
         await PowerCmd.Apply<StrengthPower>(
