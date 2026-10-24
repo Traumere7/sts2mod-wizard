@@ -3368,11 +3368,17 @@ if (isFullHandAdd && LocalContext.IsMe(card.Owner))
 ```csharp
 public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;  // 每次 Apply 新实例
 protected override object InitInternalData() => new Data();                     // 每实例私有计数
-public override int DisplayAmount => 还差几张触发;                                // 图标显示剩余
+public override int DisplayAmount => Generated % Threshold;                     // 0→1→2→3→0
 // 计数变化后 InvokeDisplayAmountChanged();
 ```
 
 ⇒ 打两张「催化」= 两个独立图标、各自数 4 张；生成第 4 张时两个都各给 1 点能量。
+
+⚠️ **图标读数口径（2026-10-25 用户指定）**：显示的是"本循环已生成几张"，
+即 `Generated % Threshold` —— `0 → 1 → 2 → 3`，再生成第 4 张时给能量并**回到 0**。
+这与原版「环绕轨道」(`4 - spent % 4`，显示"还差几点")**刻意相反**，
+`DisplayAmount` 里写清了这个差异。
+（显示 0 不会移除能力：移除判据 `ShouldRemoveDueToAmount()` 读的是 `Amount`，固定 1。）
 
 **触发钩子**：`AfterCardGeneratedForCombat(CardModel card, Player? creator)`
 （同原版「创世之柱」`PillarOfCreationPower`）。
