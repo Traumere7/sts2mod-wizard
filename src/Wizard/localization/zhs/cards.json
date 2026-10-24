@@ -46,7 +46,7 @@
   "WIZARD-ELECTROMAGNETIC_WAVE.title": "电磁波",
   "WIZARD-ENDNOTE.description": "抽1张牌。\n这张牌被[gold]消耗[/gold]时，抽{Cards:diff()}张牌。",
   "WIZARD-ENDNOTE.title": "尾注",
-  "WIZARD-EPIPHANY.description": "选择2张[gold]手牌[/gold][gold]消耗[/gold]。\n从抽牌堆选择{Cards:diff()}张牌加入你的[gold]手牌[/gold]。",
+  "WIZARD-EPIPHANY.description": "选2张牌[/gold][gold]消耗[/gold]。\n选[gold]抽牌堆[/gold]{Cards:diff()}张牌加入你的[gold]手牌[/gold]。",
   "WIZARD-EPIPHANY.selectionScreenPrompt": "选择{Amount}张牌加入你的[gold]手牌[/gold]。",
   "WIZARD-EPIPHANY.title": "顿悟",
   "WIZARD-FIREBALL.description": "造成{Damage:diff()}点[orange]火焰伤害[/orange]2次。\n给予{BurnPower:diff()}层[gold]燃烧[/gold]。",
