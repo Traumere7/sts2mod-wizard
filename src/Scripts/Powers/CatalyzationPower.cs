@@ -84,8 +84,23 @@ public class CatalyzationPower : CustomPowerModel
     public override string? CustomBigIconPath => "res://Wizard/images/powers/catalyzation_power_big.png";
 
     /// <summary>
-    /// 图标上显示"还差几张触发"（同「环绕轨道」的 <c>4 - spent % 4</c>）。
-    /// 刚打完还没生成任何牌时显示满额（4 或 3）。
+    /// 图标上显示的是<b>本循环里"已经生成了几张"</b>（2026-10-25 用户指定）。
+    ///
+    /// <para>
+    /// 期望读数：<c>0 → 1 → 2 → 3</c>，再生成第 4 张时给 1 点能量并<b>回到 0</b>。
+    /// 即 <c>Generated % Threshold</c>。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ 注意这不是原版「环绕轨道」<c>OrbitPower</c> 的口径
+    /// （它是 <c>4 - spent % 4</c>，显示"还差几点"）。这里刻意反过来。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ 显示 0 <b>不会</b>导致能力被移除 —— 移除判据是
+    /// <c>ShouldRemoveDueToAmount()</c> 读的 <c>Amount</c>（固定 1），
+    /// 与 <c>DisplayAmount</c> 无关。
+    /// </para>
     /// </summary>
     public override int DisplayAmount
     {
@@ -93,8 +108,7 @@ public class CatalyzationPower : CustomPowerModel
         {
             Data data = GetInternalData<Data>();
             int threshold = Math.Max(1, data.Threshold);
-            int remainder = data.Generated % threshold;
-            return remainder == 0 ? threshold : threshold - remainder;
+            return data.Generated % threshold;
         }
     }
 
