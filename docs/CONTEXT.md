@@ -16,7 +16,7 @@
 
 框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**62 张卡全部实现并已构建部署**；
 27 个能力、**9 个遗物**、**3 瓶药水**、**62 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
-已发布 **v0.3.8** 到创意工坊（item 3807136195）。
+已发布 **v0.3.9** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
 
@@ -2882,6 +2882,7 @@ git push --set-upstream origin main      # 已设为跟踪分支
 | v0.3.6 | 2026-10-21 | 「决心」重做；「全知形态」记忆在敌人回合也重置 | `Wizard-v0.3.6.zip` |
 | v0.3.7 | 2026-10-21 | 「净罪」每张给 2 点法术增益 + 2 点敏捷；升级改为降费 1→0 | `Wizard-v0.3.7.zip` |
 | v0.3.8 | 2026-10-22 | 新增特殊事件「火山贤者」+ 特殊怪物「火山巨兽」（含精英音乐与专属背景） | `Wizard-v0.3.8.zip` |
+| v0.3.9 | 2026-10-25 | 新增卡牌「镜像」「催化」；英文区域名词统一 [gold] | `Wizard-v0.3.9.zip` |
 
 每个版本的说明归档在 `docs/releases/v<版本>.md`（同时用作 `gh release create --notes-file`）。
 
@@ -3396,3 +3397,74 @@ public override int DisplayAmount => Generated % Threshold;                     
   （`reference/tools/make_catalyzation_power_icon.py`，环 + 奥术紫）。
 - 卡面「催化」的能量图标用**静态**写法 `{energyPrefix:energyIcons(1)}`
   （每次固定 1 点、不随升级变化），不是随升级变化的 `{Energy:energyIcons()}`。
+
+---
+
+## 14. 文案与发布的两条硬规矩（2026-10-25）
+
+### 14.1 区域名词要加 `[gold]`（中英都是）
+
+用户 2026-10-25 指出：中文卡面的「手牌」按原版惯例要加 `[gold]`。
+顺手做了**英文**侧的同类排查，并用原版数据定了口径：
+
+| 表 | `[gold]` 区域名词 | 裸词 |
+|---|---|---|
+| zhs cards（手牌） | **110** | 8 |
+| eng cards（Hand / Draw Pile / Discard Pile / Deck） | 110 / 39 / 22 / 4 | Hand 12、Draw Pile 5 |
+| eng powers | **60** | 3 |
+| eng events | **39** | 0 |
+| eng relics | **100** | 5 |
+
+⇒ **规则：`[gold]Hand[/gold]` / `[gold]Draw Pile[/gold]` / `[gold]Discard Pile[/gold]` /
+`[gold]Deck[/gold]`，英文首字母大写、中英都要加。**
+
+本次修了：
+- 中文：`WIZARD-EPIPHANY` 里第一处「手牌」（用户漏改的一处）→ 现已 0 处裸词；
+- 英文：14 张卡 + 2 条能力文案 + 3 条遗物文案；顺手把 `[gold]draw pile[/gold]` 等
+  小写写法统一成大写。
+
+**刻意不改**：`events.json` 里「规则怪谈」三条锁定理由的 `deck`
+（`Requires a deck of … cards.`）—— 中文侧写「需要牌组数量…」同样没有 `[gold]`，
+**两侧保持对称**；原版的 `[gold]Deck[/gold]` 多出现在"把牌加入你的牌组"这类动作语境。
+
+📌 **复核脚本**：`reference/tools/fix_eng_zone_keywords.py`（cards+powers）、
+`fix_eng_zone_keywords_rest.py`（其余表 + 全表复查）。
+
+### 14.2 ⚠️ Steam 工坊描述上限是 **8000 字节**，不是 8000 字符
+
+v0.3.9 首次上传失败：
+
+```
+Status: k_EItemUpdateStatusCommittingChanges
+Status: k_EItemUpdateStatusInvalid
+Error occurred while uploading to the workshop! Result: k_EResultInvalidParam
+```
+
+**已用对照实验确认**：
+
+| 描述 | 结果 |
+|---|---|
+| v0.3.8：7652 B / 5636 字符 | ✅ 成功 |
+| v0.3.9 初版：8037 B / 5923 字符 | ❌ `k_EResultInvalidParam` |
+| v0.3.9 裁剪后：7996 B / 5882 字符 | ✅ 成功 |
+
+⇒ 上限按 **UTF-8 字节** 计。中文 3 B/字，所以"字符数看着远没到"也会超。
+
+**⚠️ 现状：描述已到天花板（7996 / 8000，仅余 4 B）**。
+以后每次往简介里加内容，**必须先腾出等量空间**，可选做法：
+1. 连续空行折叠（每次能省几字节）；
+2. 收紧**英文**译文（英文是中文的对照翻译，压缩它不影响中文信息）；
+3. 精简更新说明里更早的条目（如把已下线的旧条目删掉）。
+
+⚠️ 上传失败时**不要**以为内容坏了 —— 先量描述字节数：
+```powershell
+(Get-Content .\WizardWorkspace\workshop.json -Raw | ConvertFrom-Json).description.Length  # 字符
+```
+（字节数用 Python：`len(desc.encode('utf-8'))`）
+
+### 14.3 更新说明（changelog）有延迟，别急着断定没发上去
+
+v0.3.9 上传成功后，工坊**描述页**很快更新，但
+`/sharedfiles/filedetails/changelog/<id>` 页仍然显示 v0.3.8；
+**约 2–3 分钟后**再抓就出现了 v0.3.9。
+⇒ 核对 changelog 时至少重试 2 次、间隔 1 分钟以上。
