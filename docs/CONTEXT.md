@@ -14,8 +14,8 @@
 
 ## 0. 一句话现状
 
-框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**60 张卡全部实现并已构建部署**；
-26 个能力、**9 个遗物**、**3 瓶药水**、**60 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
+框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**62 张卡全部实现并已构建部署**；
+27 个能力、**9 个遗物**、**3 瓶药水**、**62 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
 已发布 **v0.3.8** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
@@ -235,7 +235,7 @@ Remove-Item build -Recurse -Force
 
 | 类别 | 已完成 | 目标 |
 |---|---|---|
-| 卡牌 | **60**（全部） | 60 |
+| 卡牌 | **62**（全部） | 62 |
 | 遗物 | **9**（魔法卷轴 / 死海古卷 / 恒温炉 / 铅咒板 / 火漆密函 / 温暖蜡烛 / 巫术百科 / 鎏金天平 / 三原素） | 9 |
 | 药水 | 1 个占位 | 4 |
 | 能力 (Power) | 22 | — |
@@ -267,7 +267,7 @@ Remove-Item build -Recurse -Force
 > **2026-10-08 新增 1 张**：`MindFlow`（心流，X 费）。
 > 这 5 张的卡图后来都已换成真美术。
 
-**全部 60 张都有卡图**（`images/cards/{类名}.png`，1000×760）；
+**全部 62 张都有卡图**（`images/cards/{类名}.png`，1000×760）；
 
 > 📌 **换卡图后必须让 Godot 重新导入**（2026-10-01 踩到）：
 > 直接覆盖同名 png 后，`src\.godot\imported\<名>.png-<hash>.ctex` 可能**仍是旧图** ——
@@ -3302,3 +3302,91 @@ src/Wizard/images/backgrounds/volcanic_beast/volcanic_beast_bg_00_a.png
   `SetForegroundLayer(null)` 直接跳过 —— 此时背景场景里也就别放 `Foreground` 节点。
 
 📌 实测日志：`[INFO] [Wizard] 火山巨兽使用自定义战斗背景：volcanic_beast`。
+
+---
+
+## 13. 2026-10-25 新增两张卡（镜像 / 催化）
+
+### 13.1 「镜像」：ABCD → ABCD**DCBA** 的顺序怎么实现
+
+需求（用户原话）："给玩家当前手牌抓一个快照，然后从最右侧开始、把快照的复制品依次加进去"，
+期望结果 `ABCD` → `ABCDDCBA`。
+
+⚠️ **`CardPileCmd.Add` 只有三种位置，没有"插入到索引 i"**
+（`CardPileCmd.cs:505-511`）：
+
+```csharp
+CardPilePosition.Bottom => -1   // 追加末尾 = 手牌最右
+CardPilePosition.Top    =>  0   // 插入开头 = 手牌最左
+CardPilePosition.Random => 随机
+```
+
+⇒ **唯一正确组合：倒序遍历快照 + 每张 `Bottom` 追加到最右**：
+
+```
+初始  ABCD
+加 D → ABCD D
+加 C → ABCD D C
+加 B → ABCD D C B
+加 A → ABCD D C B A     ✅ ABCD DCBA
+```
+
+❌ 正序 + Bottom ⇒ `ABCD ABCD`；❌ 正序 + Top ⇒ `DCBA ABCD`。
+
+### 13.2 「手牌满了把复制品挤进弃牌堆」——引擎已经做了
+
+`CardPile.MaxCardsInHand = 10`（`CardPile.cs:21`），
+`CardPileCmd.Add` 内部（`:484-519`）：
+
+```csharp
+bool isFullHandAdd = cardPile.Type == PileType.Hand
+                  && cardPile.Cards.Count >= CardPile.MaxCardsInHand;
+if (isFullHandAdd) cardPile = CardPile.Get(PileType.Discard, card.Owner);  // 改投弃牌堆
+...
+if (isFullHandAdd && LocalContext.IsMe(card.Owner))
+    ThinkCmd.Play(new LocString("combat_messages", "HAND_FULL"), ...);      // 弹"手牌已满"
+```
+
+⇒ 不需要自己判上限，**超出的复制品会自动进弃牌堆**（正好是设计要求）。
+
+### 13.3 复制一张牌：`CardModel.CreateClone()`
+
+照抄原版「夜魇」`Nightmare`：`original.CreateClone()` →
+`CardScope.CloneCard(this)`（复制整张牌含升级等级）；
+之后同样调 `CardCmd.ClearAffliction(clone)`，复制品不继承"折磨"类临时减益。
+
+⚠️ `CreateClone()` 要求原牌在**战斗牌堆**里，否则抛
+`"Cannot create a clone of a card that is not in a combat pile."`。
+
+⚠️ **快照必须在加牌之前取**：否则会把刚加进去的复制品再复制一遍，指数爆炸。
+
+### 13.4 「催化」：循环计数器用 `PowerInstanceType.Instanced`
+
+需求：*"这种循环触发的效果不设置叠层逻辑，而是每开一张就再给予玩家一个该效果的 clone，
+每个该种效果具有独立计数器"* —— 与原版「环绕轨道」`OrbitPower` 完全一致：
+
+```csharp
+public override PowerInstanceType InstanceType => PowerInstanceType.Instanced;  // 每次 Apply 新实例
+protected override object InitInternalData() => new Data();                     // 每实例私有计数
+public override int DisplayAmount => 还差几张触发;                                // 图标显示剩余
+// 计数变化后 InvokeDisplayAmountChanged();
+```
+
+⇒ 打两张「催化」= 两个独立图标、各自数 4 张；生成第 4 张时两个都各给 1 点能量。
+
+**触发钩子**：`AfterCardGeneratedForCombat(CardModel card, Player? creator)`
+（同原版「创世之柱」`PillarOfCreationPower`）。
+只有走 `CardPileCmd.AddGeneratedCardToCombat` 的加牌才算"生成"；
+普通 `CardPileCmd.Add` 不算。
+
+⚠️ **阈值不能放 `Amount`**：`Amount` 在本能力里是"每次给几点能量"（固定 1）。
+阈值改由卡牌在 `PowerCmd.Apply` **之后**调 `SetThreshold(int)` 写入
+（照抄 `NightmarePower.SetSelectedCard` 的"Apply 后再塞参数"模式），
+并在 setter 里同步 `DynamicVars["Cards"].BaseValue`，让 `{Cards}` 显示 3/4。
+
+### 13.5 顺带确认
+
+- 「催化」图标没给素材 ⇒ 用占位工具生成
+  （`reference/tools/make_catalyzation_power_icon.py`，环 + 奥术紫）。
+- 卡面「催化」的能量图标用**静态**写法 `{energyPrefix:energyIcons(1)}`
+  （每次固定 1 点、不随升级变化），不是随升级变化的 `{Energy:energyIcons()}`。
