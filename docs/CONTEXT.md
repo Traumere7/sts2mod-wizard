@@ -3334,6 +3334,25 @@ CardPilePosition.Random => 随机
 
 ❌ 正序 + Bottom ⇒ `ABCD ABCD`；❌ 正序 + Top ⇒ `DCBA ABCD`。
 
+#### ⚠️ 「镜像」牌自身永不参与复制（2026-10-25 用户要求，design.md 已同步）
+
+design.md 现行文案：
+`镜像 - 1（0） - 稀有 - 技能 将除“镜像”牌以外的，你所有手牌的复制品加入你的手牌。消耗。`
+
+理由：**复制出来的「镜像」自己也能复制，两张镜像互相复制会无限增殖。**
+
+实现：快照阶段按 `Id.Entry` 过滤掉本牌 ——
+```csharp
+string selfEntry = Id.Entry;                      // "WIZARD-MIRROR"
+List<CardModel> snapshot = PileType.Hand.GetPile(Owner).Cards
+    .Where(c => c.Id.Entry != selfEntry)
+    .ToList();
+```
+用 `Id.Entry` 而不是写死字符串或 `is Mirror`：与 design 的“卡名”口径一致，
+且以后改类名 / 条目名时不用同步改这里。
+
+📌 顺序口径不变：手牌 `A / 镜像 / B` ⇒ 快照 `[A, B]` ⇒ 得到 `A 镜像 B B A`。
+
 ### 13.2 「手牌满了把复制品挤进弃牌堆」——引擎已经做了
 
 `CardPile.MaxCardsInHand = 10`（`CardPile.cs:21`），
