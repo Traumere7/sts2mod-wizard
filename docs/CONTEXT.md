@@ -16,7 +16,7 @@
 
 框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**62 张卡全部实现并已构建部署**；
 27 个能力、**9 个遗物**、**3 瓶药水**、**62 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
-已发布 **v0.3.9** 到创意工坊（item 3807136195）。
+已发布 **v0.4.0** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
 
@@ -2883,6 +2883,7 @@ git push --set-upstream origin main      # 已设为跟踪分支
 | v0.3.7 | 2026-10-21 | 「净罪」每张给 2 点法术增益 + 2 点敏捷；升级改为降费 1→0 | `Wizard-v0.3.7.zip` |
 | v0.3.8 | 2026-10-22 | 新增特殊事件「火山贤者」+ 特殊怪物「火山巨兽」（含精英音乐与专属背景） | `Wizard-v0.3.8.zip` |
 | v0.3.9 | 2026-10-25 | 新增卡牌「镜像」「催化」；英文区域名词统一 [gold] | `Wizard-v0.3.9.zip` |
+| v0.4.0 | 2026-10-25 | 「镜像」不再复制镜像自身；简介删去天火浩荡 / 引燃两行 | `Wizard-v0.4.0.zip` |
 
 每个版本的说明归档在 `docs/releases/v<版本>.md`（同时用作 `gh release create --notes-file`）。
 
@@ -3487,3 +3488,30 @@ v0.3.9 上传成功后，工坊**描述页**很快更新，但
 `/sharedfiles/filedetails/changelog/<id>` 页仍然显示 v0.3.8；
 **约 2–3 分钟后**再抓就出现了 v0.3.9。
 ⇒ 核对 changelog 时至少重试 2 次、间隔 1 分钟以上。
+
+### 14.4 ⚠️ 上传器的三个操作坑（2026-10-25 实测）
+
+**(a) 不要用 `| Select-Object -First N` 截断 ModUploader 的输出**
+
+`ModUploader.exe upload ... | Select-Object -First 3` 会在取够 N 行后**终止管道**，
+连带把上传进程掐掉：表现为退出码 `-532462766`（= 0xE0434352 未处理异常），
+且 `mod-uploader.log` 被截断或清空。
+
+⇒ 要过滤输出，先把整段输出接进变量再过滤：
+```powershell
+$out = .\ModUploader.exe upload -w .\WizardWorkspace 2>&1
+$out | Select-String -Pattern 'Successfully|Error occurred|Result:'
+```
+
+**(b) 最终状态行 `Status: k_EItemUpdateStatusInvalid` 是正常的**
+
+它是“上传流程已结束”的状态回调，**成功时也会出现**。
+判据只看最后一行：`Successfully uploaded ...` 还是 `Error occurred ...`。
+
+**(c) 短时间内连续上传可能返回 `k_EResultFail`（暂态）**
+
+该错误在 `Uploading ...` 之后**立刻**出现（没有任何 PreparingContent 进度行），
+属于暂态失败，等 2–3 分钟重试即可。
+
+⚠️ 与 `k_EResultInvalidParam` 区分清楚：后者发生在 **CommittingChanges** 阶段、
+内容已经完整上传完 —— 那是**描述超过 8000 字节**（见 §14.2）。
