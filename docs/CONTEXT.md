@@ -3515,3 +3515,78 @@ $out | Select-String -Pattern 'Successfully|Error occurred|Result:'
 
 ⚠️ 与 `k_EResultInvalidParam` 区分清楚：后者发生在 **CommittingChanges** 阶段、
 内容已经完整上传完 —— 那是**描述超过 8000 字节**（见 §14.2）。
+
+---
+
+## 15. 两个 bug 的根因（2026-10-25 用户实测报告）
+
+### 15.1 ⚠️「本回合免费」在多人下会串到别人身上 —— 漏了 `ShouldSkip` 的第一条
+
+**症状**：多人游戏里玩家 A 身上有「本回合免费」（由「通灵」施加），
+**玩家 B 的手牌也全部变 0 费**，而且 B 打牌不会消耗 A 的能力层数
+（扣层那条另有 owner 判定），于是只要 A 不动，B 就能一直白打。
+
+**根因**：`FreeThisTurnPower.ShouldSkip` 只抄了原版
+`VoidFormPower.ShouldSkip` 的**后半段**（"手牌 / 打出区"判定），漏了**第一条**。
+原版第一行就是：
+
+```csharp
+// VoidFormPower.cs:186-210
+private bool ShouldSkip(CardModel card)
+{
+    bool flag = card.Owner.Creature != base.Owner;   // ★ 这一条漏了
+    ...
+}
+```
+
+**修法**：`ShouldSkip` 由 `static` 改成实例方法，并在最前面加：
+
+```csharp
+if (card.Owner?.Creature != Owner)   // ① 只管自己的能力拥有者的牌
+    return true;
+// ② 只有在手牌 / 正在打出的牌才显示 0 费
+```
+
+📌 **通用纪律**：任何 **"改别人卡牌 / 改全局数值"** 的能力或遗物钩子，
+第一行都要判 **"这件事是不是发生在我身上"**。
+本项目里做对了的例子：`SpellPowerPower.ModifyDamageAdditive`（`Owner != dealer → 0`）、
+`AlternatingCurrentPower.AfterDamageGiven`（`dealer != Owner → return`）、
+`CatalyzationPower.AfterCardGeneratedForCombat`（`creator.Creature != Owner → return`）、
+`AmnesiaPower.ModifyHandDraw`（`player != Owner.Player`）。
+
+### 15.2 ⚠️「天火浩荡」能给「免疫燃烧」的火山巨兽叠燃烧 —— 免疫判定放错了层
+
+**症状**：对带「燃烧免疫」的「火山巨兽」使用「天火浩荡」，燃烧照样叠上去。
+
+**根因**：免疫判定只写在 `SpellCmd.ApplyBurn`（设计上的"收口"），
+但**收口 ≠ 唯一入口**：「天火浩荡」为了做"**加算**"（现值 + 增量，而不是取高值）
+直接调 `BurnPower.ApplyAbsolute`，**绕过了** `SpellCmd.ApplyBurn` 那道检查。
+
+**修法**：把判定**下沉**到真正的最低层收口 `BurnPower.ApplyAbsolute` 的开头：
+
+```csharp
+// desired <= 0 || !target.IsAlive 的判定之后
+if (target.HasPower<BurnImmunityPower>())
+    return new BurnApplicationResult(false);   // Landed = false
+```
+
+- `HasPower<BurnImmunityPower>()` 对子类 `MonsterBurnImmunityPower` 同样成立
+  （`Creature.HasPower<T>` 内部是 `p is T`）；
+- 返回 `Landed = false` ⇒ 「天火浩荡」不会再为免疫目标补发
+  `WizardEvents.BurnApplied`，第二趟的 `burn.Trigger()` 也找不到
+  `BurnPower`（免疫时该层已被清空），口径与 `SpellCmd.ApplyBurn` 一致。
+- `SpellCmd.ApplyBurn` 里那道检查**保留**（它还要负责"连施加动作都不算"的语义）。
+
+📌 **通用纪律**：拦截要放在**最低层的公共函数**上，而不是"看起来最像入口"的上层封装。
+判断方法：搜一遍所有调用方（`grep Apply<BurnPower> / ApplyAbsolute / ApplyBurn`），
+看有没有绕过上层封装的直连调用。
+
+### 15.3 复核脚本
+
+- 免疫：`BurnPower.ApplyAbsolute` 里现在同时有
+  `HasPower<BurnImmunityPower>()` 与既有的 `HasPower<ArtifactPower>()`（IL 已核）。
+- 多人：`FreeThisTurnPower.ShouldSkip` 里出现
+  `CardModel::get_Owner()` → `Player::get_Creature()` 与 `PowerModel::get_Owner()` 的比较（IL 已核）。
+
+> 2026-10-25 两个 bug 都是**已发布版本（v0.4.0）**里的问题；
+> 修复只在本地构建（dll `45D53F12`），**尚未发版**。
