@@ -82,7 +82,7 @@
   "WIZARD-MANA_DRAIN.title": "Mana Drain",
   "WIZARD-MIND_FLOW.description": "Gain {Block:diff()}X [gold]Block[/gold].\nWhen this card is [gold]Exhausted[/gold], gain {IfUpgraded:show:X+1|X}{energyPrefix:energyIcons(1)}.",
   "WIZARD-MIND_FLOW.title": "Mind Flow",
-  "WIZARD-MIRROR.description": "Add a copy of every card in your [gold]Hand[/gold] into your [gold]Hand[/gold].",
+  "WIZARD-MIRROR.description": "Add a copy of every card in your [gold]Hand[/gold] other than [gold]Mirror[/gold] into your [gold]Hand[/gold].",
   "WIZARD-MIRROR.title": "Mirror",
   "WIZARD-MYTH.description": "Gain {Block:diff()} [gold]Block[/gold]. Gain {Energy:energyIcons()}.\nRandomize the Energy cost of all cards in your [gold]Hand[/gold].",
   "WIZARD-MYTH.title": "Myth",

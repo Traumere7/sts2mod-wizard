@@ -9,7 +9,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 镜像 / Mirror - 1(0) 费 - 技能 - 稀有
-/// 将你所有手牌的复制品加入你的手牌。消耗。
+/// 将除「镜像」牌以外的、你所有手牌的复制品加入你的手牌。消耗。
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
@@ -70,6 +70,20 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
+/// ══════════════════════════════════════════════════════════════════
+/// ⚠️ 「镜像」牌本身<b>永不参与复制</b>（2026-10-25 用户要求）
+/// ══════════════════════════════════════════════════════════════════
+/// design.md 的现行文案是"将除『镜像』牌以外的…"。
+/// 理由：复制出来的「镜像」自己也能复制，两张镜像互相复制会<b>无限增殖</b>。
+/// ⇒ 快照阶段直接按 <c>Id.Entry</c> 过滤掉本牌：
+/// <code>
+/// .Where(c =&gt; c.Id.Entry != Id.Entry)   // Id.Entry == "WIZARD-MIRROR"
+/// </code>
+/// 用 <c>Id.Entry</c>（而不是写死字符串或 <c>is Mirror</c>）：
+/// ① 与 design 的"卡名"口径一致；② 即使以后改类名/条目名也不用同步改这里。
+/// </para>
+///
+/// <para>
 /// ⚠️ <b>快照必须在加牌之前取</b>：否则会把自己刚加进去的复制品再复制一遍，
 /// 变成指数爆炸（10 张手牌 → 10 + 20 + 40 …）。
 /// </para>
@@ -97,7 +111,14 @@ public class Mirror : WizardCardModel
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         // ⚠️ 先快照：不然后面会把新加的复制品也复制进去（指数爆炸）。
-        List<CardModel> snapshot = PileType.Hand.GetPile(Owner).Cards.ToList();
+        //
+        // ⚠️ 同时过滤掉「镜像」自己（2026-10-25 用户要求）：
+        //    复制出来的「镜像」自己也能复制，互相复制会无限增殖。
+        //    用 Id.Entry 与 design 的"卡名"口径对齐。
+        string selfEntry = Id.Entry;
+        List<CardModel> snapshot = PileType.Hand.GetPile(Owner).Cards
+            .Where(c => c.Id.Entry != selfEntry)
+            .ToList();
 
         // 倒序遍历 + 每张追加到最右 ⇒ ABCD → ABCD DCBA。
         for (int i = snapshot.Count - 1; i >= 0; i--)

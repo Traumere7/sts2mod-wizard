@@ -82,7 +82,7 @@
   "WIZARD-MANA_DRAIN.title": "魔力汲取",
   "WIZARD-MIND_FLOW.description": "获得{Block:diff()}X点[gold]格挡[/gold]。\n这张牌被[gold]消耗[/gold]时，获得{IfUpgraded:show:X+1|X}{energyPrefix:energyIcons(1)}。",
   "WIZARD-MIND_FLOW.title": "心流",
-  "WIZARD-MIRROR.description": "将你所有[gold]手牌[/gold]的复制品加入你的[gold]手牌[/gold]。",
+  "WIZARD-MIRROR.description": "将除[gold]镜像[/gold]牌以外的，你所有[gold]手牌[/gold]的复制品加入你的[gold]手牌[/gold]。",
   "WIZARD-MIRROR.title": "镜像",
   "WIZARD-MYTH.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n获得{Energy:energyIcons()}。\n随机化你所有[gold]手牌[/gold]的耗能。",
   "WIZARD-MYTH.title": "迷思",
