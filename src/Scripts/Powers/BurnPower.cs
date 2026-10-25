@@ -310,6 +310,24 @@ public class BurnPower : CustomPowerModel
             return new BurnApplicationResult(false);
         }
 
+        // ⚠️⚠️ **免疫燃烧必须在这里再挡一次**（2026-10-25 修 bug）。
+        //
+        // `SpellCmd.ApplyBurn` 已经挡过，但它是"收口"而不是"唯一入口"——
+        // 「天火浩荡」为了做"加算"（现值 + 增量）直接调本方法，
+        // **绕过了** SpellCmd 的那道检查，于是能给带「燃烧免疫」的
+        // 「火山巨兽」叠上燃烧（用户实测报告）。
+        //
+        // ⇒ 把判定下沉到本方法（真正的最低层收口），任何调用方都自动受保护。
+        //   判据用 `HasPower<BurnImmunityPower>()`，它对子类
+        //   `MonsterBurnImmunityPower` 同样成立（`Creature.HasPower<T>` 是 `p is T`）。
+        //
+        // 返回 `Landed = false`：免疫期间连"给予燃烧"这个动作都不算
+        // （与 `SpellCmd.ApplyBurn` 的口径一致，「纵火狂」等不应被触发）。
+        if (target.HasPower<BurnImmunityPower>())
+        {
+            return new BurnApplicationResult(false);
+        }
+
         string who = target.Monster?.Id.Entry ?? target.Player?.Character.Id.Entry ?? "?";
 
         await ApplyLock.WaitAsync();

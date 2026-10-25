@@ -101,10 +101,28 @@ public class FreeThisTurnPower : CustomPowerModel
     /// <summary>
     /// 是否不该受本能力影响 —— 照抄 <c>VoidFormPower.ShouldSkip</c>
     /// （<c>VoidFormPower.cs:186-210</c>）。
+    ///
+    /// <para>
+    /// ⚠️⚠️ <b>第一条必须是"牌是不是我的"</b>（2026-10-25 修多人 bug）。
+    /// 原版 <c>VoidFormPower.ShouldSkip</c> 的第一行就是：
+    /// <code>
+    /// bool flag = card.Owner.Creature != base.Owner;
+    /// </code>
+    /// 本项目最初只抄了后半段（手牌/打出区判定），漏了这一段 ——
+    /// 结果多人游戏里<b>玩家 A 身上的「本回合免费」会把玩家 B 的手牌也变成 0 费</b>，
+    /// 而且 B 打牌不会消耗 A 的能力层数（扣层那条另有 owner 判定），
+    /// 于是 B 只要等 A 不动就能一直白嫖。
+    /// </para>
     /// </summary>
-    private static bool ShouldSkip(CardModel card)
+    private bool ShouldSkip(CardModel card)
     {
-        // 只有在手牌 / 正在打出的牌才显示 0 费。
+        // ① 只管自己的能力拥有者的牌（多人对照：别人家的手牌与我无关）。
+        if (card.Owner?.Creature != Owner)
+        {
+            return true;
+        }
+
+        // ② 只有在手牌 / 正在打出的牌才显示 0 费。
         PileType? pileType = card.Pile?.Type;
         return pileType is not (PileType.Hand or PileType.Play);
     }
