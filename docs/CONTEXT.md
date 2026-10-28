@@ -14,8 +14,8 @@
 
 ## 0. 一句话现状
 
-框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**62 张卡全部实现并已构建部署**；
-27 个能力、**9 个遗物**、**3 瓶药水**、**62 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
+框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**64 张卡全部实现并已构建部署**；
+29 个能力、**9 个遗物**、**3 瓶药水**、**64 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
 已发布 **v0.4.1** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
@@ -267,7 +267,7 @@ Remove-Item build -Recurse -Force
 > **2026-10-08 新增 1 张**：`MindFlow`（心流，X 费）。
 > 这 5 张的卡图后来都已换成真美术。
 
-**全部 62 张都有卡图**（`images/cards/{类名}.png`，1000×760）；
+**全部 64 张都有卡图**（`images/cards/{类名}.png`，1000×760）；
 
 > 📌 **换卡图后必须让 Godot 重新导入**（2026-10-01 踩到）：
 > 直接覆盖同名 png 后，`src\.godot\imported\<名>.png-<hash>.ctex` 可能**仍是旧图** ——
@@ -3591,3 +3591,114 @@ if (target.HasPower<BurnImmunityPower>())
 
 > 2026-10-25 两个 bug 都是**已发布版本（v0.4.0）**里的问题；
 > 修复只在本地构建（dll `45D53F12`），**尚未发版**。
+
+---
+
+## 16. 2026-10-28 新增两张卡（冰矢 / 杰作）
+
+### 16.1 「冰矢」= 引燃的骨架 + 寒冷
+
+`冰矢 - 1 - 普通 - 攻击 造成9（12）点寒冰伤害。如果敌人的意图是攻击，则给予1（2）层寒冷。`
+
+结构完全照抄「引燃」`Ignite`（同一套"伤害 + 条件追加"骨架）：
+
+| 环节 | 写法 |
+|---|---|
+| 法术伤害 | `DamageCmd.Attack(...).WithValueProp(ValueProp.Move | SpellProps.For(School))` |
+| 意图判定 | `cardPlay.Target.Monster?.IntendsToAttack != true` ⇒ 直接 return |
+| 追加效果 | `SpellCmd.ApplyChill(...)`（统一收口，不是裸 `PowerCmd.Apply`） |
+
+⚠️ **意图判据必须用原版属性 `MonsterModel.IntendsToAttack`**：
+它把 `Attack` 与 `DeathBlow` 都算作"要攻击"。
+自己去比 `Intent` 枚举会漏掉 `DeathBlow`（大招/处决）。
+
+升级两段都升：伤害 9→12（`DamageVar.UpgradeValueBy(3)`）、寒冷 1→2。
+
+### 16.2 「杰作」的"跳过下个回合"= 一层能力，而不是立刻结束回合
+
+`杰作 - 0 - 稀有 - 技能 获得3费。抽3（5）张牌。跳过你的下个回合。消耗。`
+
+用户定的口径：*"每次使用给自己施加 1 层『跳过回合』，
+描述『在你的下 n 个回合开始时，结束你的回合。』，每回合开始结算并掉层。"*
+
+⚠️ **不要照抄「虚空形态」`VoidForm` 的"打出即结束回合"**：
+`VoidForm.OnPlay` 里是 `PlayerCmd.EndTurn(Owner, canBackOut: false)`
+——那是结束**当前**回合；本牌要跳的是**下个**回合，
+所以只能交给能力在回合开始时结算。
+
+### 16.3 ⚠️ 结束回合必须走 `PlayerCmd.EndTurn`，且它和回合开始钩子的时序是安全的
+
+`SkipTurnPower.AfterPlayerTurnStart` 里做两件事：**先掉层、再结束回合**。
+
+**(a) 为什么走官方路径**
+同 `VoidForm.cs:26` 的 `PlayerCmd.EndTurn(player, canBackOut: false)`。
+只有官方路径才会正常触发 `BeforeSideTurnEnd` / `AfterSideTurnEnd`、
+正常走 `EndPlayerTurnPhaseOne/Two`、回合数照常 +1，
+多人下也只把自己标记为"已结束"，不影响别人继续行动。
+——这正是用户要求的技术口径。
+
+**(b) 为什么在 `AfterPlayerTurnStart` 里结束回合不会重入**（`CombatManager.cs` 时序证据）
+```
+StartTurn():                                        // :727-733 先建好信号源
+    turnState.EndTurnSignalSource = new TaskCompletionSource<EndTurnSignal>();
+    await SetupPlayerTurn(...);   // :921 抽牌 → :923 Hook.AfterPlayerTurnStart(...)  ← 最后一句
+AwaitTurnEndAndSwitchSides():                       // :635
+    EndTurnSignal s = await endTurnSignalSource.Task;      // :656  在钩子之后才 await
+    await AfterAllPlayersReadyToEndTurn(turnState, s);     // :672
+```
+在钩子里调 `EndTurn` ⇒ 只是提前把那个 TCS 设好结果，等到 await 时立刻返回 ⇒
+正常进入回合结束流程。
+
+**(c) ⚠️ 为什么先掉层再 EndTurn**
+防止"回合开始的同步流程"重入后用旧层数再跳一次 → 无限跳过。
+先掉层 = "这次跳过已经用掉了"，任何重入都不会重复生效。
+
+### 16.4 ⚠️⚠️ 「跳过回合」的 `PowerType` 必须是 `None`，不能是 `Debuff`
+
+原版「人工制品」`ArtifactPower.TryModifyPowerAmountReceived` 的判定是：
+```csharp
+if (target != base.Owner) { return false; }
+if (canonicalPower.GetTypeForAmount(amount) != PowerType.Debuff) { return false; }
+if (!canonicalPower.IsVisible) { return false; }
+modifiedAmount = 0m;   // 直接归零
+await PowerCmd.Decrement(this);
+```
+**只看目标、完全不看施加者**。所以标成 `Debuff` 的话，玩家身上只要还有人工制品，
+自己打出的「杰作」就会把「跳过回合」整层吃掉 —— 代价凭空消失（稳定可白嫖的 bug）。
+用 `None` 既躲开人工制品，也贴合"这是自己安排的待办事项"的语义。
+
+### 16.5 卡面「跳过」是自定义关键词（手搓 `HoverTip`）
+
+「跳过」不是原版 `CardKeyword` 枚举成员，所以：
+1. 卡面里手写 `[gold]跳过[/gold]` 做视觉强调；
+2. 悬停解释在 `MagnumOpus.ExtraHoverTips` 里**手搓**一个 `HoverTip`：
+```csharp
+new HoverTip(
+    new LocString("cards", "WIZARD-MAGNUM_OPUS.skipKeyword.title"),
+    new LocString("cards", "WIZARD-MAGNUM_OPUS.skipKeyword.description"))
+```
+`HoverTip(LocString title, LocString description)` 是 **public 构造函数**
+（原版 `HoverTipFactory.Static` 内部也是这么 new 的，`HoverTipFactory.cs:153`）。
+
+⚠️ `HoverTip` 构造时就会 `GetFormattedText()` ⇒ **两个键必须在 zhs/eng 两侧都存在**，
+否则悬停时拿不到文本。
+
+    跳过：在你的回合开始时，结束你的回合。
+
+### 16.6 资产
+
+- 卡图：`IceArrow.png` / `MagnumOpus.png`（用户提供，1000×760）；
+- 「跳过回合」能力图标：用户没给 ⇒ 占位生成（沙漏 + 奥术紫）。
+
+### 16.7 ⚠️ 排障记录：mod 在游戏里被禁用过一次（不是代码问题）
+
+2026-10-28 验证时日志里出现
+`Skipping loading mod Wizard, it is set to disabled in settings`，
+当时 `settings.save` 里两条 Wizard 记录（`mods_directory` 与 `steam_workshop`）
+的 `is_enabled` 都是 `false`（文件写于 2026-10-27 23:33）。
+游戏退出时会把内存里的 mod 列表**回写**该文件；重启后即为 `true`，
+mod 正常加载（11 个补丁）。
+📌 **以后看到"补丁数 0"先查这个**：
+```powershell
+python -c "import json,os,pathlib; d=json.loads(pathlib.Path(os.environ['APPDATA'],'SlayTheSpire2','steam','<steamid>','settings.save').read_text(encoding='utf-8')); [print(m) for m in d['mod_settings']['mod_list'] if m['id']=='Wizard']"
+```
