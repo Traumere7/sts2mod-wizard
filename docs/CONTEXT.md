@@ -16,7 +16,7 @@
 
 框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**64 张卡全部实现并已构建部署**；
 29 个能力、**9 个遗物**、**3 瓶药水**、**64 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
-已发布 **v0.4.1** 到创意工坊（item 3807136195）。
+已发布 **v0.4.2** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
 
@@ -2885,6 +2885,7 @@ git push --set-upstream origin main      # 已设为跟踪分支
 | v0.3.9 | 2026-10-25 | 新增卡牌「镜像」「催化」；英文区域名词统一 [gold] | `Wizard-v0.3.9.zip` |
 | v0.4.0 | 2026-10-25 | 「镜像」不再复制镜像自身；简介删去天火浩荡 / 引燃两行 | `Wizard-v0.4.0.zip` |
 | v0.4.1 | 2026-10-25 | 修复多人「通灵」串号 + 「天火浩荡」无视燃烧免疫；简介「问题修复」整节换成这两条 | `Wizard-v0.4.1.zip` |
+| v0.4.2 | 2026-10-28 | 新增「冰矢」「杰作」；简介英文去掉 [gold]/[blue] 颜色标签 | `Wizard-v0.4.2.zip` |
 
 每个版本的说明归档在 `docs/releases/v<版本>.md`（同时用作 `gh release create --notes-file`）。
 
@@ -3702,3 +3703,16 @@ mod 正常加载（11 个补丁）。
 ```powershell
 python -c "import json,os,pathlib; d=json.loads(pathlib.Path(os.environ['APPDATA'],'SlayTheSpire2','steam','<steamid>','settings.save').read_text(encoding='utf-8')); [print(m) for m in d['mod_settings']['mod_list'] if m['id']=='Wizard']"
 ```
+
+### 14.5 ⚠️ 工坊简介的**英文**文案不要带 `[gold]` / `[blue]` 颜色标签
+
+2026-10-28 用户指出：Steam 简介的英文条目里混进了 `[gold]` / `[blue]`，
+在页面上会显示成裸标签。**中文条目一直是纯文本，没有问题。**
+
+⇒ 规矩：**简介正文（中英都一样）只用结构标签** ——
+`[b]` `[list]` `[*]` `[hr]` `[h1]` `[h2]` `[i]`；
+**不要**用 `[gold]` `[blue]` `[orange]` `[purple]` 等颜色修饰符。
+（颜色标签是**游戏内**卡面文案的东西，不属于工坊简介。）
+
+📌 清洗脚本：`D:\Downloads\ModUploader-win-x64\strip_desc_colors.py`
+它只处理“不含中文字符的行”，并校验：“中文行逐行完全一致”、“旧行剥掉颜色标签后逐字等于新行”、“结构标签计数不变”。
