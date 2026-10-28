@@ -80,7 +80,7 @@
   "WIZARD-MAGICAL_INDEX.title": "Magical Index",
   "WIZARD-MAGNUM_OPUS.description": "Gain {Energy:energyIcons()}.\nDraw {Cards:diff()} cards.\n[gold]Skip[/gold] your next turn.",
   "WIZARD-MAGNUM_OPUS.skipKeyword.description": "At the start of your turn, end your turn.",
-  "WIZARD-MAGNUM_OPUS.skipKeyword.title": "Skip",
+  "WIZARD-MAGNUM_OPUS.skipKeyword.title": "Skip your turn",
   "WIZARD-MAGNUM_OPUS.title": "Magnum Opus",
   "WIZARD-MANA_CONDENSE.description": "At the end of your turn, gain [gold]Block[/gold] equal to your [purple]Spell Power[/purple].",
   "WIZARD-MANA_CONDENSE.title": "Mana Condense",
