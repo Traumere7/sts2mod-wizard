@@ -12,7 +12,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 静电 - 1 费 - 攻击 - 普通
-/// 造成 4(6) 点雷电伤害 2 次。
+/// 造成 5(7) 点雷电伤害 2 次。
 ///
 /// <para>
 /// <b>两段用 <c>WithHitCount</c> 一次结算</b>，而不是手动循环两次 <c>DamageCmd</c>：
@@ -23,8 +23,8 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
-/// <b>升级涨的是每段伤害（4 → 6），段数恒为 2</b> ——
-/// 设计写的是"造成 4（6）点雷电伤害 2 次"，
+/// <b>升级涨的是每段伤害（5 → 7），段数恒为 2</b> ——
+/// 设计写的是"造成 5（7）点雷电伤害 2 次"，
 /// 括号内是伤害值，不是段数。
 /// </para>
 /// </summary>
@@ -37,7 +37,7 @@ public class StaticCharge : WizardSpellCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new DamageVar(4m, ValueProp.Move | SpellProps.For(School)),
+        new DamageVar(5m, ValueProp.Move | SpellProps.For(School)),
         new RepeatVar(2),
     ];
 
@@ -61,7 +61,7 @@ public class StaticCharge : WizardSpellCard
 
     protected override void OnUpgrade()
     {
-        // 4 → 6（段数不变）
+        // 5 → 7（段数不变）
         DynamicVars.Damage.UpgradeValueBy(2m);
     }
 }
