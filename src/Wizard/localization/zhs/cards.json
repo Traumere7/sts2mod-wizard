@@ -124,7 +124,7 @@
   "WIZARD-SUPERCONDUCT.title": "超导",
   "WIZARD-TELEPATHY.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n下个回合你的第1张牌可免费打出。",
   "WIZARD-TELEPATHY.title": "通灵",
-  "WIZARD-TIDY_UP.description": "将[gold]弃牌堆[/gold]1张牌放入你的[gold]手牌[/gold]。\n将你[gold]手牌[/gold]的1张牌放到[gold]抽牌堆[/gold]顶部。\n下回合获得{Energy:energyIcons()}。",
+  "WIZARD-TIDY_UP.description": "将[gold]弃牌堆[/gold]1张牌放入你的[gold]手牌[/gold]。\n将你[gold]手牌[/gold]1张牌放到[gold]抽牌堆[/gold]顶部。\n下回合获得{Energy:energyIcons()}。",
   "WIZARD-TIDY_UP.selectionScreenPrompt": "选择{Amount}张牌。",
   "WIZARD-TIDY_UP.title": "整理",
   "WIZARD-TRANSMOGRIFY.description": "造成{Damage:diff()}点[blue]雷电伤害[/blue]。\n选择1张[gold]手牌[/gold][gold]变化[/gold]。",
