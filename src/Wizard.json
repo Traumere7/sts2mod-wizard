@@ -3,7 +3,7 @@
   "name": "巫师",
   "author": "Traumere7",
   "description": "一位钻研禁忌法术的巫师。以生命与理智为代价，换取毁天灭地的奥术之力。",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "has_pck": true,
   "has_dll": true,
   "min_game_version": "0.107.1",
