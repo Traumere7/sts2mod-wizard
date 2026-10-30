@@ -3791,9 +3791,13 @@ design 的「随机（升级过的）」= 原版 `{IfUpgraded:show:...}` 语义�
     zhs: 从3张随机{IfUpgraded:show:升级过的|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。
     eng: Choose 1 of 3 random{IfUpgraded:show: upgraded|} Skill cards of other colors to add into your [gold]Hand[/gold].
 
-⚠️ 唯一有意偏差：**「升级过的」不加 `[gold]`**（原版 Quasar 加），
-以与本 mod 一模一样的同类卡「暗黑神秘学」保持一致 —— 两张牌同池并排出现，
-词面修饰应当统一。
+**「升级过的」加 `[gold]`**（与原版 Quasar 一致）：
+
+    zhs: 从3张随机{IfUpgraded:show:[gold]升级过的[/gold]|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。
+    eng: Choose 1 of 3 random{IfUpgraded:show: [gold]upgraded[/gold]|} Skill cards of other colors to add into your [gold]Hand[/gold].
+
+⚠️ **历史**：本 card 最初为了与本 mod 的「暗黑神秘学」保持一致而**没有**加 `[gold]`；
+2026-10-30 用户要求"与原版对齐"⇒ **两张卡一起改成加 `[gold]`**（中英都改）。
 
 ### 17.6 备忘：用户自己发过一版（2026-10-28 21:54 / 22:04）
 
@@ -3806,3 +3810,85 @@ design 的「随机（升级过的）」= 原版 `{IfUpgraded:show:...}` 语义�
 （release 是 `006841F7` / `112472B0`）。
 ⇒ 以后核对"工坊上那份是哪个版本"要看工坊缓存目录
 `steamapps\workshop\content\2868840\3807136195\` 里文件的 MD5，别默认与 release 一致。
+
+---
+
+## 18. 2026-10-30 新增事件「秘仪之间 / LevelSecret」
+
+`秘仪之间 - 任意阶段 - 单人 - 三个选项各给一件遗物（普通 / 罕见 / 稀有）`
+
+### 18.1 出现条件：什么都不用重写
+
+| design | 实现 |
+|---|---|
+| 出现阶段：任意阶段 | 不重写 `IsAllowed`（默认 `true`，`EventModel.cs:324-327`） |
+| 多人合作：否 | 不重写 `IsShared`（默认 `false`，`EventModel.cs:81`） |
+| 触发条件：无 | —— |
+
+### 18.2 「随机一件该稀有度、玩家还没有的遗物」= `RelicFactory` + 过滤器
+
+```csharp
+RelicModel relic = RelicFactory.PullNextRelicFromFront(
+    player, rarity, candidate => !player.Relics.Any(owned => owned.Id == candidate.Id));
+await RelicCmd.Obtain(relic.ToMutable(), player);
+SetEventFinished(L10NLookup($"{Key}.pages.RESULT.description"));
+```
+
+**为什么这一条就够了**（`RelicFactory.cs:45-50` → `RelicGrabBag.PullFromFront`）：
+`RelicGrabBag.Populate`（`RelicGrabBag.cs:69-90`）里袋子是这样装的：
+
+```csharp
+var list = ModelDb.RelicPool<SharedRelicPool>().GetUnlockedRelics(player.UnlockState).ToList();
+list.AddRange(player.Character.RelicPool.GetUnlockedRelics(player.UnlockState));
+list.RemoveAll(r => !_rarities.Contains(r.Rarity));   // Common/Uncommon/Rare/Shop
+// 按稀有度分桶后 UnstableShuffle(rng)
+```
+
+⇒ **天然是"通用池 + 角色专属池"的合并随机**，正好是 design 说明里
+「先从角色专属池选，全都拥有了就退到通用池」的语义（专属池空了，袋里只剩通用的）。
+
+⚠️ **"玩家没有的"必须自己过滤**：袋子只保证"本局没抽过"，不保证"没拥有"。
+⚠️ **比较必须用 `Id`**：`Player.Relics` 里是**可变实例**，工厂给的是**原型**，
+`Relics.Contains(proto)` 永远 false。
+
+该稀有度全拿完时 `PullFromFront` 返回 `null`，工厂兜底成 `FallbackRelic`（`Circlet`）——
+原版所有遗物奖励的标准行为。
+
+⚠️ **必须 `.ToMutable()`**：`RelicCmd.Obtain` 第一行就 `AssertMutable()`
+（`RelicCmd.cs:308`），传原型抛 `CanonicalModelException`。
+
+### 18.3 收尾用 `SetEventFinished`，不是 `SetEventState`
+
+三个选项都走同一句：
+
+```csharp
+SetEventFinished(L10NLookup($"{Key}.pages.RESULT.description"));
+```
+
+它内部就是 `SetEventState(description, Array.Empty<EventOption>())`（`EventModel.cs:478-481`），
+即"显示这段文字 + 只剩离开按钮"，正好对应 design 的
+「后续描述（三个选项都是）」，而且**不需要另写一个离开选项**。
+
+### 18.4 文案特效：`[sine]` 是抖动
+
+本 mod 事件文案支持的标记（沿用前两个事件）：`[red]` `[gold]` `[purple]` `[blue]` `[green]`，
+**抖动**用 `[sine]…[/sine]` 包裹（例：`[red][sine]炽热奔涌[/sine][/red]`）。
+
+本事件按 design 打了：红「不存在 / 不应存在 / 代价」、
+金「好玩意」（带 `[sine]`）/「满载而归」、紫「房间 / 尘封许久 / 一切」。
+`[gold]`/`[purple]` 等**只用于游戏内卡面/事件文案**，工坊简介里不用（见 §14.5）。
+
+### 18.5 立绘是占位
+
+`images/events/level_secret.png`（2560×1200，与另两张事件图同规格）由
+`reference/tools/make_level_secret_art.py` 程序化生成：
+拱门紫光 + 三级石台 + 卷轴/沙漏/圣杯（对应三档稀有度）。
+⚠️ **占位素材**，有正式美术替换即可。
+
+生成时的教训（写进脚本注释了）：前两版太暗、用了大量高斯模糊与暗角，
+结果门光被压掉、石台糊成黑块 —— 占位图要**少光源、实心填充、颜色亮一档、不加暗角**。
+
+### 18.6 事件总数 3
+
+`火山贤者`（第二阶段）/ `尖塔规则怪谈`（第三阶段）/ `秘仪之间`（任意阶段）。
+DevConsole 可用 `event WIZARD-LEVEL_SECRET` 直接触发。
