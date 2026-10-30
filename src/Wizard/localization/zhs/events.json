@@ -1,5 +1,5 @@
 {
-  "WIZARD-LEVEL_SECRET.pages.INITIAL.description": "从一条[red]不存在[/red]的岔路进入，你找到了一间本[red]不应存在[/red]的[purple]房间[/purple]。这里的[purple]一切[/purple]看起来都已[purple]尘封许久[/purple]。\n不论如何，这里总算是找到些[gold][jitter]好玩意[/jitter][/gold]了！",
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.description": "从一条[red]不存在[/red]的岔路进入，你找到了一间本[red]不应存在[/red]的[purple]房间[/purple]。\n这里的[purple]一切[/purple]看起来都已[purple]尘封许久[/purple]。\n不论如何，总算是找到些[gold][jitter]好玩意[/jitter][/gold]了！",
   "WIZARD-LEVEL_SECRET.pages.INITIAL.options.DEEP.description": "获得[gold]{RelicDeep}[/gold]。",
   "WIZARD-LEVEL_SECRET.pages.INITIAL.options.DEEP.title": "拿走深处的一件",
   "WIZARD-LEVEL_SECRET.pages.INITIAL.options.FRONT.description": "获得[gold]{RelicFront}[/gold]。",
