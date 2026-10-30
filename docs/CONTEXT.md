@@ -14,8 +14,8 @@
 
 ## 0. 一句话现状
 
-框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**64 张卡全部实现并已构建部署**；
-29 个能力、**9 个遗物**、**3 瓶药水**、**64 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
+框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**65 张卡全部实现并已构建部署**；
+29 个能力、**9 个遗物**、**3 瓶药水**、**65 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
 已发布 **v0.4.2** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
@@ -267,7 +267,7 @@ Remove-Item build -Recurse -Force
 > **2026-10-08 新增 1 张**：`MindFlow`（心流，X 费）。
 > 这 5 张的卡图后来都已换成真美术。
 
-**全部 64 张都有卡图**（`images/cards/{类名}.png`，1000×760）；
+**全部 65 张都有卡图**（`images/cards/{类名}.png`，1000×760）；
 
 > 📌 **换卡图后必须让 Godot 重新导入**（2026-10-01 踩到）：
 > 直接覆盖同名 png 后，`src\.godot\imported\<名>.png-<hash>.ctex` 可能**仍是旧图** ——
@@ -3716,3 +3716,93 @@ python -c "import json,os,pathlib; d=json.loads(pathlib.Path(os.environ['APPDATA
 
 📌 清洗脚本：`D:\Downloads\ModUploader-win-x64\strip_desc_colors.py`
 它只处理“不含中文字符的行”，并校验：“中文行逐行完全一致”、“旧行剥掉颜色标签后逐字等于新行”、“结构标签计数不变”。
+
+---
+
+## 17. 2026-10-30 新增「启示 / Inspiration」
+
+`启示 - 0 - 罕见 - 技能 从3张随机（升级过的）其他颜色的技能牌中选择1张加入你的手牌。消耗。`
+
+### 17.1 结构照抄原版「类星体」`Quasar`
+
+```csharp
+List<CardModel> offered = CardFactory
+    .GetDistinctForCombat(Owner, pool, 3, Owner.RunState.Rng.CombatCardGeneration).ToList();
+if (IsUpgraded) CardCmd.Upgrade(offered, CardPreviewStyle.None);
+CardModel? chosen = await CardSelectCmd.FromChooseACardScreen(ctx, offered, Owner, canSkip: true);
+if (chosen != null) await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);
+```
+
+- `GetDistinctForCombat` 内部会 `CombatState.CreateCard` ⇒ 拿到的是**本次战斗的新实例**；
+- 升级要升级**生成出来的实例**（`if (IsUpgraded)` 那段），不是改原型；
+- 静默升级用 `CardPreviewStyle.None`（同「暗黑神秘学」），否则连弹三张预览；
+- `canSkip: true` 照抄 Quasar（design 没提，原版同类"从 N 张选 1 张"都可跳过）。
+
+### 17.2 「其他颜色」= 六个池子，**显式列出**
+
+| 池类 | 颜色 | 角色 |
+|---|---|---|
+| `IroncladCardPool` | 红 | 铁甲战士 |
+| `SilentCardPool` | 绿 | 静默猎手 |
+| `DefectCardPool` | 蓝 | 故障机器人 |
+| `RegentCardPool` | 橙 | 储君 |
+| `NecrobinderCardPool` | 紫 | 亡灵契约师 |
+| `ColorlessCardPool` | 灰 | 无色牌 |
+
+⚠️ **不要用 `ModelDb.AllCardPools` 减去自己** —— 那会把 `CurseCardPool` /
+`StatusCardPool` / `EventCardPool` / `TokenCardPool` / `QuestCardPool` /
+`DeprecatedCardPool` 一起混进来（诅咒、状态、事件专属、衍生物、弃用牌都不该进"选择"）。
+
+再 `.Where(c => c.Type == CardType.Skill)` 只取技能牌。
+
+### 17.3 「生成守则」不用自己写黑名单 —— `FilterForCombat` 已经做了
+
+`CardFactory.GetDistinctForCombat` 内部调 `FilterForCombat`（`CardFactory.cs:159-162`）：
+
+```csharp
+cards.Where(c => c.CanBeGeneratedInCombat
+              && c.Rarity != CardRarity.Basic
+              && c.Rarity != CardRarity.Ancient
+              && c.Rarity != CardRarity.Event).Distinct();
+```
+
+用户点名要排除的几张牌，**原版自己就标了 `CanBeGeneratedInCombat => false`**：
+`HandOfGreed`（贪婪之手）、`Alchemize`（炼制药水）、`Feed`（狂宴）、
+`NotYet`（时候未到）、`Royalties`（王国资产）。
+⇒ 只要走 `GetDistinctForCombat` 就自动符合守则。
+**不要再手写黑名单**（原版以后新增的同类牌也会自动被排除）。
+
+📌 全游戏目前共 22 张卡标了这个 false，可用
+`grep "CanBeGeneratedInCombat => false"` 复核。
+
+### 17.4 蓝（故障机器人）的球类牌：安全但无效
+
+`PlayerCombatState.OrbQueue` 对**每个玩家**都会创建
+（`PlayerCombatState.cs:137-139`，容量 = `player.BaseOrbSlotCount`），
+而 `CharacterModel.BaseOrbSlotCount` 默认 `0`（`:101`），
+`OrbQueue.TryEnqueue` 在容量 0 时**直接 `return false`**（`OrbQueue.cs:52-55`）
+⇒ 巫师的牌池里出现充能类牌时，打出后安全地什么都不做，**不会抛异常**。
+
+### 17.5 卡面文案：`{IfUpgraded:show:...}` 而不是改数值
+
+design 的「随机（升级过的）」= 原版 `{IfUpgraded:show:...}` 语义。
+直接照抄 Quasar 句式，只把"无色牌"换成"其他颜色的技能牌"：
+
+    zhs: 从3张随机{IfUpgraded:show:升级过的|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。
+    eng: Choose 1 of 3 random{IfUpgraded:show: upgraded|} Skill cards of other colors to add into your [gold]Hand[/gold].
+
+⚠️ 唯一有意偏差：**「升级过的」不加 `[gold]`**（原版 Quasar 加），
+以与本 mod 一模一样的同类卡「暗黑神秘学」保持一致 —— 两张牌同池并排出现，
+词面修饰应当统一。
+
+### 17.6 备忘：用户自己发过一版（2026-10-28 21:54 / 22:04）
+
+那次改动只有两处：
+1. 把我给「跳过回合」生成的**占位图标换成正式美术**（`skip_turn_power*.png`）；
+2. 英文悬停标题 `Skip` → `Skip your turn`。
+
+并且**自己跑 `build.ps1` 并上传了工坊**（dll `CF300D28` / pck `9407E0B4`），
+所以工坊当时那份**不等于** GitHub Release v0.4.2 里的产物
+（release 是 `006841F7` / `112472B0`）。
+⇒ 以后核对"工坊上那份是哪个版本"要看工坊缓存目录
+`steamapps\workshop\content\2868840\3807136195\` 里文件的 MD5，别默认与 release 一致。
