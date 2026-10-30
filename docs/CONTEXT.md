@@ -3825,37 +3825,60 @@ design 的「随机（升级过的）」= 原版 `{IfUpgraded:show:...}` 语义�
 | 多人合作：否 | 不重写 `IsShared`（默认 `false`，`EventModel.cs:81`） |
 | 触发条件：无 | —— |
 
-### 18.2 「随机一件该稀有度、玩家还没有的遗物」= `RelicFactory` + 过滤器
+### 18.2 ⚠️ 遗物抽取：**必须自己分两步查**，`RelicFactory` 做不到"专属池优先"
+
+**踩过的坑（用户实测报告）**：第一版用
+`RelicFactory.PullNextRelicFromFront(player, rarity, filter)`，
+结果玩家一件专属遗物都没有，抽出来的却全是通用遗物。
+
+**原因**：它走的 `RelicGrabBag.Populate`（`RelicGrabBag.cs:69-90`）是：
 
 ```csharp
-RelicModel relic = RelicFactory.PullNextRelicFromFront(
-    player, rarity, candidate => !player.Relics.Any(owned => owned.Id == candidate.Id));
-await RelicCmd.Obtain(relic.ToMutable(), player);
-SetEventFinished(L10NLookup($"{Key}.pages.RESULT.description"));
-```
-
-**为什么这一条就够了**（`RelicFactory.cs:45-50` → `RelicGrabBag.PullFromFront`）：
-`RelicGrabBag.Populate`（`RelicGrabBag.cs:69-90`）里袋子是这样装的：
-
-```csharp
-var list = ModelDb.RelicPool<SharedRelicPool>().GetUnlockedRelics(player.UnlockState).ToList();
-list.AddRange(player.Character.RelicPool.GetUnlockedRelics(player.UnlockState));
+list = ModelDb.RelicPool<SharedRelicPool>().GetUnlockedRelics(...).ToList();
+list.AddRange(player.Character.RelicPool.GetUnlockedRelics(...));
 list.RemoveAll(r => !_rarities.Contains(r.Rarity));   // Common/Uncommon/Rare/Shop
-// 按稀有度分桶后 UnstableShuffle(rng)
+... 按稀有度分桶后 UnstableShuffle(rng)                // ★ 打乱
 ```
 
-⇒ **天然是"通用池 + 角色专属池"的合并随机**，正好是 design 说明里
-「先从角色专属池选，全都拥有了就退到通用池」的语义（专属池空了，袋里只剩通用的）。
+⇒ 两个池子**混合后打乱**，"从队首取"取到谁纯看运气，**根本没有"专属池优先"这回事**。
+（我最初把"合并"误读成了"专属优先"。）
 
-⚠️ **"玩家没有的"必须自己过滤**：袋子只保证"本局没抽过"，不保证"没拥有"。
-⚠️ **比较必须用 `Id`**：`Player.Relics` 里是**可变实例**，工厂给的是**原型**，
-`Relics.Contains(proto)` 永远 false。
+**正确做法**（本类 `RollRelic`）：
 
-该稀有度全拿完时 `PullFromFront` 返回 `null`，工厂兜底成 `FallbackRelic`（`Circlet`）——
-原版所有遗物奖励的标准行为。
+1. `player.Character.RelicPool.GetUnlockedRelics(player.UnlockState)` 里筛
+   `Rarity == rarity` + `IsAllowed(runState)` + **玩家未拥有**（`Relics.Any(o => o.Id == r.Id)`）；
+2. 空 ⇒ `ModelDb.RelicPool<SharedRelicPool>()` 同样筛一遍；
+3. 仍空 ⇒ `RelicFactory.FallbackRelic`（`Circlet`，原版兜底）。
 
-⚠️ **必须 `.ToMutable()`**：`RelicCmd.Obtain` 第一行就 `AssertMutable()`
-（`RelicCmd.cs:308`），传原型抛 `CanonicalModelException`。
+随机源用 `EventModel.Rng`（每个事件独立、按玩家槽位播种，`EventModel.cs:134-138`）。
+
+### 18.2b 选项上**直接写出遗物名字**
+
+用户要求不要"获得一件随机普通遗物"这种模糊描述。做法照抄原版「滑脚木桥」
+（`SlipperyBridge.cs:78,128-129`）：
+
+```csharp
+protected override IEnumerable<DynamicVar> CanonicalVars =>
+[
+    new StringVar("RelicFront"), new StringVar("RelicInner"), new StringVar("RelicDeep"),
+];
+// 生成选项时：
+((StringVar)DynamicVars["RelicFront"]).StringValue = relic.Title.GetFormattedText();
+```
+
+文案里写 `获得[gold]{RelicFront}[/gold]。`。
+
+**关键机制**：`DynamicVars` 是 **UI 渲染按钮时才注入**的
+（`NEventOptionButton.cs:285-286`：`Event.DynamicVars.AddTo(Option.Description)` 等），
+所以只要在 `GenerateInitialOptions` 里把 `StringValue` 设好即可。
+⚠️ `RelicModel.Title` 是 `LocString`（不像 `CardModel.Title` 是 string），要 `GetFormattedText()`。
+
+同时给选项挂 `HoverTipFactory.FromRelic(relic)` 悬停提示 +
+`.WithRelic(mutable)`（后者是遗物图鉴归类用，`EventOption.cs:162-172`）。
+
+⚠️ 三个遗物在 `GenerateInitialOptions` 里就 `ToMutable()` 好并存在字段里；
+`RelicCmd.Obtain` 与 `WithRelic` 都要求可变实例（`AssertMutable`）。
+`ToMutable()` 出来的实例按 `Id` 比对，`RelicGrabBag.Remove` 仍能正确剔除（它用 `r.Id == relic.Id`）。
 
 ### 18.3 收尾用 `SetEventFinished`，不是 `SetEventState`
 
@@ -3871,8 +3894,16 @@ SetEventFinished(L10NLookup($"{Key}.pages.RESULT.description"));
 
 ### 18.4 文案特效：`[sine]` 是抖动
 
-本 mod 事件文案支持的标记（沿用前两个事件）：`[red]` `[gold]` `[purple]` `[blue]` `[green]`，
-**抖动**用 `[sine]…[/sine]` 包裹（例：`[red][sine]炽热奔涌[/sine][/red]`）。
+本 mod 事件文案支持的标记：`[red]` `[gold]` `[purple]` `[blue]` `[green]`，
+以及两种"动效"：
+
+| 标记 | 效果 | 原版用例 |
+|---|---|---|
+| `[jitter]…[/jitter]` | **剧烈抖动** | 「滑脚木桥」`[blue][jitter]暴雨倾盆[/jitter][/blue]` |
+| `[sine]…[/sine]` | 轻微摆动（水波状） | 「滑脚木桥」`[purple][sine]阵阵狂风[/sine][/purple]` |
+
+⚠️ **2026-10-30 用户纠正**：design 里说的"抖动（再加抖动效果）"是 **`[jitter]`**（剧烈），
+不是 `[sine]`（轻微摆动）。本事件的「好玩意」已改成 `[gold][jitter]好玩意[/jitter][/gold]`。
 
 本事件按 design 打了：红「不存在 / 不应存在 / 代价」、
 金「好玩意」（带 `[sine]`）/「满载而归」、紫「房间 / 尘封许久 / 一切」。
