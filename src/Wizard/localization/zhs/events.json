@@ -1,4 +1,13 @@
 {
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.description": "从一条[red]不存在[/red]的岔路进入，你找到了一间本[red]不应存在[/red]的[purple]房间[/purple]。这里的[purple]一切[/purple]看起来都已[purple]尘封许久[/purple]。\n不论如何，这里总算是找到些[gold][sine]好玩意[/sine][/gold]了！",
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.options.DEEP.description": "获得1件随机稀有遗物。",
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.options.DEEP.title": "拿走深处的一件",
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.options.FRONT.description": "获得1件随机普通遗物。",
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.options.FRONT.title": "拿走门口的一件",
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.options.INNER.description": "获得1件随机罕见遗物。",
+  "WIZARD-LEVEL_SECRET.pages.INITIAL.options.INNER.title": "拿走内室的一件",
+  "WIZARD-LEVEL_SECRET.pages.RESULT.description": "你[gold]满载而归[/gold]。不过，这[purple]一切[/purple]都是没有[red]代价[/red]的吗？",
+  "WIZARD-LEVEL_SECRET.title": "秘仪之间",
   "WIZARD-RULES_HORROR.loss": "{character}被规则怪谈的魔力摧毁了意识...",
   "WIZARD-RULES_HORROR.pages.ABUNDANT.description": "尖塔似乎[gold]认可[/gold]了你的精神，你也收获了[gold]丰盈的财宝[/gold]（？）",
   "WIZARD-RULES_HORROR.pages.BALANCED.description": "你获得了小小的[gold]赐福[/gold]。随后公告和声音便都消失不见。",
