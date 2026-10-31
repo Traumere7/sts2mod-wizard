@@ -13,17 +13,17 @@ using Wizard.Scripts.Powers;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 净罪 / PurifySin - 0 费 - 技能 - 稀有（升级获得「固有」）
+/// 净罪 / PurifySin - 1 费 - 技能 - 稀有（升级获得「固有」）
 /// 消耗你所有的状态牌和诅咒牌。每消耗 1 张牌，获得 2 点[purple]法术增益[/purple]和 2 点[gold]敏捷[/gold]。消耗。
 ///
 /// <para>
-/// ⚠️ <b>升级口径改过三轮，当前是"0 费 + 升级加「固有」"</b>
+/// ⚠️ <b>升级口径改过三轮，当前是"1 费 + 升级加「固有」"</b>
 /// （<c>docs/design.md:130</c> 现为 <c>1（0）</c> + <c>2点法术增益和2点敏捷</c>）：
 /// <list type="bullet">
 ///   <item>第 1 版：<c>1（0）</c> + 固定 1 层 ⇒ 升级<b>降费</b>，数值固定 1。</item>
 ///   <item>第 2 版：<c>1-</c> + <c>1（2）</c> 层 ⇒ 费用不变，升级<b>加数值</b>。</item>
 ///   <item>第 3 版（2026-10-21）：<c>1（0）</c> + <b>固定 2 点</b> ⇒ 升级<b>降费</b>。</item>
-///   <item><b>现版（2026-10-31 平衡性调整）</b>：<c>0</c> 费 + <b>固定 2 点</b> ⇒
+///   <item><b>现版（2026-10-31 平衡性调整）</b>：<c>1</c> 费 + <b>固定 2 点</b> ⇒
 ///         升级<b>不再降费</b>（本就 0 费），改为 <c>AddKeyword(CardKeyword.Innate)</c>
 ///         获得「固有」。数值仍固定 2（<b>不随升级变化</b>）。</item>
 /// </list>
@@ -83,7 +83,7 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class PurifySin : WizardCardModel
 {
-    private const int Cost = 0;
+    private const int Cost = 1;
 
     /// <summary>每消耗 1 张牌给予的法术增益层数（<b>固定值，不随升级变化</b>）。</summary>
     private const int SpellPowerPerCard = 2;
@@ -158,7 +158,7 @@ public class PurifySin : WizardCardModel
     /// </summary>
     protected override void OnUpgrade()
     {
-        // 2026-10-31 平衡性调整：升级不再降费（本就 0 费），改为获得「固有」。
+        // 2026-10-31 平衡性调整：升级不再降费（本就 1 费），改为获得「固有」。
         AddKeyword(CardKeyword.Innate);
     }
 }
