@@ -15,7 +15,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 天火浩荡 - 4 费 - 技能 - 稀有
-/// 将所有敌人的燃烧<b>增加</b> 8（10）层。立刻触发一次燃烧结算。消耗。
+/// 将所有敌人的燃烧<b>增加</b> 10（12）层。立刻触发一次燃烧结算。消耗。
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
@@ -91,9 +91,9 @@ public class SkyfireRampage : WizardSpellCard
     private const int Cost = 4;
 
     /// <summary>基础增加层数（升级前）。</summary>
-    private const int BurnToAdd = 8;
+    private const int BurnToAdd = 10;
 
-    /// <summary>升级后额外增加（8 → 10）。</summary>
+    /// <summary>升级后额外增加（10 → 12）。</summary>
     private const int UpgradeAdd = 2;
 
     /// <summary>
