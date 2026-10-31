@@ -9,14 +9,15 @@ using MegaCrit.Sts2.Core.Models;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 泛灵论 / Animism - 0 费 - 技能 - 稀有
-/// <b>（保留）</b>抽 1 张牌。变化你的所有手牌，这些牌获得虚无。
+/// 泛灵论 / Animism - 1（0）费 - 技能 - 稀有
+/// 抽 1 张牌。变化你的所有手牌，这些牌获得虚无。
 ///
 /// <para>
-/// ⚠️ <b>design.md 里的「（保留）」是"升级才获得保留"</b>（用户 2026-10-19 明确说明）：
-/// 升级前<b>没有</b>「保留」词条，升级后<b>获得</b>「保留」。
-/// 所以 <c>CanonicalKeywords</c> 保持空，在 <c>OnUpgrade()</c> 里
-/// <c>AddKeyword(CardKeyword.Retain)</c>（与「熵」<c>Entropy</c> 升级加「固有」同一写法）。
+/// ⚠️ <b>数值已改（2026-10-31 平衡性调整，design.md 同步）</b>：
+/// <b>旧</b>：0 费，升级<b>加「保留」</b>。
+/// <b>新</b>：<b>1（0）费</b>，<b>没有「保留」</b>了 —— 升级只降费。
+/// ⇒ <c>CanonicalKeywords</c> 保持空，<c>OnUpgrade()</c> 里
+/// <c>EnergyCost.UpgradeBy(-1)</c>，**不再** <c>AddKeyword(Retain)</c>。
 /// </para>
 ///
 /// <para>
@@ -54,9 +55,9 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class Animism : WizardCardModel
 {
-    private const int Cost = 0;
+    private const int Cost = 1;
 
-    /// <summary>抽几张（design.md 未标注升级值，升级只加「保留」）。</summary>
+    /// <summary>抽几张（design.md 未标注升级值，升级只降费）。</summary>
     private const int DrawCount = 1;
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
@@ -100,10 +101,10 @@ public class Animism : WizardCardModel
     }
 
     /// <summary>
-    /// 升级只加「保留」词条（design.md 的「（保留）」就是这个意思）。
+    /// 升级只降费 1 → 0（2026-10-31 起不再加「保留」词条）。
     /// </summary>
     protected override void OnUpgrade()
     {
-        AddKeyword(CardKeyword.Retain);
+        EnergyCost.UpgradeBy(-1);
     }
 }

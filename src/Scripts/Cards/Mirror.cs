@@ -8,7 +8,7 @@ using Wizard.Scripts.Pools;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 镜像 / Mirror - 1(0) 费 - 技能 - 稀有
+/// 镜像 / Mirror - 0 费 - 技能 - 稀有（升级获得「保留」）
 /// 将除「镜像」牌以外的、你所有手牌的复制品加入你的手牌。消耗。
 ///
 /// <para>
@@ -96,7 +96,7 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class Mirror : WizardCardModel
 {
-    private const int Cost = 1;
+    private const int Cost = 0;
 
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
     [
@@ -134,9 +134,12 @@ public class Mirror : WizardCardModel
         }
     }
 
-    /// <summary>升级 1 费 → 0 费（design.md 写的是「1（0）」）。</summary>
+    /// <summary>
+    /// 升级获得「保留」词条（2026-10-31 平衡性调整：本牌改为<b>一直 0 费</b>，
+    /// 升级不再降费，而是 <c>AddKeyword(CardKeyword.Retain)</c>）。
+    /// </summary>
     protected override void OnUpgrade()
     {
-        EnergyCost.UpgradeBy(-1);
+        AddKeyword(CardKeyword.Retain);
     }
 }
