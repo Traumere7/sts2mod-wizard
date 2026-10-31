@@ -3924,3 +3924,46 @@ SetEventFinished(L10NLookup($"{Key}.pages.RESULT.description"));
 
 `火山贤者`（第二阶段）/ `尖塔规则怪谈`（第三阶段）/ `秘仪之间`（任意阶段）。
 DevConsole 可用 `event WIZARD-LEVEL_SECRET` 直接触发。
+
+---
+
+## 19. 2026-10-31 三张牌平衡性调整（改了费用与升级词条）
+
+design.md 改了这三行，实现随之调整。**三张牌都是"费用/升级词条"层面的改动，效果文本不变。**
+
+| 牌 | 旧 | 新 |
+|---|---|---|
+| 泛灵论 `Animism` | `0` 费，升级**加「保留」** | **`1（0）` 费**，升级只**降费**，**去掉「保留」** |
+| 镜像 `Mirror` | `1（0）` 费 | **一直 `0` 费**，升级**加「保留」** |
+| 净罪 `PurifySin` | `1（0）` 费，升级降费 | **`0` 费**，升级**加「固有」**（不再降费） |
+
+### 19.1 代码落点
+
+| 牌 | `Cost` 常量 | `OnUpgrade()` |
+|---|---|---|
+| Animism | `1` | `EnergyCost.UpgradeBy(-1)`（删掉原来的 `AddKeyword(Retain)`） |
+| Mirror | `0` | `AddKeyword(CardKeyword.Retain)`（删掉 `UpgradeBy(-1)`） |
+| PurifySin | `0` | `AddKeyword(CardKeyword.Innate)`（删掉 `UpgradeBy(-1)`） |
+
+`CanonicalKeywords` 都不含这两个升级词条（升级才加），只有原本的「消耗」。
+「保留」「固有」由 `CanonicalKeywords`/`AddKeyword` 自动渲染，**不写进描述文本**，
+所以三张牌的本地化文案本次**没有改动**。
+
+### 19.2 IL 复核方法（费用与关键词都能从 IL 直接读出）
+
+`CardKeyword` 枚举值：`None=0, Exhaust=1, Ethereal=2, Innate=3, Unplayable=4, Retain=5, Sly=6, Eternal=7`。
+
+实测（部署后的 dll）：
+
+```
+Animism   .ctor: ldc.i4.1     OnUpgrade: UpgradeBy(-1)
+Mirror    .ctor: ldc.i4.0     OnUpgrade: AddKeyword(ldc.i4.5)  → Retain
+PurifySin .ctor: ldc.i4.0     OnUpgrade: AddKeyword(ldc.i4.3)  → Innate
+```
+
+📌 以后改费用/关键词，**先数 `ldc.i4` 再对枚举**，比肉眼读源码可靠。
+
+### 19.3 中文卡面标点
+
+镜像的中文文案在 design 里从「以外的**，**」改成了「以外的**、**」，
+文案已与 design 对齐（`将除“镜像”牌以外的、你所有手牌…`）。
