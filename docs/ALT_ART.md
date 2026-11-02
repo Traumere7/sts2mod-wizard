@@ -73,13 +73,21 @@ art_alt\
     └── images\characters\*.png    战斗 / 火堆 / 死亡 立绘
 ```
 
-然后：
+然后**直接跑 `\build.ps1` 就行**——第 5 步会自动出包并部署：
 
-```powershell
-python reference\tools\make_alt_art_pck.py art_alt build\WizardAlt.pck
+```
+=== 5/6 打包替换美术包（B 版，可选） ===
+  源：...\art_alt（76 张 png）
+  WizardAlt.pck 生成并部署成功（108.2 MB，MD5 B62BCAC7）
 ```
 
-（`reference\tools\make_test_alt_art.py` 是"先用 A 版占位 + 几张明显替换"的测试版生成器。）
+细节：
+- 源目录缺 / 里面没有 png / 缺 python / 缺打包工具 / 加 `-SkipAltArt` ⇒ **跳过**，
+  并且**不会删除**已经装在 `mods\Wizard\` 里的 `WizardAlt.pck`。
+- 产物先落 `build\WizardAlt.pck`（做哈希校验），再复制到 `mods\Wizard\`。
+- 单独出包（不走整个构建）仍可用：
+  `python reference\tools\make_alt_art_pck.py art_alt build\WizardAlt.pck`
+- （`reference\tools\make_test_alt_art.py` 是"先用 A 版占位 + 几张明显替换"的测试版生成器。）
 
 ⚠️ 不要包含：遗物、事件、怪物的贴图（B 版范围不含它们）。
 ⚠️ 覆盖包里**不要**出现 `project.godot`、`.godot/uid_cache.bin`、`.godot/editor/`（脚本已自动剔除）。

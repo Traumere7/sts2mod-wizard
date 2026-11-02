@@ -4081,3 +4081,28 @@ PurifySin .ctor: ldc.i4.0     OnUpgrade: AddKeyword(ldc.i4.3)  → Innate
 加一个默认 `true` 的对照属性后，两个值都正确落盘，**证明没有这个 bug** ——
 是残留的旧 cfg / 未完全退出的实例造成的。
 ⇒ 以后验证配置类功能：**先确认进程真的退出**，再改文件，并每次打印 `Test-Path`。
+
+### 21.5 已集成进 build.ps1（2026-11-02）
+
+`build.ps1` 从 5 步变 **6 步**，新增第 5 步「打包替换美术包（B 版，可选）」：
+
+```
+1/6 编译 C#
+2/6 Godot import
+3/6 打包 pck
+4/6 部署
+5/6 打包替换美术包（B 版，可选）   ← 新增
+6/6 自动提交
+```
+
+- 源目录 `art_alt\`（**已加入 .gitignore**），工具 `reference/tools/make_alt_art_pck.py`
+- 产物先落 `build\WizardAlt.pck` 做哈希校验，再复制到 `$ModDir\WizardAlt.pck`
+- 跳过条件：`-SkipAltArt` / 源目录不存在 / 没有 png / 找不到 python / 缺工具
+  ⇒ **跳过时不动已部署的 `WizardAlt.pck`**（别人装好的 B 包不会被顺手删掉）
+- 与主 pck 一样做「产物必须是本轮刚写出来的」时间戳校验 + 部署后哈希复核
+
+⚠️ **PS 5.1 兼容**：新步骤只用了 `@(...)`、`*> file`、`Get-Content -Tail`、
+`-ne $null` 这类 5.1 就有的东西；**没有** `??` / 三元。
+实测（`powershell.exe -File build.ps1`）两项都通过：
+- 全量：`art_alt` 76 张 → `WizardAlt.pck` 113,426,692 B，部署后 MD5 `B62BCAC7` 与构建产物一致
+- `-SkipAltArt`：打印「跳过（指定了 -SkipAltArt）」+「保留已有的替换美术包」，B 包时间戳未变
