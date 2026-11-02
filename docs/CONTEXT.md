@@ -3968,3 +3968,75 @@ PurifySin .ctor: ldc.i4.0     OnUpgrade: AddKeyword(ldc.i4.3)  → Innate
 
 镜像的中文文案在 design 里从「以外的**，**」改成了「以外的**、**」，
 文案已与 design 对齐（`将除“镜像”牌以外的、你所有手牌…`）。
+
+---
+
+## 20. 2026-11-02 美术 A/B 两套切换：可行性**已实测通过**
+
+### 20.1 结论先说
+
+**可以做到**"工坊只发 A 版 + 设置里勾一下切到我私下发的 B 版"，
+而且**不需要改任何美术路径代码** —— 因为 Godot 支持运行时再挂一个包、
+用同名 `res://` 路径**覆盖**已挂载资源。
+
+### 20.2 实测证据（2026-11-02，用 64×64 洋红假图冒充 B 版「镜像」）
+
+```
+[Wizard] [探测] alt 包: ...\mods\Wizard\WizardAlt.pck 存在=True
+[Wizard] [探测] 挂载前(Ignore) Mirror = 1000x760     ← A 版基线
+[Wizard] [探测] LoadResourcePack => True
+[Wizard] [探测] 挂载后(Reuse)  Mirror = 64x64        ← ★ 游戏真正用的模式拿到 B 版
+[Wizard] [探测] 挂载后(Ignore) Mirror = 64x64        ← 磁盘解析顺序也被改写
+[Wizard] [探测] 对照 IceArrow = 1000x760             ← 未在覆盖包里的资源不受影响
+```
+
+⇒ 三条关键性质全部成立：**覆盖生效**、**游戏用的 `CacheMode.Reuse` 也吃到覆盖**、
+**其它资源零影响**。日志无任何 `[ERROR]`/异常。
+
+### 20.3 机制三件套
+
+| 环节 | 事实 | 出处 |
+|---|---|---|
+| 游戏只挂一个 mod 包 | `ProjectSettings.LoadResourcePack(mods\Wizard\Wizard.pck)` | `ModManager.cs:822-828` |
+| **但可再挂一个包并覆盖同名路径** | `Boolean ProjectSettings.LoadResourcePack(String pack, Boolean replaceFiles = True, Int32 offset = 0)` —— 默认就 replace | GodotSharp 实测签名 |
+| 挂载时机的唯一要求 | **必须在任何美术资源被加载之前**；mod 初始化函数里调用即可（实测有效） | 本次实验 |
+
+### 20.4 覆盖包（B 版 pck）怎么做
+
+工具：`reference/tools/make_alt_art_pck.py <替换资源目录> [输出pck]`
+
+流程（脚本已封装）：最小 `project.godot` → `godot --headless --import` →
+**剔掉** `project.godot` / `icon.svg*` / `.godot/uid_cache.bin` /
+`.godot/global_script_class_cache.cfg` / `.godot/editor/` / 孤儿 `icon.svg-*` 导入产物 →
+`gdre_tools --pck-create` → `--list-files` 回读校验。
+
+⚠️ **踩过的两个坑**：
+
+1. **第一次打出来的包把 `project.godot`、`.godot/uid_cache.bin`、`.godot/editor/` 也装进去了**
+   —— 这些会盖掉游戏/mod 的工程配置与资源 uid 缓存，必须剔除。
+2. GDRE **不会覆盖已存在的输出文件**（老坑，见 build.ps1 注释）⇒ 打包前先删输出。
+
+### 20.5 两个"意外的顺利"
+
+- `.png` 的导入产物文件名 `<name>.png-<hash>.ctex` 里的 hash **只取决于源路径 + 导入参数**，
+  与图片内容无关 ⇒ **A/B 两版同路径的 ctex 文件名完全一致**，覆盖是"同名同址覆盖"，非常干净。
+- `.import` 里的 `uid://` 两边不同，但 Godot **按路径回退**解析，实测无副作用。
+
+### 20.6 用户定下的方案（2026-11-02）
+
+1. **工坊公开版**：代码里带"切换美术"的设置项，但**包里只有 A 版**；
+   B 版由用户私下分发 `WizardAlt.pck`。
+2. **B 版覆盖范围**：巫师所有**场景立绘**（封面/战斗/死亡/商店/火堆等）、
+   各类**巫师图标**（头像、地图标记）、**所有卡图**。
+   **不含**：遗物、事件、怪物的贴图。
+3. **勾选后需重启生效** —— 设置项里要写明这句提示。
+4. 朋友是 Steam 版，能往 `mods\Wizard\` 放文件。
+
+### 20.7 待实现（下一步）
+
+- [ ] `WizardArtConfig : SimpleModConfig`：`public static bool UseAltArt`（bool ⇒ 自动是复选框），
+      `ModConfigRegistry.Register("Wizard", cfg)`，标签与提示文案（含"需重启"）
+- [ ] `Entry.Initialize()` 里：`UseAltArt && File.Exists(<dll 同目录>/WizardAlt.pck)` ⇒
+      `ProjectSettings.LoadResourcePack(alt, replaceFiles: true)`，并打一行日志
+- [ ] 用户提供 B 版美术后，用 `make_alt_art_pck.py` 出包，附一页"放哪 + 勾哪里 + 重启"的说明
+- [ ] 可选：`art_alt/` 源目录约定（`Wizard/images/cards/*.png` 结构），便于以后重新出包
