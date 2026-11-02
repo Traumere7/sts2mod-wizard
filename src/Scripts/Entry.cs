@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using BaseLib.Config;
 using Godot;
@@ -74,6 +76,47 @@ public class Entry
     /// ⚠️ 任何异常都只记日志、<b>不中止初始化</b>：美术包缺失/损坏不该让 mod 起不来。
     /// </para>
     /// </summary>
+    /// <summary>替换美术包的文件名。</summary>
+    private const string AltPackName = "WizardAlt.pck";
+
+    /// <summary>
+    /// 若玩家在设置里勾了「使用替换美术」，就找一个 <see cref="AltPackName"/>
+    /// 作为**覆盖包**挂载上去。
+    ///
+    /// <para>
+    /// 原理（2026-11-02 实测）：游戏只挂 mod 自己的 <c>Wizard.pck</c> 一个包
+    /// （<c>ModManager.cs:822-828</c>），但 Godot 的
+    /// <c>ProjectSettings.LoadResourcePack(path, replaceFiles: true)</c>
+    /// 允许再挂一个包、<b>用同名 <c>res://</c> 路径覆盖已有资源</b>。
+    /// 覆盖包里的路径与正式包完全一致 ⇒ 不需要改任何美术路径代码。
+    /// </para>
+    ///
+    /// <para>
+    /// ══════════════════════════════════════════════════════════════════
+    /// 搜索顺序（2026-11-02 晚新增 ②：工坊订阅者也能用）
+    /// ══════════════════════════════════════════════════════════════════
+    /// <list type="number">
+    ///   <item><b>DLL 同目录</b> —— 本地安装时是 <c>mods\Wizard\</c>；
+    ///         工坊订阅时是 <c>steamapps\workshop\content\2868840\3807136195\</c>
+    ///         （能读到，但 Steam 更新工坊条目时可能把这个多余文件清掉）。</item>
+    ///   <item><b><c>%APPDATA%\SlayTheSpire2\WizardAlt.pck</c></b>
+    ///         （<c>OS.GetUserDataDir()</c>）—— <b>推荐给只订阅工坊、没有本地构建的玩家</b>：
+    ///         这是用户目录，Steam 永远不碰，也不用动任何 mod 文件。</item>
+    /// </list>
+    /// 两个位置都没有时，会把**搜索过的路径全部**打进日志，便于让玩家自查。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ <b>调用时机是硬要求</b>：必须在任何美术资源被加载之前。
+    /// <c>Entry.Initialize</c> 由 <c>ModManager</c> 在挂完本 mod 的 pck 后立刻调用，
+    /// 此时还没有模型/UI 去读贴图，所以这里挂载是安全的
+    /// （实测：挂载后 <c>CacheMode.Reuse</c> 读到的是覆盖包里的版本）。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ 任何异常都只记日志、<b>不中止初始化</b>：美术包缺失/损坏不该让 mod 起不来。
+    /// </para>
+    /// </summary>
     private static void MountAltArtPack()
     {
         try
@@ -84,22 +127,37 @@ public class Entry
                 return;
             }
 
-            string dir = Path.GetDirectoryName(typeof(Entry).Assembly.Location) ?? ".";
-            string altPath = Path.Combine(dir, "WizardAlt.pck");
-            if (!File.Exists(altPath))
+            List<string> candidates = [Path.Combine(
+                Path.GetDirectoryName(typeof(Entry).Assembly.Location) ?? ".", AltPackName)];
+            try
             {
-                Logger.Warn($"美术：已开启替换美术，但没找到 {altPath}；继续使用自带版本");
+                candidates.Add(Path.Combine(OS.GetUserDataDir(), AltPackName));
+            }
+            catch (Exception e)
+            {
+                Logger.Warn($"美术：取用户目录失败，跳过该搜索位置：{e.Message}");
+            }
+
+            string? found = candidates.FirstOrDefault(File.Exists);
+            if (found == null)
+            {
+                Logger.Warn("美术：已开启替换美术，但下列位置都没有 " + AltPackName);
+                foreach (string candidate in candidates)
+                {
+                    Logger.Warn($"美术：   - {candidate}");
+                }
+
                 return;
             }
 
-            bool ok = ProjectSettings.LoadResourcePack(altPath, replaceFiles: true);
+            bool ok = ProjectSettings.LoadResourcePack(found, replaceFiles: true);
             if (ok)
             {
-                Logger.Info($"美术：已挂载替换美术包 {altPath}");
+                Logger.Info($"美术：已挂载替换美术包 {found}");
             }
             else
             {
-                Logger.Warn($"美术：替换美术包挂载失败 {altPath}；继续使用自带版本");
+                Logger.Warn($"美术：替换美术包挂载失败 {found}；继续使用自带版本");
             }
         }
         catch (Exception e)
