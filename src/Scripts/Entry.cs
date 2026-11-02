@@ -1,8 +1,12 @@
+using System.IO;
 using System.Reflection;
+using BaseLib.Config;
+using Godot;
 using Godot.Bridge;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Modding;
+using Wizard.Scripts.Config;
 using Wizard.Scripts.Spells;
 
 namespace Wizard;
@@ -31,6 +35,13 @@ public class Entry
         // 必须：让 Godot 能找到本程序集里的 C# 脚本（自定义场景会用到）。
         ScriptManagerBridge.LookupScriptsInAssembly(assembly);
 
+        // 设置项（BaseLib 的 mod 配置页会自动生成 UI）
+
+        ModConfigRegistry.Register(ModId, new WizardArtConfig());
+
+        // 美术 A/B：必须在**任何美术资源被加载之前**挂载覆盖包
+        MountAltArtPack();
+
         ApplyPatches(assembly);
 
         // 常驻订阅"给予燃烧"事件，供「巨焱拳」统计"本场战斗施加了多少层"。
@@ -38,6 +49,63 @@ public class Entry
         BurnTally.Subscribe();
 
         Logger.Info($"[{ModId}] 初始化完成。");
+    }
+
+    /// <summary>
+    /// 若玩家在设置里勾了「使用替换美术」，就把 DLL 同目录的
+    /// <c>WizardAlt.pck</c> 作为**覆盖包**挂载上去。
+    ///
+    /// <para>
+    /// 原理（2026-11-02 实测）：游戏只挂 <c>mods\Wizard\Wizard.pck</c> 一个包
+    /// （<c>ModManager.cs:822-828</c>），但 Godot 的
+    /// <c>ProjectSettings.LoadResourcePack(path, replaceFiles: true)</c>
+    /// 允许再挂一个包、<b>用同名 <c>res://</c> 路径覆盖已有资源</b>。
+    /// 覆盖包里的路径与正式包完全一致 ⇒ 不需要改任何美术路径代码。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ <b>调用时机是硬要求</b>：必须在任何美术资源被加载之前。
+    /// <c>Entry.Initialize</c> 由 <c>ModManager</c> 在挂完本 mod 的 pck 后立刻调用，
+    /// 此时还没有模型/UI 去读贴图，所以这里挂载是安全的
+    /// （实测：挂载后 <c>CacheMode.Reuse</c> 读到的是覆盖包里的版本）。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ 任何异常都只记日志、<b>不中止初始化</b>：美术包缺失/损坏不该让 mod 起不来。
+    /// </para>
+    /// </summary>
+    private static void MountAltArtPack()
+    {
+        try
+        {
+            if (!WizardArtConfig.UseAltArt)
+            {
+                Logger.Info("美术：使用 mod 自带版本（设置里未开启替换美术）");
+                return;
+            }
+
+            string dir = Path.GetDirectoryName(typeof(Entry).Assembly.Location) ?? ".";
+            string altPath = Path.Combine(dir, "WizardAlt.pck");
+            if (!File.Exists(altPath))
+            {
+                Logger.Warn($"美术：已开启替换美术，但没找到 {altPath}；继续使用自带版本");
+                return;
+            }
+
+            bool ok = ProjectSettings.LoadResourcePack(altPath, replaceFiles: true);
+            if (ok)
+            {
+                Logger.Info($"美术：已挂载替换美术包 {altPath}");
+            }
+            else
+            {
+                Logger.Warn($"美术：替换美术包挂载失败 {altPath}；继续使用自带版本");
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.Warn($"美术：挂载替换美术包时异常，继续使用自带版本：{e}");
+        }
     }
 
     /// <summary>

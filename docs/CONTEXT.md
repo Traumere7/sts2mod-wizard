@@ -4040,3 +4040,44 @@ PurifySin .ctor: ldc.i4.0     OnUpgrade: AddKeyword(ldc.i4.3)  → Innate
       `ProjectSettings.LoadResourcePack(alt, replaceFiles: true)`，并打一行日志
 - [ ] 用户提供 B 版美术后，用 `make_alt_art_pck.py` 出包，附一页"放哪 + 勾哪里 + 重启"的说明
 - [ ] 可选：`art_alt/` 源目录约定（`Wizard/images/cards/*.png` 结构），便于以后重新出包
+
+---
+
+## 21. 替换美术（B 包）功能：基建已落地（2026-11-02）
+
+### 21.1 组成
+
+| 位置 | 作用 |
+|---|---|
+| `src/Scripts/Config/WizardArtConfig.cs` | BaseLib `SimpleModConfig`，一个 `UseAltArt` 复选框（`[ConfigSection("Art")]`） |
+| `src/Scripts/Entry.cs` → `MountAltArtPack()` | 读开关；开且文件在 ⇒ `ProjectSettings.LoadResourcePack(altPath, replaceFiles: true)` |
+| `localization/{zhs,eng}/settings_ui.json` | 设置页文案：`WIZARD-ART.title` / `WIZARD-USE_ALT_ART.title` |
+| `reference/tools/make_alt_art_pck.py` | 把「替换资源目录」打成可挂载覆盖包（含剔除工程文件、清单校验） |
+| `reference/tools/make_test_alt_art.py` | 生成"可辨测试包"：A 版全量复制 + 5 张改成洋红大白 B |
+| `docs/ALT_ART.md` | 给朋友的安装/回退/排障说明 |
+
+### 21.2 关键实现细节（都是踩出来的）
+
+- **标签键**：`ModConfig.GetLabelText` 查 `settings_ui` 表里的
+  `{根命名空间大写}-{Slugify(属性名)}.title` ⇒ 我们的键是 `WIZARD-USE_ALT_ART.title`；
+  分区名同理 `WIZARD-ART.title`。键缺失只会退化成属性名，不会崩。
+- **配置文件**：`%APPDATA%\SlayTheSpire2\mod_configs\Wizard.cfg`（文件名取根命名空间 `Wizard`）。
+- **挂载时机**：必须在任何美术资源加载之前 ⇒ 放在 `Entry.Initialize()` 里（ModManager 挂完本 mod
+  的 pck 后立刻调用），实测此时挂载后 `CacheMode.Reuse` 也能读到覆盖版本。
+- **容错**：文件缺失 / 挂载失败 / 抛异常，都只记一条日志并继续用 A 版，**绝不中止初始化**。
+- **日志**：`美术：使用 mod 自带版本` / `美术：已挂载替换美术包 ...` /
+  `美术：已开启替换美术，但没找到 ...`（`Entry.Logger` 自带 `[Wizard]` 前缀，消息里**不要**再写）。
+
+### 21.3 覆盖包体积
+
+76 张图（65 卡图 + 8 UI + 3 角色）的覆盖包约 **110 MB** —— 因为 godot 会把
+**原始 png 与导入后的 ctex 一起打进包**（与正式包的口径相同）。
+可行的瘦身做法（未采用，怕破坏一致性）：import 后删掉原始 png，只用 `.import` + `.ctex`，约 50 MB。
+
+### 21.4 ⚠️ 排障教训：别用"杀进程 + 立刻改 cfg"来验证开关
+
+验证开关时我反复 `Stop-Process` 强杀游戏、紧接着改 `Wizard.cfg`，出现了
+"没勾选但文件里变成 True"的假象，一度误判成 BaseLib 的 bug。
+加一个默认 `true` 的对照属性后，两个值都正确落盘，**证明没有这个 bug** ——
+是残留的旧 cfg / 未完全退出的实例造成的。
+⇒ 以后验证配置类功能：**先确认进程真的退出**，再改文件，并每次打印 `Test-Path`。
