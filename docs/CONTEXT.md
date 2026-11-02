@@ -4106,3 +4106,86 @@ PurifySin .ctor: ldc.i4.0     OnUpgrade: AddKeyword(ldc.i4.3)  → Innate
 实测（`powershell.exe -File build.ps1`）两项都通过：
 - 全量：`art_alt` 76 张 → `WizardAlt.pck` 113,426,692 B，部署后 MD5 `B62BCAC7` 与构建产物一致
 - `-SkipAltArt`：打印「跳过（指定了 -SkipAltArt）」+「保留已有的替换美术包」，B 包时间戳未变
+
+---
+
+## 22. 2026-11-02 选人界面「矩形阴影」修复 + 离屏渲染验证法
+
+### 22.1 症状与根因
+
+用户截图报告：角色选择界面的大封面上有一块**明显的矩形阴影**（带笔直的边）。
+
+根因在 `src/Wizard/scenes/wizard_bg.tscn` 的 `PanelShade` 节点：
+它原本是一个 **`ColorRect`**（纯色块，`alpha 0.36`），
+尺寸 `-260,-600 → 1600,677`（盖住大半个屏幕）。
+`ColorRect` **画不出渐变** —— 而那段注释却写着"用 6 段 stop 逼近线性渐变"，
+实际从未实现。于是屏幕上就是一块硬边半透明矩形。
+
+📌 复核方法（不用进游戏）：对截图做"整列/整行平均亮度"的一阶差，
+最大的两个突变正好落在该节点的**右边（root x=1600）和下边（root y=694）**上。
+
+### 22.2 修法：`GradientTexture2D` + **铺满整个根节点**
+
+```
+[sub_resource type="Gradient" id="Gradient_shade"]
+offsets = PackedFloat32Array(0, 0.42, 0.62)
+colors = PackedColorArray(... 0.45, ... 0.18, ... 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_shade"]
+gradient = SubResource("Gradient_shade")
+fill_from = Vector2(0, 0)
+fill_to = Vector2(1, 0)
+
+[node name="PanelShade" type="TextureRect" parent="."]
+anchors_preset = 15      # 铺满父节点
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = SubResource("GradientTexture2D_shade")
+stretch_mode = 0         # SCALE
+```
+
+⚠️ **两个容易再踩的点**：
+
+1. **`ColorRect` 做不了渐变**，想要渐变必须用 `TextureRect` + `GradientTexture2D`（或贴图）。
+2. **渐变节点的矩形不能比可见区域小** —— 否则它自己的**下边/右边**又成了一条硬边。
+   第一版我只把矩形缩到 `x -260..1080 / y -600..677`，结果底部仍有一条水平硬边（离屏渲染一眼看到）。
+   正确做法是**铺满整个根节点**：选人界面的可见窗口是 root 的 `(0,0)-(1920,1078)`，
+   而 root 是 `2560x1200` ⇒ 四条边全在屏幕外，任何窗口尺寸都不会露边。
+
+### 22.3 ⭐ 可复用：把 Godot 场景**离屏渲染成 PNG** 来验证画面
+
+改 UI/场景时不用进游戏也能看到结果（这次就是靠它发现第一版仍有硬边的）：
+
+```gdscript
+# src/_render_check.gd（用完即删）
+extends SceneTree
+func _initialize() -> void:
+    var ps: PackedScene = load("res://Wizard/scenes/wizard_bg.tscn")
+    var node: Node = ps.instantiate()
+    root.add_child(node)
+    for i in range(6):
+        await process_frame
+    await RenderingServer.frame_post_draw
+    var img: Image = root.get_texture().get_image()
+    img.save_png("D:/Projects/STS2/_render_wizard_bg.png")
+    quit(0)
+```
+
+```powershell
+# ⚠️ 不能加 --headless —— headless 下没有渲染结果
+& 'D:\Godot\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64_console.exe' `
+    --path src --script res://_render_check.gd
+```
+
+产物是本项目默认窗口尺寸（1152x648）下的真实渲染，可直接看图判断。
+📌 用完记得删掉 `src/_render_check.gd`（否则会被打进 pck）。
+
+### 22.4 ⚠️ 附带教训：脚本改 `.gitignore` 时别假设换行
+
+`.gitignore` 是 **LF**，而 `build.ps1` 是 CRLF。
+我上一轮的脚本按 CRLF 拼锚点 ⇒ 静默没匹配上，却因为"写完又读了一遍也没断言"而打印成功，
+结果 `art_alt/` 一直没被忽略、还被提交进了两个 commit（~110 MB 进了历史）。
+
+- 现在的脚本改文本**一律先探测换行**（`if "\r\n" in s`），并在写完后**断言关键行存在**；
+- `art_alt/` 已加入 `.gitignore` 并用 `git rm -r --cached art_alt` 取消跟踪；
+- ⚠️ **历史里仍有那两个 commit 的素材**（远端仓库 ~75 MB）。要彻底清掉必须重写历史 + 强推。
