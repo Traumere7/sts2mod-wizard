@@ -13,6 +13,7 @@
 param(
     [string]$Configuration = 'Debug',
     [switch]$SkipPck,
+    [switch]$SkipAltArt,
     [switch]$NoCommit
 )
 
@@ -23,6 +24,12 @@ $ProjectDir = Join-Path $RepoRoot 'src'
 $ProjectFile = Join-Path $ProjectDir 'Wizard.csproj'
 $BuildDir = Join-Path $RepoRoot 'build'
 $PckOut = Join-Path $BuildDir 'Wizard.pck'
+
+# 替换美术（B 版）：源目录 art_alt\，产物先落 build\WizardAlt.pck 再部署。
+# 详见 docs/ALT_ART.md 与 CONTEXT.md §20/§21。
+$AltArtSrcDir = Join-Path $RepoRoot 'art_alt'
+$AltPckOut = Join-Path $BuildDir 'WizardAlt.pck'
+$AltTool = Join-Path $RepoRoot 'reference\tools\make_alt_art_pck.py'
 
 $GameDir = 'D:\SteamLibrary\steamapps\common\Slay the Spire 2'
 
@@ -111,7 +118,7 @@ function Invoke-NativeCapture {
 }
 
 # ─────────────────────────────────────────────────────────────
-Write-Step '1/5 编译 C#'
+Write-Step '1/6 编译 C#'
 
 # 把工坊目录**传给 csproj**：csproj 的 CopyMod 目标负责复制 dll + json，
 # 它的默认值与这里一致，但显式传参可保证"改一处就够"，不会两边漂移。
@@ -119,7 +126,7 @@ dotnet build $ProjectFile -c $Configuration -v minimal "-p:WorkshopDir=$ModDir"
 if ($LASTEXITCODE -ne 0) { throw "dotnet build 失败（退出码 $LASTEXITCODE）" }
 
 # ─────────────────────────────────────────────────────────────
-Write-Step '2/5 让 Godot 导入/刷新资源'
+Write-Step '2/6 让 Godot 导入/刷新资源'
 
 # 说明：独立运行 Godot 时，游戏本体的 PCK 没有挂载，所以场景里指向原版资源的引用
 # （res://src/Core/Nodes/... 、res://addons/mega_text/... 、res://themes/... 等）
@@ -183,9 +190,9 @@ if ($realErrors) {
 
 # ─────────────────────────────────────────────────────────────
 if ($SkipPck) {
-    Write-Step '3/5 已跳过 pck 打包'
+    Write-Step '3/6 已跳过 pck 打包'
 } else {
-    Write-Step '3/5 打包 pck（GDRE，无需导出模板）'
+    Write-Step '3/6 打包 pck（GDRE，无需导出模板）'
     New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
 
     # ⚠️⚠️ 必须**先删掉旧的 pck**。⚠️⚠️
@@ -228,7 +235,7 @@ if ($SkipPck) {
 }
 
 # ─────────────────────────────────────────────────────────────
-Write-Step '4/5 部署到游戏目录 mods\Wizard'
+Write-Step '4/6 部署到游戏目录 mods\Wizard'
 
 # 目标目录先做一次存在性校验：路径写错会静默创建出一个没人读的目录，
 # 而哈希校验依然"通过"（MakeDir 成功 + Copy 成功 ⇒ 一路绿灯，实际却写错了地方）。
@@ -319,8 +326,91 @@ if ((Test-Path $wsDll) -and (Test-Path $wsPck)) {
 }
 
 
+
 # ─────────────────────────────────────────────────────────────
-# === 5/5 自动提交 ===
+Write-Step '5/6 打包替换美术包（B 版，可选）'
+# ─────────────────────────────────────────────────────────────
+# 从 art_alt\ 生成覆盖包 WizardAlt.pck，并部署到 mods\Wizard。
+# 游戏启动时由 Entry.MountAltArtPack() 按设置项决定是否挂载（见 docs/ALT_ART.md）。
+#
+# · 源目录不存在 / 里面没有 png / 缺 python / 缺打包工具 / -SkipAltArt ⇒ **跳过**
+#   （跳过时**不动**已部署的 WizardAlt.pck —— 不要顺手删掉玩家装好的 B 包）
+# · 打包细节在 reference/tools/make_alt_art_pck.py：
+#     godot --import → 剔除 project.godot / uid_cache / editor 缓存 → GDRE 打包 → 清单校验
+#   ⚠️ 那个脚本会往 art_alt\ 里写临时 project.godot 再删掉，属正常行为。
+
+$altSkipReason = $null
+if ($SkipAltArt) {
+    $altSkipReason = '指定了 -SkipAltArt'
+} elseif (-not (Test-Path $AltArtSrcDir)) {
+    $altSkipReason = "没有源目录 $AltArtSrcDir"
+} elseif (-not (Test-Path $AltTool)) {
+    $altSkipReason = "缺少打包工具 $AltTool"
+} else {
+    $altPngCount = @(Get-ChildItem $AltArtSrcDir -Recurse -File -Filter '*.png' -ErrorAction SilentlyContinue).Count
+    if ($altPngCount -eq 0) {
+        $altSkipReason = "$AltArtSrcDir 里没有 png"
+    }
+}
+
+if ($altSkipReason -ne $null) {
+    Write-Host "  跳过（$altSkipReason）" -ForegroundColor DarkGray
+    $deployedAltPck = Join-Path $ModDir 'WizardAlt.pck'
+    if (Test-Path $deployedAltPck) {
+        Write-Host "  保留已有的替换美术包：$deployedAltPck（$([math]::Round((Get-Item $deployedAltPck).Length / 1MB, 1)) MB）" -ForegroundColor DarkGray
+    }
+} else {
+    $pythonCmd = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCmd -eq $null) {
+        Write-Host '  跳过（找不到 python；替换美术包需要它来做 godot import）' -ForegroundColor DarkGray
+    } else {
+        if (Test-Path $AltPckOut) {
+            Remove-Item $AltPckOut -Force
+        }
+
+        $altStart = Get-Date
+        $altLog = Join-Path $env:TEMP 'wizard-alt-pck.log'
+        Write-Host "  源：$AltArtSrcDir（$altPngCount 张 png）" -ForegroundColor DarkGray
+
+        $env:PYTHONIOENCODING = 'utf-8'
+        & $pythonCmd.Source $AltTool $AltArtSrcDir $AltPckOut *> $altLog
+        $altExit = $LASTEXITCODE
+        Remove-Item Env:\PYTHONIOENCODING -ErrorAction SilentlyContinue
+
+        Get-Content $altLog -Encoding UTF8 -Tail 10 | ForEach-Object { Write-Host "    $_" -ForegroundColor DarkGray }
+
+        if ($altExit -ne 0) {
+            throw "替换美术包构建失败（python 退出码 $altExit，日志见 $altLog）"
+        }
+        if (-not (Test-Path $AltPckOut)) {
+            throw "替换美术包未生成：$AltPckOut（日志见 $altLog）"
+        }
+
+        # 与主 pck 一样：产物必须是本轮刚写出来的
+        $altInfo = Get-Item $AltPckOut
+        if ($altInfo.LastWriteTime -lt $altStart.AddSeconds(-5)) {
+            throw "替换美术包时间戳早于本次打包（$($altInfo.LastWriteTime) < $altStart）—— 产物可能是陈旧的"
+        }
+
+        $altSrcHash = (Get-FileHash $AltPckOut -Algorithm MD5).Hash
+        $dstAltPck = Join-Path $ModDir 'WizardAlt.pck'
+        Copy-Item $AltPckOut $ModDir -Force
+        $altDstHash = if (Test-Path $dstAltPck) { (Get-FileHash $dstAltPck -Algorithm MD5).Hash } else { '' }
+
+        if ($altSrcHash -ne $altDstHash) {
+            Write-Host "  ✗ WizardAlt.pck 复制未生效（源 $($altSrcHash.Substring(0,8)) vs 目标 $($altDstHash.Substring(0,8))）" -ForegroundColor Red
+            Write-Host '    最可能的原因：**游戏正在运行，锁住了 WizardAlt.pck**。请关闭游戏后重跑。' -ForegroundColor Yellow
+            throw '替换美术包部署失败：目标文件与构建产物哈希不一致'
+        }
+
+        $altSize = [math]::Round($altInfo.Length / 1MB, 1)
+        Write-Host "  WizardAlt.pck 生成并部署成功（$altSize MB，MD5 $($altSrcHash.Substring(0,8))）" -ForegroundColor Green
+        Write-Host '  （是否启用由游戏内设置项「使用替换美术」决定；勾选后需重启游戏）' -ForegroundColor DarkGray
+    }
+}
+
+# ─────────────────────────────────────────────────────────────
+# === 6/6 自动提交 ===
 # ─────────────────────────────────────────────────────────────
 # 构建完成后把源码 / 资源 / 文档的改动提交并推送到线上仓库，避免攒成一大坨。
 # · build/ 与 src/.godot/ 已在 .gitignore 里，不会被提交
@@ -328,13 +418,13 @@ if ((Test-Path $wsDll) -and (Test-Path $wsPck)) {
 # · 用 -NoCommit 关闭本次自动提交
 if ($NoCommit) {
     Write-Host ''
-    Write-Step '5/5 自动提交（-NoCommit，跳过）'
+    Write-Step '6/6 自动提交（-NoCommit，跳过）'
 } elseif (-not (Test-Path (Join-Path $RepoRoot '.git'))) {
     Write-Host ''
-    Write-Step '5/5 自动提交（非 git 仓库，跳过）'
+    Write-Step '6/6 自动提交（非 git 仓库，跳过）'
 } else {
     Write-Host ''
-    Write-Step '5/5 自动提交'
+    Write-Step '6/6 自动提交'
 
     $savedEap = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
