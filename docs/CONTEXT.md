@@ -4215,3 +4215,28 @@ WizardBg (Control)
 
 📌 验证方式仍用 §22.3 的离屏渲染：渲染结果里除了 `BgImage` 与两组微粒，
 **没有任何会改变颜色的节点**，即"原图效果"。
+
+### 21.6 覆盖包的搜索位置（2026-11-02 晚：工坊订阅者也能用）
+
+原实现只在 **DLL 同目录** 找 `WizardAlt.pck`。这带来一个现实问题：
+只订阅工坊的玩家，DLL 在 `steamapps\workshop\content\2868840\3807136195\`，
+那个目录由 Steam 管理（条目更新时可能清掉多余文件）；
+而"只往 `mods\Wizard\` 丢一个 pck"是不行的 —— 游戏只在 `mods\Wizard` 有 `Wizard.json`
+时才会把那里当成 mod，否则完全忽略该目录。
+
+⇒ `MountAltArtPack` 现在按顺序搜索：
+
+1. **DLL 同目录**（本地 `mods\Wizard\`；工坊目录也能读到，但不推荐）
+2. **`%APPDATA%\SlayTheSpire2\WizardAlt.pck`**（`OS.GetUserDataDir()`）——
+   **推荐给工坊订阅者**：用户目录，Steam 不碰，不用动任何 mod 文件
+
+两个都没有时，会把**搜索过的完整路径**逐条写进日志（`美术：   - <path>`），方便让玩家自查。
+
+实测（本机，包放在 `%APPDATA%\SlayTheSpire2\`，`mods\Wizard\` 里**没有** pck）：
+```
+[Wizard] 美术：已挂载替换美术包 C:/Users/32539/AppData/Roaming/SlayTheSpire2\WizardAlt.pck
+11 个补丁；无错误
+```
+
+⚠️ 用 `OS.GetUserDataDir()` 而不是硬编码 `%APPDATA%`：Godot 的 user:// 目录就是它，
+换平台/换用户都自动正确。

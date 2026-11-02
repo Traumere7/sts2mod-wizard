@@ -7,19 +7,41 @@
 
 ## 一、安装
 
-1. 把作者发给你的 `WizardAlt.pck` 放进**本 mod 的目录**，与 `Wizard.pck` 并排：
+把作者发给你的 `WizardAlt.pck` 放到下面**任意一个**位置即可（两个都放也行，先命中先用）：
+
+### 方式 A（推荐，只订阅工坊也能用）—— 放到游戏用户目录
+
+```
+%APPDATA%\SlayTheSpire2\WizardAlt.pck
+```
+
+把它粘到文件资源管理器地址栏就是：
+```
+C:\Users\<你的用户名>\AppData\Roaming\SlayTheSpire2
+```
+
+- **不需要**动 mod 目录里的任何文件，**不需要**本地构建；
+- Steam 永远不碰这个目录，工坊更新也不会删掉它；
+- 实测日志：`美术：已挂载替换美术包 C:/Users/.../AppData/Roaming/SlayTheSpire2\WizardAlt.pck`
+
+### 方式 B —— 放到 mod 自己的目录（仅限本地安装）
 
 ```
 Slay the Spire 2\mods\Wizard\
 ├── Wizard.dll
 ├── Wizard.json
 ├── Wizard.pck          ← 原版美术（A）
-└── WizardAlt.pck       ← 替换美术（B）——新加的这个
+└── WizardAlt.pck       ← 替换美术（B）
 ```
 
-> 不知道 `mods\Wizard` 在哪？Steam → 库 → 右键《Slay the Spire 2》→ 管理 → 浏览本地文件，
-> 然后进 `mods\Wizard`。
-> （如果你是从创意工坊订阅的，游戏目录这边同样可以放——**本地 `mods` 目录优先于工坊**。）
+> 不知道 `mods\Wizard` 在哪？Steam → 库 → 右键《杀戮尖塔 2》→ 管理 → 浏览本地文件，然后进 `mods\Wizard`。
+
+### 不建议 —— 放进创意工坊缓存目录
+
+`steamapps\workshop\content\2868840\3807136195\` 虽然**读得到**，
+但那个目录由 Steam 管理，**工坊条目更新时可能把这个多余文件清掉**，所以别放那儿。
+（顺带说：只放一个 `WizardAlt.pck` 到 `mods\Wizard\` 而**不放** `Wizard.dll/pck/json` 是不行的 ——
+游戏根本不会从那个目录加载 mod，这也是为什么要有方式 A。）
 
 2. 启动游戏 → 主菜单 → **设置（Settings）** → 找到 mod 设置里的 **巫师 / Wizard** →
    勾选 **「使用替换美术（勾选后需重启游戏）」**。
