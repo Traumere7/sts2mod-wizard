@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://bwiz0merchant1"]
 
 [ext_resource type="Script" path="res://src/Core/Nodes/Screens/Shops/NMerchantCharacter.cs" id="1_wizmc"]
-[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_battle.png" id="2_wizmerchant"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_shop.png" id="2_wizmerchant"]
 
 ; ══════════════════════════════════════════════════════════════════
 ; ⚠️⚠️ 底部那个 AnimationPlayer + 名字叫 "die" 的动画 **不是装饰，是必需的**
@@ -56,6 +56,10 @@
 ;       position.y = -(670 - 384) * 0.875 = -250.25
 ;       position.x = -8 * 0.875 = -7.0
 ;     实算人物范围：x -134..+134，y -493..0
+;
+; 【图独立】商店立绘用 wizard_shop.png（**不再复用** wizard_battle.png）：
+;   A 版 = 战斗图的副本；B 版（替换美术包）里是单独的商店图。
+;   两张图都是 512x768、人物包围盒接近，所以下面的 scale/position 两边通用。
 ;
 ; 【节点名 Icon 不要改】`NMerchantCharacter._Ready` 用 `GetChild(0)` 取它；
 ;   我们的战败立绘补丁也按 `Icon` 这个名字找它。
