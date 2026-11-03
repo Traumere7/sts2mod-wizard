@@ -4240,3 +4240,71 @@ WizardBg (Control)
 
 ⚠️ 用 `OS.GetUserDataDir()` 而不是硬编码 `%APPDATA%`：Godot 的 user:// 目录就是它，
 换平台/换用户都自动正确。
+
+---
+
+## 23. 2026-11-03 借用原版演出/音效（落日 / 天火浩荡 / 雷光 / 降雷）
+
+原则：**不新增任何美术或音频资源**，全部直接调用原版游戏已有的 VFX / SFX。
+所有"出处"都写在 `src/Scripts/Utils/WizardVfx.cs` 的注释里，方便以后对照原版改动。
+
+### 23.1 落日 <c>Sunset</c> / 天火浩荡 <c>SkyfireRampage</c> —— 末日降临的演出
+
+原版「末日降临」`EndOfDays.OnPlay` 的演出是一枚**大型魔法飞弹**砸在敌方半场中心：
+```csharp
+Vector2? sideCenterFloor = VfxCmd.GetSideCenterFloor(CombatSide.Enemy, base.CombatState);
+if (sideCenterFloor.HasValue) {
+    NLargeMagicMissileVfx vfx = NLargeMagicMissileVfx.Create(sideCenterFloor.Value, new Color("8c2447"));
+    if (vfx != null) {
+        NCombatRoom.Instance?.CombatVfxContainer.AddChildSafely(vfx);
+        await Cmd.Wait(vfx.WaitTime);
+    }
+}
+```
+封装成 `WizardVfx.PlayLargeMagicMissile(combatState)`，两张牌在**结算之前** `await` 它：
+
+| 卡 | 插入位置 |
+|---|---|
+| 落日 | 算完每段伤害之后、`DamageCmd.Attack` **之前** |
+| 天火浩荡 | `CreatureCmd.TriggerAnim("Cast")` 之后、施加燃烧**之前** |
+
+要点：
+- 配色沿用末日降临的 `8c2447`（`WizardVfx.EndOfDaysTint`），换色只改一处；
+- 飞弹节点**自带音效**，所以这两张牌不用另外传 SFX；
+- 整段包在 `try/catch` 里：演出失败只记一条 `演出：大型魔法飞弹播放失败（不影响结算）`，绝不打断结算；
+- `NCombatRoom.Instance == null`（非战斗场景）直接返回，避免留下孤儿节点。
+
+### 23.2 雷光 <c>LightningBolt</c> / 降雷 <c>LightningFall</c> —— 闪电球激发的打击特效 + 音效
+
+出处：原版故障机器人的闪电球 `LightningOrb.TriggerPassive` / `Evoke`
+（`MegaCrit.Sts2.Core.Models.Orbs/LightningOrb.cs`）：
+```csharp
+foreach (Creature item in targets)
+    VfxCmd.PlayOnCreature(item, "vfx/vfx_attack_lightning");
+PlayEvokeSfx();                       // event:/sfx/characters/defect/defect_lightning_evoke
+```
+⇒ `WizardVfx` 里落成两个常量：
+
+| 常量 | 值 | 来源字段 |
+|---|---|---|
+| `LightningOrbImpact` | `vfx/vfx_attack_lightning` | `ApplyLightningDamage` 里的 `VfxCmd.PlayOnCreature` |
+| `LightningOrbEvokeSfx` | `event:/sfx/characters/defect/defect_lightning_evoke` | `protected override string EvokeSfx` |
+
+两张牌都改成：
+```csharp
+.WithHitFx(WizardVfx.LightningOrbImpact, WizardVfx.LightningOrbEvokeSfx)
+```
+`AttackCommand.WithHitFx(vfx, sfx)` 的第二个参数在内部走 `SfxCmd.Play(HitSfx)`
+（原版怪物攻击也这么用，如 `ByrdSwoop`）。
+
+⚠️ **只传 vfx 不传 sfx 的话，音效仍是默认攻击音** —— 第一版就是这么漏的，
+用户实测"只改了特效没改声音"才发现。以后借原版演出，**特效和音效要一起对**。
+
+**降雷的"对每个敌人都生效"**：
+`AttackCommand` 默认在多目标攻击时把命中特效**只播在敌方半场中心**一次
+（`VfxCmd.PlayOnSide`），要逐目标播必须显式加
+```csharp
+.SpawningHitVfxOnEachCreature()
+```
+（源码注释原文："If this attack hits multiple creatures, this sets the hit VFX to spawn on each creature rather than on the side."）
+音效则由 `SfxCmd.Play(HitSfx)` 在每次命中间隔里各播一次，与特效自然对齐。
