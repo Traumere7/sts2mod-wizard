@@ -242,8 +242,15 @@ public static class WizardVfx
     /// <summary>
     /// 尖刺/碎冰飞溅。
     /// 出处：原版 <c>CrushUnder</c> / <c>Stomp</c> → <c>NSpikeSplashVfx.Create(target, color)</c>。
+    ///
+    /// <para>
+    /// 默认色 **Cyan**（冰蓝）—— 与 <see cref="GroundFire"/> 不同，
+    /// <c>NSpikeSplashVfx</c> 只是把颜色往下传给
+    /// <c>NFgGroundSpikeVfx</c>/<c>NBgGroundSpikeVfx</c> 的 <c>_vfxColor</c>，
+    /// **没有会 throw 的 switch**，所以 Cyan 可以安全使用。
+    /// </para>
     /// </summary>
-    public static void SpikeSplash(Creature target, VfxColor color = VfxColor.Blue)
+    public static void SpikeSplash(Creature target, VfxColor color = VfxColor.Cyan)
         => Attach(NSpikeSplashVfx.Create(target, color), nameof(NSpikeSplashVfx));
 
     /// <summary>
