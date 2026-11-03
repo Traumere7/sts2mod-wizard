@@ -4327,3 +4327,49 @@ PlayEvokeSfx();                       // event:/sfx/characters/defect/defect_lig
    挂巫师自绘立绘上**必须先实测**再推广。
 
 优先级建议与风险清单都在对照文档里，等用户勾选后再逐条实现。
+
+---
+
+## 25. 2026-11-03 商店立绘与战斗立绘解耦
+
+### 25.1 改了什么
+
+原来 `wizard_character_merchant.tscn` 的 `Icon` 节点直接引用
+`res://Wizard/images/characters/wizard_battle.png` —— **商店复用战斗图**。
+现在商店用**独立**的：
+
+| 版本 | 文件 | 来源 |
+|---|---|---|
+| A（正式包） | `src/Wizard/images/characters/wizard_shop.png` | 由 `wizard_battle.png` **原样复制**一份（用户要求） |
+| B（替换美术包） | `art_alt/Wizard/images/characters/wizard_shop.png` | 用户提供的专用商店图（198,731 B） |
+
+场景改动只有一行：
+
+```
+- [ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_battle.png" id="2_wizmerchant"]
++ [ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_shop.png" id="2_wizmerchant"]
+```
+
+战斗场景 `wizard_character.tscn` 仍引用 `wizard_battle.png`，两者从此互不影响。
+
+### 25.2 为什么 B 包能覆盖
+
+Godot 的 `.ctex` 产物名 `<文件名>.png-<hash>.ctex` 里的 hash **只由源路径 + 导入参数决定，
+与图片内容无关** —— 所以 A/B 两个包里这个名字完全一样：
+
+```
+wizard_shop.png-51c12b1111b6aec8bc2ad5c77ca37cc9.ctex
+```
+（实测确认 A、B 包内该名字一致 ⇒ 覆盖包能顶掉正式包里的图。）
+
+### 25.3 两版构图差异（不是 bug）
+
+| | 尺寸 | 人物包围盒 | 底边 |
+|---|---|---|---|
+| A（= 战斗图副本） | 512x768 | 369 x 574 | y=671 |
+| B（专用商店图） | 512x768 | 272 x 519 | y=660 |
+
+两张图**同尺寸**，所以场景里的 `scale 0.875` / `position (-7, -250.3)` 通用；
+但 B 版人物的包围盒略小、底边高 11 px ⇒ 商店里 B 版看起来会**稍小一点、离地略高**（约 10 单位）。
+如果以后要各自精调，只能给两版各做一个场景（B 包不能覆盖 `.tscn`？其实**可以** ——
+覆盖包按 `res://` 路径覆盖，加一个同名 tscn 就会连场景一起覆盖）。
