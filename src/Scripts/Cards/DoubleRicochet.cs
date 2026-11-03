@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -137,7 +138,7 @@ public class DoubleRicochet : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(SpellSchool.Fire))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitFx("vfx/vfx_molten_fist")
+            .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
 
         // ② 雷电段（吃「超导」加成，不吃「寒冷」）。

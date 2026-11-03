@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.Powers;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -81,6 +82,9 @@ public class Pyromaniac : WizardCardModel
             DynamicVars[nameof(PyromaniacPower)].BaseValue,
             Owner.Creature,
             this);
+
+        // 演出（F05）：自身脚下地火 —— 原版「燃烧」的 NGroundFireVfx。
+        WizardVfx.GroundFire(Owner.Creature);
     }
 
     protected override void OnUpgrade()

@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -87,7 +88,7 @@ public class Puncture : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(target)
-            .WithHitFx("vfx/vfx_starry_impact")
+            .WithHitFx(WizardVfx.DramaticStabFx)
             .Execute(choiceContext);
 
         // ③ 最后上易伤（放在伤害之后，避免本次伤害吃到自己刚施加的易伤）。

@@ -7,6 +7,8 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using Wizard.Scripts.Pools;
+using Wizard.Scripts.Utils;
+using Godot;
 
 namespace Wizard.Scripts.Cards;
 
@@ -70,6 +72,11 @@ public class DarkMysticism : WizardCardModel
         {
             return;
         }
+
+        // 演出（A03）：整屏紫色烟雾暗角 —— 原版「噩梦」Nightmare 的 NSmokyVignetteVfx。
+        WizardVfx.SmokyVignette(
+            new Color(0.45f, 0.22f, 0.8f, 0.5f),
+            new Color(0.08f, 0f, 0.35f, 0.3f));
 
         // 卡池快照：巫师的已解锁卡，供按类型筛选。
         List<CardModel> pool = Owner.Character.CardPool

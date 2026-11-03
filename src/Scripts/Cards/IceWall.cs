@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -51,6 +52,9 @@ public class IceWall : WizardCardModel
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+
+        // 演出（I02）：冰蓝尖刺飞溅 —— 原版 CRUSH UNDER/STOMP 的 NSpikeSplashVfx。
+        WizardVfx.SpikeSplash(Owner.Creature);
 
         await PowerCmd.Apply<FrostWallPower>(
             choiceContext,

@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -91,6 +92,9 @@ public class IceArrow : WizardSpellCard
     {
         // 单体攻击牌没有目标属于引擎级异常 —— 直接抛，不要静默跳过（同引燃）。
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
+
+        // 演出（I03）：冰蓝细切痕 —— 原版「斩击」Slice 的 NThinSliceVfx(Cyan)。
+        WizardVfx.ThinSlice(cardPlay.Target);
 
         // ① 寒冰伤害。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)

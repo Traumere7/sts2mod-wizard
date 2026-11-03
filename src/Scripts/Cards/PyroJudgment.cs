@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -74,6 +75,9 @@ public class PyroJudgment : WizardCardModel
             PyroJudgmentPower.GrowthPerApplication,
             Owner.Creature,
             this);
+
+        // 演出（F04）：自身燃烧光环 —— 同上 NFireBurningVfx。
+        WizardVfx.FireBurning(Owner.Creature);
 
         // 燃烧量的初值由卡牌决定（3，升级 4），
         // 必须在施加之后写，否则会被新建实例的默认值覆盖。

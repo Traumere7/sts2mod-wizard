@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using Wizard.Scripts.Cards.Vars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using Wizard.Scripts.Utils;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
@@ -93,6 +94,9 @@ public class IceArmor : WizardCardModel
             plating,
             Owner.Creature,
             this);
+
+        // 演出（I01）：身上盖一层冰壳 —— 原版「弹跳药瓶」的 NLiquidOverlayVfx（染冰蓝）。
+        WizardVfx.LiquidOverlay(Owner.Creature, WizardVfx.IceTint);
     }
 
     /// <summary>

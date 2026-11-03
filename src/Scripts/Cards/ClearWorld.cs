@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -117,7 +118,7 @@ public class ClearWorld : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
-            .WithHitFx("vfx/vfx_molten_fist")
+            .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
 
         // ② 再给每个敌人上虚弱与冻结。

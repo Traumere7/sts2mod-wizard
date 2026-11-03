@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -50,7 +51,7 @@ public class FlameSpark : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitFx("vfx/vfx_molten_fist")
+            .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
 
         await SpellCmd.ApplyBurn(

@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -145,8 +146,11 @@ public class Ignite : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitFx("vfx/vfx_molten_fist")
+            .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
+
+        // 演出（F02）：目标脚下燃起地火 —— 原版「燃烧」Burn 的 NGroundFireVfx。
+        WizardVfx.GroundFire(cardPlay.Target);
 
         // ② 给予燃烧（走统一收口）。
         await SpellCmd.ApplyBurn(

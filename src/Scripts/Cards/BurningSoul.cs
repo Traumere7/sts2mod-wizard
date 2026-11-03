@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -58,6 +59,9 @@ public class BurningSoul : WizardCardModel
             1m,
             Owner.Creature,
             this);
+
+        // 演出（F03）：自身燃烧光环 —— 原版「火焰屏障」FlameBarrier 的 NFireBurningVfx。
+        WizardVfx.FireBurning(Owner.Creature);
     }
 
     /// <summary>升级获得「保留」（照抄原版「独白」<c>Monologue</c>）。</summary>

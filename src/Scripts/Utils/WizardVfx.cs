@@ -1,62 +1,345 @@
 using Godot;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
+using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.CommonUi;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Nodes.Vfx;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Cards;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Forms;
 
 namespace Wizard.Scripts.Utils;
 
 /// <summary>
-/// 从<b>原版游戏</b>借用的演出片段（不新增任何美术资源）。
+/// 从<b>原版游戏</b>借用的演出片段（不新增任何美术/音频资源）。
 ///
 /// <para>
-/// 这里每个方法都是"原版某张卡/某个球的演出"的忠实复刻，
-/// 并在注释里写明<b>出处文件</b>，方便以后对照原版改动。
+/// 每个方法都对应原版某张卡/某个球的演出，注释里写明<b>出处文件</b>与原始代码，
+/// 方便以后对照原版改动。完整候选清单见 <c>docs/VFX_SOURCES.md</c>。
+/// </para>
+///
+/// <para>
+/// ⚠️ 三条统一约定：
+/// <list type="number">
+///   <item>任何效果失败都只写一条 <c>演出：…</c> 日志，<b>绝不打断卡牌结算</b>；</item>
+///   <item>节点 <c>Create</c> 返回 null（资源没加载上）时也会记日志，便于排查"没效果"；</item>
+///   <item>除 <see cref="PlayLargeMagicMissile"/> / <see cref="GrandFinale"/> /
+///         <see cref="EchoFormPulse"/> 这些<b>需要等演出播完</b>的以外，一律<b>不 await</b>，
+///         避免拖慢战斗节奏。</item>
+/// </list>
 /// </para>
 /// </summary>
 public static class WizardVfx
 {
-    /// <summary>
-    /// 原版「末日降临」<c>EndOfDays</c> 的配色（深绯）。
-    /// 出处：<c>MegaCrit.Sts2.Core.Models.Cards/EndOfDays.cs</c> 里的 <c>new Color("8c2447")</c>。
-    /// </summary>
+    // ══════════════════════════════════════════════════════════════
+    // 配色 / 音效 / 特效名
+    // ══════════════════════════════════════════════════════════════
+
+    /// <summary>原版「末日降临」<c>EndOfDays</c> 的深绯色。</summary>
     public static readonly Color EndOfDaysTint = new("8c2447");
 
+    /// <summary>冰系染色（浅青蓝）。</summary>
+    public static readonly Color IceTint = new("#8fd8ff");
+
+    /// <summary>火焰系染色（橙红）。</summary>
+    public static readonly Color EmberTint = new("#ff7a2f");
+
+    /// <summary>奥术系染色（紫）。</summary>
+    public static readonly Color ArcaneTint = new("#b06cff");
+
+    /// <summary>金色（用于「真理派对」这类"审判/神圣"演出）。</summary>
+    public static readonly Color GoldTint = new("#ffd76e");
+
+    /// <summary>原版熔岩拳（我们火焰攻击一直在用）。</summary>
+    public const string MoltenFistFx = "vfx/vfx_molten_fist";
+
+    /// <summary>原版星光冲击（我们冰/雷杂项一直在用）。</summary>
+    public const string StarryImpactFx = "vfx/vfx_starry_impact";
+
     /// <summary>
-    /// 原版故障机器人「闪电球」激发时打在敌人身上的打击特效。
-    ///
-    /// <para>
-    /// 出处：<c>MegaCrit.Sts2.Core.Models.Orbs/LightningOrb.cs</c> 的
-    /// <c>ApplyLightningDamage</c>：
-    /// <code>
-    /// foreach (Creature item in targets)
-    ///     VfxCmd.PlayOnCreature(item, "vfx/vfx_attack_lightning");
-    /// </code>
-    /// 被动与激发（<c>isEvoke</c>）走的是同一个特效，所以这个常量两处都适用。
-    /// </para>
+    /// 夸张刺击（原版「背刺」「暗杀」在用）。
+    /// 出处：<c>Backstab.cs</c> / <c>Assassinate.cs</c> → <c>.WithHitFx("vfx/vfx_dramatic_stab")</c>。
+    /// </summary>
+    public const string DramaticStabFx = "vfx/vfx_dramatic_stab";
+
+    /// <summary>重型钝击（原版「全力一击」AllForOne / Bludgeon 在用）。</summary>
+    public const string HeavyBluntFx = "vfx/vfx_heavy_blunt";
+
+    /// <summary>
+    /// 火焰攻击的通用音效。
+    /// 出处：<c>Brand.cs</c> / <c>Burn.cs</c> / <c>FiendFire.cs</c> →
+    /// <c>"event:/sfx/characters/attack_fire"</c>。
+    /// </summary>
+    public const string FireHitSfx = "event:/sfx/characters/attack_fire";
+
+    /// <summary>
+    /// 原版故障机器人「闪电球」<b>激发</b>时的打击特效。
+    /// 出处：<c>LightningOrb.ApplyLightningDamage</c> → <c>VfxCmd.PlayOnCreature(item, "vfx/vfx_attack_lightning")</c>。
     /// </summary>
     public const string LightningOrbImpact = "vfx/vfx_attack_lightning";
 
     /// <summary>
-    /// 原版故障机器人「闪电球」<b>激发</b>时的音效。
-    ///
-    /// <para>
-    /// 出处：<c>LightningOrb.cs</c> 的 <c>protected override string EvokeSfx</c>：
-    /// <code>
-    /// protected override string EvokeSfx => "event:/sfx/characters/defect/defect_lightning_evoke";
-    /// </code>
-    /// （同一个类里还有 <c>PassiveSfx</c> = <c>..._passive</c>、<c>ChannelSfx</c> = <c>..._channel</c>，
-    /// 我们只要激发那一个。）
-    /// </para>
-    ///
-    /// <para>
-    /// 传给 <c>AttackCommand.WithHitFx(vfx, sfx)</c> 的第二个参数，内部走 <c>SfxCmd.Play(HitSfx)</c>。
-    /// 原版怪物攻击也这么用（如 <c>ByrdSwoop</c>：
-    /// <c>.WithHitFx("vfx/vfx_attack_slash", "event:/sfx/byrdpip/byrdpip_attack")</c>）。
-    /// </para>
+    /// 原版闪电球<b>激发</b>音效。
+    /// 出处：<c>LightningOrb.EvokeSfx</c> → <c>"event:/sfx/characters/defect/defect_lightning_evoke"</c>。
     /// </summary>
     public const string LightningOrbEvokeSfx = "event:/sfx/characters/defect/defect_lightning_evoke";
+
+    // ══════════════════════════════════════════════════════════════
+    // 挂载基础设施
+    // ══════════════════════════════════════════════════════════════
+
+    /// <summary>把节点挂到战斗特效层（<c>NCombatRoom.CombatVfxContainer</c>）。</summary>
+    private static void Attach(Node? node, string what)
+    {
+        if (node == null)
+        {
+            Entry.Logger.Warn($"演出：{what} 创建失败（资源可能没加载上）");
+            return;
+        }
+
+        try
+        {
+            Control? container = NCombatRoom.Instance?.CombatVfxContainer;
+            if (container == null)
+            {
+                node.QueueFree();
+                Entry.Logger.Warn($"演出：{what} 找不到战斗特效层，跳过");
+                return;
+            }
+
+            container.AddChildSafely(node);
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：{what} 挂载失败：{e.Message}");
+        }
+    }
+
+    /// <summary>把节点挂到全局 UI 层（整屏特效：烟雾暗角、屏幕手等）。</summary>
+    private static void AttachToGlobalUi(Node? node, string what)
+    {
+        if (node == null)
+        {
+            Entry.Logger.Warn($"演出：{what} 创建失败（资源可能没加载上）");
+            return;
+        }
+
+        try
+        {
+            Node? ui = NRun.Instance?.GlobalUi;
+            if (ui == null)
+            {
+                node.QueueFree();
+                Entry.Logger.Warn($"演出：{what} 找不到全局 UI 层，跳过");
+                return;
+            }
+
+            ui.AddChildSafely(node);
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：{what} 挂载失败：{e.Message}");
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 火焰系
+    // ══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// 目标脚下燃起地火（持续一小会儿）。
+    /// 出处：原版「燃烧」<c>Burn</c> / 「烙印」<c>Brand</c> / <c>Conflagration</c> / <c>Inflame</c>。
+    /// </summary>
+    public static void GroundFire(Creature target, VfxColor color = VfxColor.Red)
+        => Attach(NGroundFireVfx.Create(target, color), nameof(NGroundFireVfx));
+
+    /// <summary>
+    /// 目标身上持续燃烧的光效。
+    /// 出处：原版「火焰屏障」<c>FlameBarrier</c>（<c>Create(creature, 0.75f, goingRight: false)</c>）。
+    /// </summary>
+    public static void FireBurning(Creature target, float scale = 0.75f)
+        => Attach(NFireBurningVfx.Create(target, scale, goingRight: false), nameof(NFireBurningVfx));
+
+    /// <summary>
+    /// 熄灭的一团烟。
+    /// 出处：<c>InfernoPower</c> / <c>TheBombPower</c> / <c>ExplosiveAmpoule</c>。
+    /// </summary>
+    public static void FireSmoke(Creature target)
+        => Attach(NFireSmokePuffVfx.Create(target), nameof(NFireSmokePuffVfx));
+
+    // ══════════════════════════════════════════════════════════════
+    // 雷电系
+    // ══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// 从施法者射向目标的粗光束 + 命中爆点。
+    /// 出处：原版「超能光束」<c>Hyperbeam</c> →
+    /// <c>NHyperbeamVfx.Create(owner, target)</c> + <c>NHyperbeamImpactVfx.Create(owner, target)</c>。
+    /// </summary>
+    public static void Hyperbeam(Creature owner, Creature target)
+    {
+        Attach(NHyperbeamVfx.Create(owner, target), nameof(NHyperbeamVfx));
+        Attach(NHyperbeamImpactVfx.Create(owner, target), nameof(NHyperbeamImpactVfx));
+    }
+
+    /// <summary>
+    /// 横向扫射光束（可一次扫过多个目标）。
+    /// 出处：原版「横扫光束」<c>SweepingBeam</c> →
+    /// <c>NSweepingBeamVfx.Create(owner, List&lt;Creature&gt;)</c>。
+    /// </summary>
+    public static void SweepingBeam(Creature owner, IReadOnlyList<Creature> targets)
+    {
+        if (targets.Count == 0)
+        {
+            return;
+        }
+
+        Attach(NSweepingBeamVfx.Create(owner, targets.ToList()), nameof(NSweepingBeamVfx));
+        foreach (Creature target in targets)
+        {
+            Attach(NSweepingBeamImpactVfx.Create(target), nameof(NSweepingBeamImpactVfx));
+        }
+    }
+
+    /// <summary>
+    /// 目标处线条炸开。
+    /// 出处：原版祭典兽 <c>CeremonialBeast</c>（<c>NLineBurstVfx.Create(target)</c>）。
+    /// </summary>
+    public static void LineBurst(Creature target)
+        => Attach(NLineBurstVfx.Create(target), nameof(NLineBurstVfx));
+
+    // ══════════════════════════════════════════════════════════════
+    // 冰霜系
+    // ══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// 极细的一闪切痕（可染色；冰系用 <see cref="VfxColor.Cyan"/>）。
+    /// 出处：原版「斩击」<c>Slice</c> → <c>NThinSliceVfx.Create(target, VfxColor.Red)</c>。
+    /// </summary>
+    public static void ThinSlice(Creature? target, VfxColor color = VfxColor.Cyan)
+        => Attach(NThinSliceVfx.Create(target, color), nameof(NThinSliceVfx));
+
+    /// <summary>
+    /// 尖刺/碎冰飞溅。
+    /// 出处：原版 <c>CrushUnder</c> / <c>Stomp</c> → <c>NSpikeSplashVfx.Create(target, color)</c>。
+    /// </summary>
+    public static void SpikeSplash(Creature target, VfxColor color = VfxColor.Cyan)
+        => Attach(NSpikeSplashVfx.Create(target, color), nameof(NSpikeSplashVfx));
+
+    /// <summary>
+    /// 在目标身上盖一层液体/冰壳。
+    /// 出处：原版「弹跳药瓶」<c>BouncingFlask</c>（<c>NLiquidOverlayVfx.Create(target, tint)</c>）。
+    /// </summary>
+    public static void LiquidOverlay(Creature? target, Color tint)
+        => Attach(NLiquidOverlayVfx.Create(target, tint), nameof(NLiquidOverlayVfx));
+
+    // ══════════════════════════════════════════════════════════════
+    // 奥术 / 整屏演出
+    // ══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// 整屏横向扫描线（Whirlwind 大招那种）。
+    /// 出处：原版「大风车」<c>Whirlwind</c> →
+    /// <c>CombatVfxContainer.AddChildSafely(NHorizontalLinesVfx.Create(color, 0.8 + …))</c>。
+    /// </summary>
+    public static void HorizontalLines(Color color, double duration = 1.2)
+        => Attach(NHorizontalLinesVfx.Create(color, duration), nameof(NHorizontalLinesVfx));
+
+    /// <summary>
+    /// 整屏烟雾暗角。
+    /// 出处：原版「噩梦」<c>Nightmare</c>（挂 <c>NRun.Instance.GlobalUi</c>）。
+    /// </summary>
+    public static void SmokyVignette(Color tint, Color highlight)
+        => AttachToGlobalUi(NSmokyVignetteVfx.Create(tint, highlight), nameof(NSmokyVignetteVfx));
+
+    /// <summary>
+    /// 屏幕里伸出大量手。
+    /// 出处：原版「噩梦」<c>Nightmare</c>（<c>NNightmareHandsVfx.Create()</c>，挂 GlobalUi）。
+    /// </summary>
+    public static void NightmareHands()
+        => AttachToGlobalUi(NNightmareHandsVfx.Create(), nameof(NNightmareHandsVfx));
+
+    /// <summary>
+    /// 盛大收束光效（有前摇，需要等）。
+    /// 出处：原版「终幕」<c>GrandFinale</c> →
+    /// <c>NGrandFinaleVfx.Create(owner)</c> + <c>await Cmd.Wait(totalAnticipationDuration)</c>。
+    /// </summary>
+    public static async Task GrandFinale(Creature owner)
+    {
+        try
+        {
+            NGrandFinaleVfx? vfx = NGrandFinaleVfx.Create(owner);
+            if (vfx == null)
+            {
+                Entry.Logger.Warn($"演出：{nameof(NGrandFinaleVfx)} 创建失败（资源可能没加载上）");
+                return;
+            }
+
+            Control? container = NCombatRoom.Instance?.CombatVfxContainer;
+            if (container == null)
+            {
+                vfx.QueueFree();
+                return;
+            }
+
+            container.AddChildSafely(vfx);
+            await Cmd.Wait(NGrandFinaleVfx.totalAnticipationDuration);
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：{nameof(NGrandFinaleVfx)} 播放失败（不影响结算）：{e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 原版「回声形态」的光环，**一次性**播 2 秒后自动移除。
+    ///
+    /// <para>
+    /// 出处：<c>EchoFormPower</c> → <c>NEchoFormVfx.Create(base.Owner)</c>。
+    /// 原版是**常驻**光环（能力在就一直在），但那是绑在原版角色 spine 骨骼上的；
+    /// 巫师是自绘立绘，先做成一次性脉冲最安全 —— 若实测没问题，再考虑改成常驻。
+    /// </para>
+    /// </summary>
+    public static async Task EchoFormPulse(Creature owner, float seconds = 2f)
+    {
+        NEchoFormVfx? vfx = null;
+        try
+        {
+            vfx = NEchoFormVfx.Create(owner);
+            if (vfx == null)
+            {
+                Entry.Logger.Warn($"演出：{nameof(NEchoFormVfx)} 创建失败（资源可能没加载上）");
+                return;
+            }
+
+            Control? container = NCombatRoom.Instance?.CombatVfxContainer;
+            if (container == null)
+            {
+                vfx.QueueFree();
+                return;
+            }
+
+            container.AddChildSafely(vfx);
+
+            await Cmd.Wait(seconds);
+
+            if (vfx.IsValid())
+            {
+                vfx.QueueFree();
+            }
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：{nameof(NEchoFormVfx)} 播放失败（不影响结算）：{e.Message}");
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // 大型魔法飞弹（末日降临）
+    // ══════════════════════════════════════════════════════════════
 
     /// <summary>
     /// 原版「末日降临」<c>EndOfDays</c> 的演出：
@@ -74,16 +357,6 @@ public static class WizardVfx
     ///     }
     /// }
     /// </code>
-    /// </para>
-    ///
-    /// <para>
-    /// ⚠️ <b>任何异常都不能让卡牌结算崩掉</b>：演出只是表现层，
-    /// 这里整段 <c>try/catch</c> 掉，出错只写日志、照常继续结算。
-    /// </para>
-    ///
-    /// <para>
-    /// ⚠️ <b>没有战斗房间时（例如卡牌库预览）直接返回</b>：
-    /// <c>NCombatRoom.Instance</c> 为 null，硬挂会留下孤儿节点。
     /// </para>
     /// </summary>
     /// <param name="combatState">当前战斗状态；为 null 时不做任何事。</param>

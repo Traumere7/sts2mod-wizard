@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -85,6 +86,9 @@ public class TruthParty : WizardCardModel
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
+
+        // 演出（A02）：金色整屏扫描线 —— 同 A01 的 NHorizontalLinesVfx。
+        WizardVfx.HorizontalLines(WizardVfx.GoldTint, 1.0);
 
         // ① 先上燃烧 —— 本牌自己给的燃烧也要参与下面的"最高层数"。
         await SpellCmd.ApplyBurn(

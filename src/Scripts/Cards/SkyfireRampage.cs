@@ -139,6 +139,9 @@ public class SkyfireRampage : WizardSpellCard
 
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
 
+        // 演出（A01）：整屏横向扫描线 —— 原版「大风车」Whirlwind 的 NHorizontalLinesVfx。
+        WizardVfx.HorizontalLines(WizardVfx.EmberTint, 1.2);
+
         // 演出：借用原版「末日降临」的大型魔法飞弹（敌方半场中心砸下）。
         await WizardVfx.PlayLargeMagicMissile(combatState);
 

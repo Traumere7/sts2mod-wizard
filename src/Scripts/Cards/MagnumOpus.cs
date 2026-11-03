@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -98,6 +99,9 @@ public class MagnumOpus : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        // 演出（A05）：盛大收束光效 —— 原版「终幕」GrandFinale 的 NGrandFinaleVfx（带前摇）。
+        await WizardVfx.GrandFinale(Owner.Creature);
+
         // ① 获得能量。
         await PlayerCmd.GainEnergy(DynamicVars[EnergyKey].BaseValue, Owner);
 

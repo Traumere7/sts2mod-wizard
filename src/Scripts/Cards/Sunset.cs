@@ -141,7 +141,7 @@ public class Sunset : WizardSpellCard
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
             .WithHitCount(hits)
-            .WithHitFx("vfx/vfx_molten_fist")
+            .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
 
         // ② 再给全体上燃烧。
