@@ -85,3 +85,41 @@
 | **L02** 雷光 | 光束 + 原闪电打击**同时**存在 | 可能觉得"太满"，可只保留一个 |
 | **I01** `NLiquidOverlayVfx` | 原版是毒液瓶的"覆盖层" | 蓝色可能偏"粘液"而不像冰 |
 | **A01/A02** 整屏扫描线 | 全屏层 | 可能挡视线或太吵 |
+
+---
+
+## 第二轮修订（2026-11-03 晚，依据实测）
+
+| 编号 | 处理 | 说明 |
+|---|---|---|
+| **F04** 火刑 | **修改** | 去掉卡面的"自身燃烧光环"（理由：不该烧自己）；改成**每回合结算时给每个敌人脚下地火**（`NGroundFireVfx`，在 `PyroJudgmentPower.AfterSideTurnStart` 的施加循环里） |
+| **L01** 电磁波 | **回退** | 横扫光束是从眼睛射出的，太夸张、只适配原版机器人 |
+| **L02** 雷光 | **回退** | 同上；只保留电球激发的打击特效+音效 |
+| **I01** 冰铠 | **修改** | 原来是 `NLiquidOverlayVfx`，**实测完全没效果** —— 见下方"踩坑记录"；改成**脚下蓝色寒气圈**（`NGroundFireVfx` + `VfxColor.Blue`） |
+| **A02** 真理派对 | **回退** | 不需要 |
+| **A04** 失忆 | **回退** | 不需要 |
+| **A05** 杰作 | **修改** | `NGrandFinaleVfx`（带前摇）不合适；改成**与 A03 相同的紫色烟雾暗角** |
+| **P02** 巨焱拳 | **回退** | 不合适，恢复 `vfx/vfx_molten_fist` |
+| I02 冰之城墙 | 微调 | `Cyan` → `Blue`（`NGroundFireVfx` 的 switch 对 Cyan 直接 `throw`，统一用映射好的 Blue） |
+
+### 踩坑记录：`NLiquidOverlayVfx` 对自绘立绘无效
+
+```csharp
+// NLiquidOverlayVfx.PlayVfx()
+(NCombatRoom.Instance?.GetCreatureNode(_targetCreature))?.Visuals.TryApplyLiquidOverlay(_tint);
+```
+它只是去调**角色立绘上的"液体槽"**（原版 spine 才有的东西）。
+巫师是自绘立绘，那个槽不存在 ⇒ 整段**静默无效**，节点自己 0.5 秒后 `QueueFree`，
+所以日志里连错误都没有。以后凡是 `CreatureNode.Visuals.*` 系列（液体覆盖、染色等）
+都不能直接用在巫师身上。
+
+### 防呆
+
+`WizardVfx.GroundFire` 加了一层颜色白名单（Red/Green/Blue/Purple/Black/White），
+不认识的颜色一律回落 Blue —— 因为 `NGroundFireVfx.ApplyColor` 的 `default` 分支是
+`throw new ArgumentOutOfRangeException()`，传 Cyan 会炸在 `_Ready` 里。
+
+### 当前仍然生效的条目
+
+F01、F02、F03、F05、I01（新方案）、I02、I03、A01、A03、A05（新方案）、P01
+（加上之前就有的：落日/天火浩荡的大飞弹、雷光/降雷的电球激发特效+音效）
