@@ -9,7 +9,6 @@ using MegaCrit.Sts2.Core.Models.Powers;
 using Wizard.Scripts.Cards.Vars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
-using Wizard.Scripts.Utils;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
@@ -95,14 +94,6 @@ public class IceArmor : WizardCardModel
             Owner.Creature,
             this);
 
-        // 演出（I01）：与「冰之城墙」(I02) 相同的冰蓝尖刺飞溅
-        // —— 原版 CRUSH UNDER / STOMP 的 NSpikeSplashVfx(Cyan)。
-        //
-        // ⚠️ 历史：最初用的是 NLiquidOverlayVfx，实测**完全没效果**
-        //    （它只调 CreatureNode.Visuals.TryApplyLiquidOverlay，
-        //     找原版 spine 立绘上的"液体槽"，自绘立绘没有 ⇒ 静默无效）；
-        //    中间试过 NGroundFireVfx(Blue) 的脚下寒气圈，观感不如尖刺，按用户要求换成与冰之城墙一致。
-        WizardVfx.SpikeSplash(Owner.Creature);
     }
 
     /// <summary>
