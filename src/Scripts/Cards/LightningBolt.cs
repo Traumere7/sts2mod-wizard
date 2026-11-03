@@ -17,6 +17,12 @@ namespace Wizard.Scripts.Cards;
 /// <summary>
 /// 雷光 - 2 费 - 攻击 - 罕见
 /// 造成 8(10) 点雷电伤害，给予 1(2) 层麻痹，给予 1 层电流外溢。
+///
+/// <para>
+/// <b>演出</b>：命中时借用原版故障机器人「闪电球<b>激发</b>」的打击特效 + 音效
+/// （<see cref="WizardVfx.LightningOrbImpact"/> / <see cref="WizardVfx.LightningOrbEvokeSfx"/>）。
+/// 只换了表现，结算逻辑与数值完全不变。
+/// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
 public class LightningBolt : WizardSpellCard
@@ -55,7 +61,7 @@ public class LightningBolt : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitFx(WizardVfx.LightningOrbImpact)
+            .WithHitFx(WizardVfx.LightningOrbImpact, WizardVfx.LightningOrbEvokeSfx)
             .Execute(choiceContext);
 
         await PowerCmd.Apply<ParalysisPower>(

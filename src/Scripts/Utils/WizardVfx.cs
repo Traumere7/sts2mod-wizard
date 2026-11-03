@@ -39,6 +39,26 @@ public static class WizardVfx
     public const string LightningOrbImpact = "vfx/vfx_attack_lightning";
 
     /// <summary>
+    /// 原版故障机器人「闪电球」<b>激发</b>时的音效。
+    ///
+    /// <para>
+    /// 出处：<c>LightningOrb.cs</c> 的 <c>protected override string EvokeSfx</c>：
+    /// <code>
+    /// protected override string EvokeSfx => "event:/sfx/characters/defect/defect_lightning_evoke";
+    /// </code>
+    /// （同一个类里还有 <c>PassiveSfx</c> = <c>..._passive</c>、<c>ChannelSfx</c> = <c>..._channel</c>，
+    /// 我们只要激发那一个。）
+    /// </para>
+    ///
+    /// <para>
+    /// 传给 <c>AttackCommand.WithHitFx(vfx, sfx)</c> 的第二个参数，内部走 <c>SfxCmd.Play(HitSfx)</c>。
+    /// 原版怪物攻击也这么用（如 <c>ByrdSwoop</c>：
+    /// <c>.WithHitFx("vfx/vfx_attack_slash", "event:/sfx/byrdpip/byrdpip_attack")</c>）。
+    /// </para>
+    /// </summary>
+    public const string LightningOrbEvokeSfx = "event:/sfx/characters/defect/defect_lightning_evoke";
+
+    /// <summary>
     /// 原版「末日降临」<c>EndOfDays</c> 的演出：
     /// 在<b>敌方半场中心的地面</b>砸下一枚大型魔法飞弹，等它演完再继续结算。
     ///

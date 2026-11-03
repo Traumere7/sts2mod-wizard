@@ -19,6 +19,13 @@ namespace Wizard.Scripts.Cards;
 /// <summary>
 /// 降雷 - 1 费 - 攻击 - 稀有
 /// 对全体敌人造成 4(7) 点雷电伤害。
+///
+/// <para>
+/// <b>演出</b>：每一段命中<b>每个敌人</b>时都播原版故障机器人「闪电球激发」的打击特效 + 音效
+/// （<see cref="WizardVfx.LightningOrbImpact"/> / <see cref="WizardVfx.LightningOrbEvokeSfx"/>），
+/// 靠 <c>SpawningHitVfxOnEachCreature()</c> 从"整场播一次"改成"逐目标各播一次"。
+/// 只换表现，结算逻辑与数值完全不变。
+/// </para>
 /// 所有敌人具有的负面效果每有 1 种类，就再结算 1 次。
 ///
 /// <para>
@@ -126,7 +133,7 @@ public class LightningFall : WizardSpellCard
             .WithHitCount(hitCount)
             // 原版闪电球激发的打击特效，并且**每个敌人身上各播一发**
             // （默认多目标只在场中央播一次，SpawningHitVfxOnEachCreature 才是逐目标）。
-            .WithHitFx(WizardVfx.LightningOrbImpact)
+            .WithHitFx(WizardVfx.LightningOrbImpact, WizardVfx.LightningOrbEvokeSfx)
             .SpawningHitVfxOnEachCreature()
             .Execute(choiceContext);
     }
