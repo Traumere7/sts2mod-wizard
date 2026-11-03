@@ -123,3 +123,18 @@
 
 F01、F02、F03、F05、I01（新方案）、I02、I03、A01、A03、A05（新方案）、P01
 （加上之前就有的：落日/天火浩荡的大飞弹、雷光/降雷的电球激发特效+音效）
+
+---
+
+## 第三轮修订（2026-11-03 夜）
+
+| 编号 | 处理 | 说明 |
+|---|---|---|
+| **I02** 冰之城墙 | **回退到上一版** | 恢复 `NSpikeSplashVfx` 默认色 **Cyan**（`WizardVfx.SpikeSplash(Owner.Creature)`，不带显式颜色） |
+| **I01** 冰铠 | **改成同款** | 与上一版「冰之城墙」完全相同的冰蓝尖刺飞溅（`SpikeSplash(Owner.Creature)`） |
+
+顺带把 `WizardVfx.SpikeSplash` 的默认色从 Blue 改回 **Cyan**，并在注释里写明：
+`NSpikeSplashVfx` 只是把颜色往下传给 `NFgGroundSpikeVfx`/`NBgGroundSpikeVfx` 的
+`_vfxColor`，**没有会 throw 的 switch**，所以 Cyan 可安全使用（与 `GroundFire` 不同）。
+
+> 现状：冰铠 / 冰之城墙共用同一个"冰蓝尖刺飞溅"特效。
