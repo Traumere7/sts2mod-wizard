@@ -4374,3 +4374,46 @@ wizard_shop.png-51c12b1111b6aec8bc2ad5c77ca37cc9.ctex
 但 B 版人物的包围盒略小、底边高 11 px ⇒ 商店里 B 版看起来会**稍小一点、离地略高**（约 10 单位）。
 如果以后要各自精调，只能给两版各做一个场景（B 包不能覆盖 `.tscn`？其实**可以** ——
 覆盖包按 `res://` 路径覆盖，加一个同名 tscn 就会连场景一起覆盖）。
+
+---
+
+## 26. 2026-11-03 「荆棘反伤 0 点」的完整机制（结论：原版行为，不改）
+
+### 26.1 现象
+
+玩家攻击**棘刺蟾蜍**时，反伤显示 **0**，且蟾蜍身上荆棘图标显示 **−5 层**。
+
+### 26.2 完整因果链（已逐条对照反编译源码 + 旧日志确认）
+
+1. **荆棘只在"突出尖刺 → 尖刺爆炸"之间存在**
+   `SpinyToad.SpikesMove` → 自身 `+5 ThornsPower`；
+   `SpinyToad.ExplosionMove` → 造成伤害后 `PowerCmd.Apply<ThornsPower>(..., -5m, ...)`。
+2. **第一次爆炸**：`Apply(-5)` 落在已有 5 层上 → `ModifyAmount` 减到 0
+   → `PowerCmd.Apply` 返回 null、能力**被移除**。
+3. **第二次爆炸**（我们的「冻结」让意图锁定在 `SPIKE_EXPLOSION_MOVE`，于是它重复这一招）：
+   `Apply(-5)` 时**能力已不存在** → `PowerCmd.Apply` 走"新建实例"分支
+   → `PowerModel.SetAmount(-5)`，而它的钳制是
+   `Math.Clamp(amount, -999999999, 999999999)`
+   ⇒ **负层数合法**，于是出现一个 `Amount = -5` 的全新 ThornsPower（图标显示 −5）。
+4. **玩家此时攻击**：`ThornsPower.BeforeDamageReceived` →
+   `CreatureCmd.Damage(dealer, base.Amount /* -5 */, Unpowered | SkipHurtAnim, ...)`
+   → `Hook.ModifyDamage(...)` 的收尾是 **`return Math.Max(0m, num);`**
+   ⇒ `modifiedAmount = 0`。
+5. 显示规则（`CreatureCmd.Damage`）：
+   `if (WasFullyBlocked) continue;` 完全不显示；
+   `if (damage > 0 || (modifiedAmount == 0m && ...))` 才画数字
+   ⇒ 因为 `modifiedAmount == 0`、格挡吸收也是 0（`Math.Min(Block, 0)`），
+   所以正好走到"显示 0"这一支。
+
+### 26.3 结论与决定
+
+- **与我们 mod 无关**：全仓库 grep `Thorns` 零命中；链条里没有一处 mod 代码。
+- 唯一与 mod 相关的**放大器**是「冻结」：它让敌人重复同一个招式，
+  而"爆炸"是**消耗型**招式，重复执行就把自身的 5 层扣成 0、再扣成 −5。
+- **用户决定（2026-11-03）：不为冻结加任何限制，维持现状** ——
+  这是极少见的特例（需要同时满足：敌人招式里有"减少自身层数"、又被冻结锁定在同一招）。
+
+### 26.4 顺带记下的两个原版细节
+
+- `PowerModel.SetAmount` 允许负层数（只钳 ±999999999），所以"负 buff"是可能存在的；
+- `Hook.ModifyDamage` 统一 `Math.Max(0, …)`，所以任何负伤害最终都变 0（不会变成治疗/加格挡）。
