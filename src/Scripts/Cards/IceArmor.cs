@@ -10,6 +10,7 @@ using Wizard.Scripts.Cards.Vars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Utils;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
@@ -95,8 +96,12 @@ public class IceArmor : WizardCardModel
             Owner.Creature,
             this);
 
-        // 演出（I01）：身上盖一层冰壳 —— 原版「弹跳药瓶」的 NLiquidOverlayVfx（染冰蓝）。
-        WizardVfx.LiquidOverlay(Owner.Creature, WizardVfx.IceTint);
+        // 演出（I01）：脚下蓝色寒气圈 —— 原版「燃烧」的 NGroundFireVfx（Blue 配色）。
+        //
+        // ⚠️ 原来用的是 NLiquidOverlayVfx，实测**完全没效果**：
+        //    它内部是 `CreatureNode.Visuals.TryApplyLiquidOverlay(tint)`，
+        //    作用在原版 spine 骨骼的液体槽上；巫师是自绘立绘，那个槽不存在 ⇒ 静默无效。
+        WizardVfx.GroundFire(Owner.Creature, VfxColor.Blue);
     }
 
     /// <summary>

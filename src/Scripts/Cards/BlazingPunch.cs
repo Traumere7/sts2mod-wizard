@@ -154,7 +154,7 @@ public class BlazingPunch : WizardSpellCard
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
             .WithHitCount(Hits)
-            .WithHitFx(WizardVfx.HeavyBluntFx, WizardVfx.FireHitSfx)
+            .WithHitFx("vfx/vfx_molten_fist")
             .Execute(choiceContext);
     }
 

@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Utils;
+using Godot;
 
 namespace Wizard.Scripts.Cards;
 
@@ -99,8 +100,11 @@ public class MagnumOpus : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        // 演出（A05）：盛大收束光效 —— 原版「终幕」GrandFinale 的 NGrandFinaleVfx（带前摇）。
-        await WizardVfx.GrandFinale(Owner.Creature);
+        // 演出（A05）：整屏紫色烟雾暗角（与 A03「暗黑神秘学」同款）——
+        // 原版「噩梦」Nightmare 的 NSmokyVignetteVfx。
+        WizardVfx.SmokyVignette(
+            new Color(0.45f, 0.22f, 0.8f, 0.5f),
+            new Color(0.08f, 0f, 0.35f, 0.3f));
 
         // ① 获得能量。
         await PlayerCmd.GainEnergy(DynamicVars[EnergyKey].BaseValue, Owner);

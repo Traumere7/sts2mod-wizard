@@ -8,7 +8,6 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Spells;
-using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -99,11 +98,6 @@ public class ElectromagneticWave : WizardSpellCard
         {
             return;
         }
-
-        // 演出（L01）：横向扫射光束 —— 原版「横扫光束」SweepingBeam。
-        WizardVfx.SweepingBeam(
-            Owner.Creature,
-            combatState.GetOpponentsOf(Owner.Creature).Where(c => c.IsAlive).ToList());
 
         // ① 先造成群体雷电伤害。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)

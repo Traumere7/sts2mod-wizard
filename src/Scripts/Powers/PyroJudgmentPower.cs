@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Powers;
 
@@ -156,6 +157,9 @@ public class PyroJudgmentPower : CustomPowerModel
         // "给予燃烧"的动作本身算数，所以走 SpellCmd（内部会触发 WizardEvents.BurnApplied）。
         foreach (Creature enemy in enemies)
         {
+            // 演出（F04）：每回合结算时给每个敌人脚下一圈地火 —— 原版「燃烧」的 NGroundFireVfx。
+            WizardVfx.GroundFire(enemy);
+
             await SpellCmd.ApplyBurn(new ThrowingPlayerChoiceContext(), enemy, burnRate, Owner, null);
         }
 

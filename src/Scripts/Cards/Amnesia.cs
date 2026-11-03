@@ -6,7 +6,6 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using Wizard.Scripts.Powers;
-using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -89,9 +88,6 @@ public class Amnesia : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        // 演出（A04）：屏幕里伸出大量手 —— 原版「噩梦」的 NNightmareHandsVfx。
-        WizardVfx.NightmareHands();
-
         await PowerCmd.Apply<AmnesiaPower>(
             choiceContext,
             Owner.Creature,

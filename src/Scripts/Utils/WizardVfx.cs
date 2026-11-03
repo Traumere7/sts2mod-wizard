@@ -152,9 +152,26 @@ public static class WizardVfx
     /// <summary>
     /// 目标脚下燃起地火（持续一小会儿）。
     /// 出处：原版「燃烧」<c>Burn</c> / 「烙印」<c>Brand</c> / <c>Conflagration</c> / <c>Inflame</c>。
+    ///
+    /// <para>
+    /// ⚠️ <b>只支持 Red / Green / Blue / Purple / Black / White</b>：
+    /// <c>NGroundFireVfx.ApplyColor</c> 的 <c>switch</c> 里
+    /// <c>default: throw new ArgumentOutOfRangeException()</c>
+    /// —— 传 <c>Cyan</c> 会直接抛异常（<c>_Ready</c> 里炸，特效不显示还刷错误）。
+    /// 这里做一层防呆：不认识的颜色一律回落成 Blue（寒气色）。
+    /// </para>
     /// </summary>
     public static void GroundFire(Creature target, VfxColor color = VfxColor.Red)
-        => Attach(NGroundFireVfx.Create(target, color), nameof(NGroundFireVfx));
+    {
+        VfxColor safe = color switch
+        {
+            VfxColor.Red or VfxColor.Green or VfxColor.Blue or VfxColor.Purple
+                or VfxColor.Black or VfxColor.White => color,
+            _ => VfxColor.Blue,
+        };
+
+        Attach(NGroundFireVfx.Create(target, safe), nameof(NGroundFireVfx));
+    }
 
     /// <summary>
     /// 目标身上持续燃烧的光效。
@@ -226,12 +243,19 @@ public static class WizardVfx
     /// 尖刺/碎冰飞溅。
     /// 出处：原版 <c>CrushUnder</c> / <c>Stomp</c> → <c>NSpikeSplashVfx.Create(target, color)</c>。
     /// </summary>
-    public static void SpikeSplash(Creature target, VfxColor color = VfxColor.Cyan)
+    public static void SpikeSplash(Creature target, VfxColor color = VfxColor.Blue)
         => Attach(NSpikeSplashVfx.Create(target, color), nameof(NSpikeSplashVfx));
 
     /// <summary>
     /// 在目标身上盖一层液体/冰壳。
     /// 出处：原版「弹跳药瓶」<c>BouncingFlask</c>（<c>NLiquidOverlayVfx.Create(target, tint)</c>）。
+    ///
+    /// <para>
+    /// ⚠️ <b>只对原版 spine 角色有效</b>：它内部只是
+    /// <c>CreatureNode.Visuals.TryApplyLiquidOverlay(tint)</c>，
+    /// 去找立绘上的"液体槽"。巫师是**自绘立绘**，没有那个槽 ⇒
+    /// 实测**完全没有效果**（2026-11-03「冰铠」踩过，已改用 <see cref="GroundFire"/> 蓝色地火）。
+    /// </para>
     /// </summary>
     public static void LiquidOverlay(Creature? target, Color tint)
         => Attach(NLiquidOverlayVfx.Create(target, tint), nameof(NLiquidOverlayVfx));

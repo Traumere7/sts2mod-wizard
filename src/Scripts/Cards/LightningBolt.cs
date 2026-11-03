@@ -57,9 +57,6 @@ public class LightningBolt : WizardSpellCard
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
 
-        // 演出（L02）：从施法者射向目标的粗光束 —— 原版「超能光束」Hyperbeam。
-        WizardVfx.Hyperbeam(Owner.Creature, cardPlay.Target);
-
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
