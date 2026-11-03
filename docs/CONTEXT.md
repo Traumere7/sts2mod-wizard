@@ -4308,3 +4308,22 @@ PlayEvokeSfx();                       // event:/sfx/characters/defect/defect_lig
 ```
 （源码注释原文："If this attack hits multiple creatures, this sets the hit VFX to spawn on each creature rather than on the side."）
 音效则由 `SfxCmd.Play(HitSfx)` 在每次命中间隔里各播一次，与特效自然对齐。
+
+---
+
+## 24. 2026-11-03 原版演出/音效可借用清单
+
+📄 见 **[`docs/VFX_SOURCES.md`](VFX_SOURCES.md)**（巫师卡牌 ↔ 原版特效/音效对照表）。
+
+扫描口径（`reference/tools/scan_vanilla_vfx.py`，输出 `build/vfx-scan.txt`）：
+- 596 张原版卡里 **221 张**有演出调用
+- 卡牌用到 **17 种** `vfx/...` 资源字符串、**33 种**脚本化 `N*Vfx` 节点
+- 卡牌里显式写死的音效事件只有 **7 条**（其余靠角色/球的音效库）
+
+关键结论（实现时先看这三条）：
+1. `WithHitFx(vfx)` 只改画面，**音效要一起给**（第二参数，内部走 `SfxCmd.Play`）。
+2. 多目标攻击默认**只在场中央播一次**特效，要逐目标必须 `.SpawningHitVfxOnEachCreature()`。
+3. `NFormVfx` 系列（恶魔/回声/虚空形态光环）绑原版角色 spine 骨骼，
+   挂巫师自绘立绘上**必须先实测**再推广。
+
+优先级建议与风险清单都在对照文档里，等用户勾选后再逐条实现。
