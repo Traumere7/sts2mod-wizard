@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -54,7 +55,7 @@ public class LightningBolt : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitFx("vfx/vfx_starry_impact")
+            .WithHitFx(WizardVfx.LightningOrbImpact)
             .Execute(choiceContext);
 
         await PowerCmd.Apply<ParalysisPower>(

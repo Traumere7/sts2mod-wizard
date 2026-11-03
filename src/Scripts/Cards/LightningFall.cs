@@ -11,6 +11,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Cards;
@@ -123,7 +124,10 @@ public class LightningFall : WizardSpellCard
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
             .WithHitCount(hitCount)
-            .WithHitFx("vfx/vfx_starry_impact")
+            // 原版闪电球激发的打击特效，并且**每个敌人身上各播一发**
+            // （默认多目标只在场中央播一次，SpawningHitVfxOnEachCreature 才是逐目标）。
+            .WithHitFx(WizardVfx.LightningOrbImpact)
+            .SpawningHitVfxOnEachCreature()
             .Execute(choiceContext);
     }
 

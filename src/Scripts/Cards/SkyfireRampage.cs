@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -137,6 +138,9 @@ public class SkyfireRampage : WizardSpellCard
         }
 
         await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
+
+        // 演出：借用原版「末日降临」的大型魔法飞弹（敌方半场中心砸下）。
+        await WizardVfx.PlayLargeMagicMissile(combatState);
 
         decimal add = DynamicVars[BurnKey].BaseValue;
 

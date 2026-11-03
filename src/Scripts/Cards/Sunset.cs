@@ -12,6 +12,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -129,6 +130,10 @@ public class Sunset : WizardSpellCard
         decimal damagePerHit = DynamicVars.CalculationBase.BaseValue
             + DynamicVars.ExtraDamage.BaseValue * highestBurn;
         int hits = DynamicVars.Repeat.IntValue;
+
+        // ⓪ 演出：借用原版「末日降临」的大型魔法飞弹（敌方半场中心砸下）。
+        //    放在伤害之前，和原版 EndOfDays 的"先演出、再结算"顺序一致。
+        await WizardVfx.PlayLargeMagicMissile(combatState);
 
         // ① 先造成伤害（此时燃烧还没被本牌加上）。
         await DamageCmd.Attack(damagePerHit)
