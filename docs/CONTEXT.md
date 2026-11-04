@@ -4433,3 +4433,58 @@ wizard_shop.png-51c12b1111b6aec8bc2ad5c77ca37cc9.ctex
 
 - `PowerModel.SetAmount` 允许负层数（只钳 ±999999999），所以"负 buff"是可能存在的；
 - `Hook.ModifyDamage` 统一 `Math.Max(0, …)`，所以任何负伤害最终都变 0（不会变成治疗/加格挡）。
+
+---
+
+## 27. 2026-11-04 修：「腐化」附魔的法术牌会多扣「法术增益」层数的血
+
+### 27.1 现象
+
+任意造成法术伤害的牌被附魔 **「腐化」Corrupted**（事件 Symbiote 获得）后，
+在拥有 N 层 **「法术增益」** 时打出：玩家掉 **2 + N** 点血（应为 2）。
+
+### 27.2 根因：附魔自伤被误判成"法术伤害"
+
+原版 `Corrupted.OnPlay`：
+```csharp
+await CreatureCmd.Damage(choiceContext, base.Card.Owner.Creature, 2m,
+    ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move,
+    base.Card, cardPlay);        // ← cardSource = 那张被附魔的牌
+```
+
+`SpellProps.Resolve(props, cardSource)` 的**回退分支**是"props 没有法术标记时看卡牌接口"：
+```csharp
+if (props.HasFlag(Fire)) …          // 有标记 → 直接判定，没问题
+…
+return cardSource.SchoolOf();       // ← 附魔自伤没有任何标记，但 cardSource 是法术牌 ⇒ 误判成法术
+```
+于是 `SpellPowerPower.ModifyDamageAdditive`（要求 `dealer == Owner` 且 `IsSpell`）
+把 **2 点自伤**当成法术伤害，加上 `Amount` ⇒ 掉 2 + N。
+
+### 27.3 修法：非攻击性伤害一律不算法术
+
+```csharp
+// SpellProps.Resolve
+if (props.HasFlag(ValueProp.Unpowered)
+    || props.HasFlag(ValueProp.Unblockable)
+    || !props.HasFlag(ValueProp.Move))
+{
+    return SpellSchool.None;       // 能力/遗物/附魔/药水自伤、直接扣血、非攻击
+}
+return cardSource.SchoolOf();      // 只有"卡牌发起的攻击"才允许回退到卡牌接口
+```
+
+- 我们自己的法术伤害**一律显式带** `SpellProps.For(School)`，
+  前面几个 `HasFlag` 就返回了，**根本不会走到回退分支** ⇒ 正常法术不受影响
+  （已核对：法术牌里 18 处伤害调用全部带 `SpellProps`，唯一"没带"的是注释）。
+- 同一处修复顺带修掉同类隐患：`AlternatingCurrentPower`（电流外溢）、
+  `SuperconductPower`（超导）也都会先看 `Resolve`，以前附魔自伤同样会被当成雷电伤害。
+- 全游戏只有 `Corrupted` 这一个附魔会做"cardSource=被附魔牌"的扣血
+  （已 grep `Enchantments/**` 下所有 `CreatureCmd.Damage` 确认）。
+
+### 27.4 排查方法（可复用）
+
+1. 先找"谁的 props 里没有法术标记，但 cardSource 是法术牌"——
+   即**附魔/关键词等以卡牌为 source 的附加伤害**；
+2. `SpellProps.Resolve` 这类"标记优先、卡牌兜底"的判定，
+   兜底分支必须**加上"这确实是一次攻击"的前置条件**，否则会被附属效果骗过。
