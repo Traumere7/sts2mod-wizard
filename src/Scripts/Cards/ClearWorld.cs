@@ -114,12 +114,10 @@ public class ClearWorld : WizardSpellCard
             return;
         }
 
-        // 演出（G03）：每个敌人头顶先落下一枚小魔法飞弹（"下落"观感）。
-        //   用 NSmallMagicMissileVfx（原版「彗星」那枚），染冰蓝。
-        foreach (Creature enemy in enemies)
-        {
-            WizardVfx.SmallMissileOn(enemy, WizardVfx.IceTint);
-        }
+        // 演出（G03）：每个敌人头顶先落下一枚小魔法飞弹（"下落"观感），
+        //   **等它们真的砸到**再进伤害结算 —— 否则会出现"刀光先命中、飞弹后落下"的时序错位。
+        //   0.4 秒 = 前摇 0.2 + 飞行 0.2（见 WizardVfx.SmallMissileFallDuration）。
+        await WizardVfx.SmallMissileRain(enemies, WizardVfx.IceTint);
 
         // ① 先造成群体寒冰伤害。
         //   命中特效换成「与冰矢相同的细切闪光」（NThinSliceVfx，Cyan），每命中一个目标各闪一次。

@@ -1,0 +1,9 @@
+{
+  "WIZARD-FORBIDDEN_BLOOD.description": "HPを[green]{Heal}[/green]回復する。HPが半分未満の場合、追加で[green]{BonusHeal}[/green]HPを回復する。",
+  "WIZARD-FORBIDDEN_BLOOD.title": "禁断の血",
+  "WIZARD-MANA_POTION.description": "[purple]魔法威力[/purple][blue]{SpellPowerPower}[/blue]を得る。",
+  "WIZARD-MANA_POTION.title": "マナポーション",
+  "WIZARD-TRUTH_POTION.description": "カードを[blue]{Cards}[/blue]枚引く。最大[blue]{MaxExhaust}[/blue]枚のカードを選び、[gold]廃棄[/gold]する。",
+  "WIZARD-TRUTH_POTION.selectionScreenPrompt": "最大[blue]{Amount}[/blue]枚のカードを選び、[gold]廃棄[/gold]する。",
+  "WIZARD-TRUTH_POTION.title": "真実のポーション"
+}

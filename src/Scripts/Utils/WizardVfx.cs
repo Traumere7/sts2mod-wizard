@@ -234,31 +234,79 @@ public static class WizardVfx
     // ══════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// 在**某个生物身上**从天上落下一枚小型魔法飞弹（"下落"观感的打击特效）。
+    /// 小型魔法飞弹从**生成到砸到**的总时长。
+    ///
+    /// <para>
+    /// 实测（对照 <c>reference/archive/game-recovery/scenes/vfx/vfx_small_magic_missile.tscn</c>）：
+    /// 场景**没有**覆写这两个值，所以用类里的默认值：
+    /// <code>
+    /// private float _anticipationDuration = 0.2f;   // 前摇（天空射线 + 落点预兆）
+    /// public  float WaitTime            = 0.2f;    // 弹体飞行
+    /// </code>
+    /// 合计 <b>0.4 秒</b>后冲击粒子才开始、屏幕才震 —— 这时才算"砸到"。
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ 原版「彗星」「指引之星」只 <c>await Cmd.Wait(vfx.WaitTime)</c>（0.2 秒），
+    /// 也就是**它们的伤害早于落地**。我们按用户要求改成等满 0.4 秒，
+    /// 让"烟尘/冲击"与命中闪光、伤害结算同时发生。
+    /// </para>
+    /// </summary>
+    public const float SmallMissileFallDuration = 0.4f;
+
+    /// <summary>
+    /// 给一组目标同时落小魔法飞弹，并**等它们真的砸到**再返回。
     ///
     /// <para>
     /// 出处：原版「彗星」<c>Comet</c> / 「指引之星」<c>GuidingStar</c> →
-    /// <c>NSmallMagicMissileVfx.Create(nCreature.GetBottomOfHitbox(), tint)</c>。
-    /// 这里改用 <c>NCreature.VfxSpawnPosition</c>（原版「泡泡」<c>BubbleBubble</c> 用的那个），
-    /// 对任何生物（含自绘立绘的巫师）都能取到坐标 —— 不需要 spine。
+    /// <c>NSmallMagicMissileVfx.Create(nCreature.GetBottomOfHitbox(), tint)</c>；
+    /// 这里改用 <c>NCreature.VfxSpawnPosition</c>（原版「泡泡」用的那个），
+    /// 对自绘立绘的巫师也有效，不依赖 spine。
     /// </para>
     /// </summary>
-    public static void SmallMissileOn(Creature target, Color tint)
+    public static async Task SmallMissileRain(IReadOnlyList<Creature> targets, Color tint)
     {
+        bool spawned = false;
+
+        foreach (Creature target in targets)
+        {
+            try
+            {
+                NCreature? node = NCombatRoom.Instance?.GetCreatureNode(target);
+                if (node == null)
+                {
+                    Entry.Logger.Warn($"演出：{nameof(NSmallMagicMissileVfx)} 取不到 {target?.Name} 的节点，跳过");
+                    continue;
+                }
+
+                NSmallMagicMissileVfx? vfx = NSmallMagicMissileVfx.Create(node.VfxSpawnPosition, tint);
+                if (vfx == null)
+                {
+                    Entry.Logger.Warn($"演出：{nameof(NSmallMagicMissileVfx)} 创建失败（资源可能没加载上）");
+                    continue;
+                }
+
+                Attach(vfx, nameof(NSmallMagicMissileVfx));
+                spawned = true;
+            }
+            catch (Exception e)
+            {
+                Entry.Logger.Warn($"演出：{nameof(NSmallMagicMissileVfx)} 播放失败（不影响结算）：{e.Message}");
+            }
+        }
+
+        if (!spawned)
+        {
+            return;
+        }
+
         try
         {
-            NCreature? node = NCombatRoom.Instance?.GetCreatureNode(target);
-            if (node == null)
-            {
-                Entry.Logger.Warn($"演出：{nameof(NSmallMagicMissileVfx)} 取不到 {target?.Name} 的节点，跳过");
-                return;
-            }
-
-            Attach(NSmallMagicMissileVfx.Create(node.VfxSpawnPosition, tint), nameof(NSmallMagicMissileVfx));
+            await Cmd.Wait(SmallMissileFallDuration);
         }
         catch (Exception e)
         {
-            Entry.Logger.Warn($"演出：{nameof(NSmallMagicMissileVfx)} 播放失败（不影响结算）：{e.Message}");
+            Entry.Logger.Warn($"演出：等待小魔法飞弹落地时异常（不影响结算）：{e.Message}");
         }
     }
 

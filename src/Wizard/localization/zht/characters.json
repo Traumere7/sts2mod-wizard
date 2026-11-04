@@ -1,0 +1,22 @@
+{
+  "WIZARD-WIZARD_CHARACTER.title": "巫師",
+  "WIZARD-WIZARD_CHARACTER.titleObject": "巫師",
+  "WIZARD-WIZARD_CHARACTER.description": "一名鑽研禁忌奧術的施法者。\n以生命與理智為代價，換取[gold]毀天滅地[/gold]的力量。",
+
+  "WIZARD-WIZARD_CHARACTER.pronounSubject": "他",
+  "WIZARD-WIZARD_CHARACTER.pronounObject": "他",
+  "WIZARD-WIZARD_CHARACTER.pronounPossessive": "他的",
+  "WIZARD-WIZARD_CHARACTER.possessiveAdjective": "他的",
+
+  "WIZARD-WIZARD_CHARACTER.unlockText": "使用[pink]{Prerequisite}[/pink]完成一局遊戲，即可解鎖此角色。",
+
+  "WIZARD-WIZARD_CHARACTER.cardsModifierTitle": "巫師卡牌",
+  "WIZARD-WIZARD_CHARACTER.cardsModifierDescription": "巫師的卡牌現在會出現在獎勵與商店中。",
+
+  "WIZARD-WIZARD_CHARACTER.goldMonologue": "[sine][purple]這些金幣……或許能換來幾頁失傳的咒文。[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.aromaPrinciple": "[sine][purple]……這氣味裡，有魔力的痕跡。[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.eventDeathPrevention": "不……我的研究還沒有完成……",
+
+  "WIZARD-WIZARD_CHARACTER.banter.alive.endTurnPing": "換你了。別浪費我的時間。",
+  "WIZARD-WIZARD_CHARACTER.banter.dead.endTurnPing": "……替我繼續。"
+}

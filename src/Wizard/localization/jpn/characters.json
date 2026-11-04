@@ -1,0 +1,22 @@
+{
+  "WIZARD-WIZARD_CHARACTER.title": "ウィザード",
+  "WIZARD-WIZARD_CHARACTER.titleObject": "ウィザード",
+  "WIZARD-WIZARD_CHARACTER.description": "禁断の秘術を研究する魔術師。\n命と正気を引き換えに、[gold]世界を砕く[/gold]力を得る。",
+
+  "WIZARD-WIZARD_CHARACTER.pronounSubject": "彼",
+  "WIZARD-WIZARD_CHARACTER.pronounObject": "彼",
+  "WIZARD-WIZARD_CHARACTER.pronounPossessive": "彼の",
+  "WIZARD-WIZARD_CHARACTER.possessiveAdjective": "彼の",
+
+  "WIZARD-WIZARD_CHARACTER.unlockText": "[pink]{Prerequisite}[/pink]で1回プレイして、このキャラクターをアンロック。",
+
+  "WIZARD-WIZARD_CHARACTER.cardsModifierTitle": "ウィザードのカード",
+  "WIZARD-WIZARD_CHARACTER.cardsModifierDescription": "報酬やショップにウィザードのカードが出現するようになる。",
+
+  "WIZARD-WIZARD_CHARACTER.goldMonologue": "[sine][purple]金貨……失われた知識の数ページくらいにはなるだろう。[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.aromaPrinciple": "[sine][purple]……この香りには、魔力の気配がある。[/purple][/sine]",
+  "WIZARD-WIZARD_CHARACTER.eventDeathPrevention": "いや……私の研究はまだ終わっていない……",
+
+  "WIZARD-WIZARD_CHARACTER.banter.alive.endTurnPing": "お前の番だ。時間を無駄にするな。",
+  "WIZARD-WIZARD_CHARACTER.banter.dead.endTurnPing": "……あとは頼む。"
+}

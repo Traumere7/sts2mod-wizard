@@ -1,0 +1,9 @@
+{
+  "WIZARD-FORBIDDEN_BLOOD.description": "恢復 [green]{Heal}[/green] 點生命。若你的生命低於一半，額外恢復 [green]{BonusHeal}[/green] 點生命。",
+  "WIZARD-FORBIDDEN_BLOOD.title": "禁忌之血",
+  "WIZARD-MANA_POTION.description": "獲得 [blue]{SpellPowerPower}[/blue] 層[purple]魔法威力[/purple]。",
+  "WIZARD-MANA_POTION.title": "魔力藥水",
+  "WIZARD-TRUTH_POTION.description": "抽 [blue]{Cards}[/blue] 張牌。選擇最多 [blue]{MaxExhaust}[/blue] 張牌[gold]消耗[/gold]。",
+  "WIZARD-TRUTH_POTION.selectionScreenPrompt": "選擇最多 [blue]{Amount}[/blue] 張牌來[gold]消耗[/gold]。",
+  "WIZARD-TRUTH_POTION.title": "真理藥水"
+}
