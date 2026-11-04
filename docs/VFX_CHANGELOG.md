@@ -194,3 +194,24 @@ if (nCreature != null && nCreature.Visuals.HasSpineAnimation)
 若以后真想要常驻形态光环，两条路：
 1. 给巫师做 **spine 立绘**（工作量大，但能直接复用原版形态光环）；
 2. 自己写一个挂在 `NCreature` 下的常驻节点（不依赖 spine，纯自绘粒子/贴图）。
+
+---
+
+## 第六轮 · 修正（2026-11-04 下午）—— 清净世界的时序
+
+**问题**：刀光（`NThinSliceVfx`）与伤害先结算，天上飞弹才开始下落，视觉上"打完了才砸到"。
+
+**原因**：小魔法飞弹的完整时长是 **0.4 秒**
+（`_anticipationDuration = 0.2f` 前摇 + `WaitTime = 0.2f` 飞行；
+`vfx_small_magic_missile.tscn` **没有覆写**这两个默认值，已核对场景文件）。
+原版「彗星」「指引之星」只等 `WaitTime`（0.2 秒），所以**它们自己的伤害其实也早于落地**；
+我们照抄就继承了这个错位。
+
+**修法**：`WizardVfx.SmallMissileOn` → `WizardVfx.SmallMissileRain(targets, tint)`
+```csharp
+// 先给所有目标同时生成飞弹，再统一等它们砸到
+foreach (var t in targets) ...Create/Attach...
+await Cmd.Wait(SmallMissileFallDuration);   // 0.4f
+```
+`ClearWorld` 改成 `await WizardVfx.SmallMissileRain(enemies, WizardVfx.IceTint);`
+⇒ 现在顺序是：飞弹落下 → 冲击粒子/屏幕一震 → **同一时刻**亮细切闪光 + 伤害结算。
