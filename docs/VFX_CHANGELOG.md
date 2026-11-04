@@ -215,3 +215,30 @@ await Cmd.Wait(SmallMissileFallDuration);   // 0.4f
 ```
 `ClearWorld` 改成 `await WizardVfx.SmallMissileRain(enemies, WizardVfx.IceTint);`
 ⇒ 现在顺序是：飞弹落下 → 冲击粒子/屏幕一震 → **同一时刻**亮细切闪光 + 伤害结算。
+
+---
+
+## 第六轮 · 再修正（2026-11-04）—— 清净世界改用「重锤」
+
+小魔法飞弹的"下落感"实测仍偏轻，改用原版「重锤」Bludgeon 的命中演出。
+
+```csharp
+// 原版 Bludgeon.cs
+.WithHitFx("vfx/vfx_heavy_blunt", null, "heavy_attack.mp3")
+.WithHitVfxSpawnedAtBase()        // 特效砸在目标**脚下**，下砸感更强
+```
+
+`ClearWorld` 现在：
+```csharp
+await DamageCmd.Attack(...)
+    .TargetingAllOpponents(combatState)
+    .WithHitFx("vfx/vfx_heavy_blunt", null, "heavy_attack.mp3")
+    .WithHitVfxSpawnedAtBase()
+    .WithHitVfxNode(t => NThinSliceVfx.Create(t, VfxColor.Cyan))   // 与冰矢相同的细切闪光
+    .Execute(choiceContext);
+```
+
+- **不再有前置等待**：重锤是"命中瞬间"的特效（不像飞弹有 0.4 秒下落），
+  所以之前那段 `await SmallMissileRain(...)` 已经删掉，卡牌手感恢复即时结算。
+- `WizardVfx.SmallMissileRain` / `SmallMissileFallDuration` 仍保留在工具类里（带注释），
+  以后想给别的牌做"天降"演出可以直接用。
