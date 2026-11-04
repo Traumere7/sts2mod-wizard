@@ -114,18 +114,18 @@ public class ClearWorld : WizardSpellCard
             return;
         }
 
-        // ① 先造成群体寒冰伤害。
+        // 演出（G03）：先让每个敌人脚下"挨一记重锤"，**等锤子真的砸到**（0.2 秒）再结算伤害。
         //
-        // 演出（G03）：命中特效改用原版「重锤」Bludgeon 的那套 ——
-        //   vfx/vfx_heavy_blunt + "heavy_attack.mp3"，并且 WithHitVfxSpawnedAtBase()
-        //   让特效砸在目标的**脚下**（原版 Bludgeon 就是这么写的，下砸感更强）。
-        //   再叠一层「与冰矢相同的细切闪光」（NThinSliceVfx，Cyan），每命中一个目标各闪一次。
+        // 重锤特效自身的脚本 NHeavyBluntVfx.PlaySequence 是：
+        //   前摇粒子 → await 0.2s → 震屏 + 冲击粒子
+        // 所以不能在伤害"命中时"才播（那样数字/闪光会早于锤子落下）。
+        await WizardVfx.HeavyBluntRain(enemies);
+
+        // ① 再造成群体寒冰伤害；命中瞬间叠一层「与冰矢相同的细切闪光」。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
-            .WithHitFx("vfx/vfx_heavy_blunt", null, "heavy_attack.mp3")
-            .WithHitVfxSpawnedAtBase()
             .WithHitVfxNode(t => NThinSliceVfx.Create(t, VfxColor.Cyan))
             .Execute(choiceContext);
 

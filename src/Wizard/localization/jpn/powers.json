@@ -58,7 +58,7 @@
   "WIZARD-MONSTER_BURN_IMMUNITY_POWER.title": "燃焼無効",
   "WIZARD-OMNISCIENT_FORM_POWER.description": "このターンにまだ付与していない種類の[gold]デバフ[/gold]を敵に付与するたび、エナジー1を得てカードを引く。",
   "WIZARD-OMNISCIENT_FORM_POWER.smartDescription": "このターンにまだ付与していない種類の[gold]デバフ[/gold]を敵に付与するたび、エナジー1を得てカードを[blue]{Amount}[/blue]枚引く。",
-  "WIZARD-OMNISCIENT_FORM_POWER.title": "全知の形態",
+  "WIZARD-OMNISCIENT_FORM_POWER.title": "全知化",
   "WIZARD-PARALYSIS_POWER.description": "与えるダメージが半減する。ターン終了時に1減少する。",
   "WIZARD-PARALYSIS_POWER.smartDescription": "与えるダメージが半減する。[blue]{Amount}[/blue]ターンの間持続する。",
   "WIZARD-PARALYSIS_POWER.title": "麻痺",

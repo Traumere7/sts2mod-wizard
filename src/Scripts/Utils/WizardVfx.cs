@@ -234,6 +234,69 @@ public static class WizardVfx
     // ══════════════════════════════════════════════════════════════
 
     /// <summary>
+    /// 重锤从"举起"到"砸到地面"的时间。
+    ///
+    /// <para>
+    /// 出处：<c>NHeavyBluntVfx.PlaySequence</c>（重锤特效自己的脚本）：
+    /// <code>
+    /// 重启 _anticipationParticles（前摇粒子：举起的烟尘/预兆）
+    /// await WaitForSeconds(0.2f);                 // ← 0.2 秒后才"落下"
+    /// NGame.ScreenShake(Strong, Short);           // 震屏
+    /// 重启 _impactParticles（冲击粒子）
+    /// </code>
+    /// 所以特效的"砸到"发生在生成后 <b>0.2 秒</b>。
+    /// </para>
+    /// </summary>
+    public const float HeavyBluntFallDuration = 0.2f;
+
+    /// <summary>
+    /// 让一组目标先各自挨一记「重锤」特效（原版 Bludgeon / AllForOne / Break 用的
+    /// <c>vfx/vfx_heavy_blunt</c>），并<b>等它真的砸到</b>之后再返回。
+    ///
+    /// <para>
+    /// 为什么不直接 <c>.WithHitFx("vfx/vfx_heavy_blunt")</c>：
+    /// 那样特效是在**伤害结算那一刻**才开始播的，于是"伤害数字/闪光先出、锤子后落"，
+    /// 与用户的观感要求相反。这里改为**先播特效、等 0.2 秒、再结算伤害**。
+    /// </para>
+    ///
+    /// <para>
+    /// 挂载位置用 <c>VfxCmd.PlayOnCreature</c>（= 生物的**脚下**），
+    /// 与 Bludgeon 的 <c>WithHitVfxSpawnedAtBase()</c> 一致。
+    /// </para>
+    /// </summary>
+    public static async Task HeavyBluntRain(IReadOnlyList<Creature> targets)
+    {
+        bool played = false;
+
+        foreach (Creature target in targets)
+        {
+            try
+            {
+                VfxCmd.PlayOnCreature(target, VfxCmd.heavyBluntPath);
+                played = true;
+            }
+            catch (Exception e)
+            {
+                Entry.Logger.Warn($"演出：重锤特效播放失败（不影响结算）：{e.Message}");
+            }
+        }
+
+        if (!played)
+        {
+            return;
+        }
+
+        try
+        {
+            await Cmd.Wait(HeavyBluntFallDuration);
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：等待重锤落地时异常（不影响结算）：{e.Message}");
+        }
+    }
+
+    /// <summary>
     /// 小型魔法飞弹从**生成到砸到**的总时长。
     ///
     /// <para>
