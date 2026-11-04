@@ -162,3 +162,35 @@ F01、F02、F03、F05、I01（新方案）、I02、I03、A01、A03、A05（新�
 | **I02** 冰之城墙 | **恢复冰蓝尖刺飞溅** | `WizardVfx.SpikeSplash(Owner.Creature)`（`NSpikeSplashVfx` 默认 **Cyan**，不带显式颜色） |
 
 > 最终状态：**冰铠无特效，冰之城墙有冰蓝尖刺飞溅**。
+
+---
+
+## 第六轮（2026-11-04，按新需求）
+
+| 编号 | 卡牌 | 改了什么 |
+|---|---|---|
+| **G01** | 决心 | 给自己上燃烧时，**脚下也燃起一圈地火**（`NGroundFireVfx`，与「纵火狂」同款） |
+| **G02** | 高温消毒 | 同上 |
+| **G03** | 清净世界 | **去掉熔岩拳**；改成 ① 每个敌人头顶先落一枚**小魔法飞弹**（`NSmallMagicMissileVfx` 染冰蓝，`NCreature.VfxSpawnPosition` 取坐标，"下落"观感）② 命中特效换成**与冰矢相同的细切闪光**（`NThinSliceVfx(Cyan)`，逐目标各闪一次）。同时去掉了原来那条火焰音效（这张牌是**寒冰**伤害） |
+| **G04** | 全知形态 | 「形态展开」演出：整屏紫烟暗角（`NSmokyVignetteVfx`）+ 扫掠线（`NHorizontalLinesVfx`） |
+
+### 关于「原版形态光环」为什么用不了（重要结论）
+
+原版 5 张形态牌（恶魔/回响/虚空/收割者/蛇）的光环是 `NFormVfx` 家族的节点：
+```csharp
+// NFormVfx.Initialize(Player owner)
+NCreature nCreature = ...;
+if (nCreature != null && nCreature.Visuals.HasSpineAnimation)
+    SetSpineSprite(nCreature.Visuals.SpineBody, nCreature.Visuals.GetCurrentBody());
+```
+`HasSpineAnimation => SpineBody != null`，而 `NEchoFormVfx` / `NVoidFormVfx` 内部还带有
+`_ironcladBoneName` / `_silentBoneName` / `_regentBoneName` / `_necrobinderBoneName` / `_defectBoneName`
+—— **它们是按原版 5 个角色的 spine 骨骼名硬编码的**。
+
+巫师是**自绘 Sprite2D 立绘**（`wizard_character.tscn`：`NCreatureVisuals` + `Sprite2D`），
+`SpineBody == null` ⇒ **绑不上**，光环不会出现在角色身上。
+
+所以 G04 只能做"登场演出"而不是"常驻光环"。
+若以后真想要常驻形态光环，两条路：
+1. 给巫师做 **spine 立绘**（工作量大，但能直接复用原版形态光环）；
+2. 自己写一个挂在 `NCreature` 下的常驻节点（不依赖 spine，纯自绘粒子/贴图）。
