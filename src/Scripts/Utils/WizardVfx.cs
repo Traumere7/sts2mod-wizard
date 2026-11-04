@@ -250,34 +250,82 @@ public static class WizardVfx
     public const float HeavyBluntFallDuration = 0.2f;
 
     /// <summary>
-    /// 让一组目标先各自挨一记「重锤」特效（原版 Bludgeon / AllForOne / Break 用的
-    /// <c>vfx/vfx_heavy_blunt</c>），并<b>等它真的砸到</b>之后再返回。
+    /// 我们自己的**蓝色版**重锤场景（复制原版 <c>vfx_heavy_blunt</c> 后只改 LUT 配色）。
+    ///
+    /// <para>
+    /// 资源由 <c>reference/tools/make_blue_heavy_blunt.py</c> 生成：
+    /// 原版贴图是**灰度**的，红/白来自材质里的 LUT 渐变
+    /// （<c>colors = PackedColorArray(1, 0.4, 0.4, 1, 1, 1, 1, 1)</c>），
+    /// 所以只复制 5 个材质 + 5 个组件场景 + 1 个根场景、把暗端换成冰蓝即可，
+    /// 贴图/着色器仍引用游戏本体资源。
+    /// </para>
+    /// </summary>
+    public const string BlueHeavyBluntScenePath = "res://Wizard/scenes/vfx/vfx_heavy_blunt_blue.tscn";
+
+    /// <summary>
+    /// 让一组目标先各自挨一记**蓝色**「重锤」特效，并<b>等它真的砸到</b>之后再返回。
     ///
     /// <para>
     /// 为什么不直接 <c>.WithHitFx("vfx/vfx_heavy_blunt")</c>：
-    /// 那样特效是在**伤害结算那一刻**才开始播的，于是"伤害数字/闪光先出、锤子后落"，
-    /// 与用户的观感要求相反。这里改为**先播特效、等 0.2 秒、再结算伤害**。
+    /// 重锤特效自带 0.2 秒前摇（<c>NHeavyBluntVfx.PlaySequence</c>：
+    /// 前摇粒子 → await 0.2s → 震屏 + 冲击粒子），
+    /// 而 <c>WithHitFx</c> 是"伤害结算那一刻才开播" ⇒ 数字/闪光会早于锤子落下。
+    /// 这里改为 <b>先播 → 等 0.2 秒 → 再结算</b>。
     /// </para>
     ///
     /// <para>
-    /// 挂载位置用 <c>VfxCmd.PlayOnCreature</c>（= 生物的**脚下**），
-    /// 与 Bludgeon 的 <c>WithHitVfxSpawnedAtBase()</c> 一致。
+    /// 挂载位置与容器照抄 <c>VfxCmd.PlayOnCreature</c>：
+    /// <c>target.GetVfxContainer()</c> + <c>creatureNode.GlobalPosition</c>（脚下）。
     /// </para>
     /// </summary>
     public static async Task HeavyBluntRain(IReadOnlyList<Creature> targets)
     {
+        PackedScene? scene = null;
+        try
+        {
+            scene = ResourceLoader.Load<PackedScene>(BlueHeavyBluntScenePath);
+            if (scene == null)
+            {
+                Entry.Logger.Warn($"演出：蓝色重锤场景加载失败（{BlueHeavyBluntScenePath}），本次跳过");
+                return;
+            }
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：蓝色重锤场景加载异常：{e.Message}");
+            return;
+        }
+
         bool played = false;
 
         foreach (Creature target in targets)
         {
             try
             {
-                VfxCmd.PlayOnCreature(target, VfxCmd.heavyBluntPath);
+                if (target == null || target.IsDead)
+                {
+                    continue;
+                }
+
+                NCreature? node = NCombatRoom.Instance?.GetCreatureNode(target);
+                if (node == null)
+                {
+                    continue;
+                }
+
+                Node2D? vfx = scene.Instantiate<Node2D>();
+                if (vfx == null)
+                {
+                    continue;
+                }
+
+                target.GetVfxContainer()?.AddChildSafely(vfx);
+                vfx.GlobalPosition = node.GlobalPosition;
                 played = true;
             }
             catch (Exception e)
             {
-                Entry.Logger.Warn($"演出：重锤特效播放失败（不影响结算）：{e.Message}");
+                Entry.Logger.Warn($"演出：蓝色重锤播放失败（不影响结算）：{e.Message}");
             }
         }
 
