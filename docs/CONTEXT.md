@@ -16,7 +16,7 @@
 
 框架与角色机制（含最难的「冻结」）已全部完成并实测通过；**65 张卡全部实现并已构建部署**；
 29 个能力、**9 个遗物**、**3 瓶药水**、**65 张卡牌**已实现。卡图与遗物/药水图标均已补齐真美术。
-已发布 **v0.4.7** 到创意工坊（item 3807136195）。
+已发布 **v0.4.8** 到创意工坊（item 3807136195）。
 剩余：先古对话补充键、以及若干待清理的诊断日志。
 遗物实现要点见 `RELICS-REFERENCE.md`。
 
@@ -2890,6 +2890,7 @@ git push --set-upstream origin main      # 已设为跟踪分支
 | v0.4.5 | 2026-10-31 | 平衡性调整：泛灵论/镜像/净罪/天火浩荡；镜像换卡图 | `Wizard-v0.4.5.zip` |
 | v0.4.6 | 2026-11-02 | 替换美术开关+基建（简介**未改**，更新说明仅写"新增了部分拓展功能"）；选人界面去掉压暗遮罩 | `Wizard-v0.4.6.zip` |
 | v0.4.7 | 2026-11-03 | 卡牌演出调整（借用原版特效/音效）+ 商店立绘独立；简介只在「其他」加一句 | `Wizard-v0.4.7.zip` |
+| v0.4.8 | 2026-11-04 | 若干卡牌特效 + **繁体中文 / 日文本地化**（zht / jpn 各 10 个 json）；工坊 tag 增加 tchinese / japanese | `Wizard-v0.4.8.zip` |
 
 每个版本的说明归档在 `docs/releases/v<版本>.md`（同时用作 `gh release create --notes-file`）。
 
@@ -3523,6 +3524,21 @@ $out | Select-String -Pattern 'Successfully|Error occurred|Result:'
 内容已经完整上传完 —— 那是**描述超过 8000 字节**（见 §14.2）。
 
 ---
+
+### 14.6 工坊 tag（2026-11-04 补记）
+
+`WizardWorkspace/workshop.json` 里有 `tags` 数组，**每项就是一个工坊 tag**：
+
+```json
+"tags": ["Characters", "Cards", "English", "schinese", "tchinese", "japanese"]
+```
+
+- 语言 tag 用 Steam 的**语言代码**：`English` / `schinese` / `tchinese` / `japanese`
+  （页面上 `English` 与 `japanese` 会显示在 **Languages:** 分组，
+  `schinese` / `tchinese` 显示在 **Tags:** 分组，名字分别是
+  「Simplified Chinese」「Traditional Chinese」——两者都生效，只是分组不同）。
+- 改了 tags 需要**重新 upload 一次**才会同步到工坊。
+- 校验方式：抓 item 页面看 `class="workshopTags"` 区块，或看链接里的 `requiredtags[]=…`。
 
 ## 15. 两个 bug 的根因（2026-10-25 用户实测报告）
 
