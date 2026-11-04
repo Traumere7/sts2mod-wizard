@@ -45,5 +45,5 @@
 - Burn 能力 zht = 焚燒（避让原版 INFLAME「燃燒」）；Burn 状态牌 zht = 灼傷。
 - zht Rules Horror = 規則怪談；jpn = ルール・ホラー。
 - zht 卡名整体重写，未照搬 zhs。
-- jpn 命名修正：Myth → **迷妄**（不译「神話」）；Omniscient Form → **全知化**（原版 FORM 系均译「〜化」）；Clear World → **氷封世界**、Purify Sin → **浄罪**（避免两张都带「浄化」）。
+- jpn 命名修正：Myth → **迷妄**（不译「神話」）；Omniscient Form → **全知化**（原版 FORM 系均译「〜化」）；Clear World → **氷結世界**、Purify Sin → **祓罪**（避免两张都带「浄化」）。
 - `eng` 已修 Doubt/DEFY 两处标签（见 `ENG_FIXES.md`）。

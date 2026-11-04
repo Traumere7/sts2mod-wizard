@@ -19,7 +19,7 @@
 | Calm Mind | 精神統一 | — |
 | Catalyzation | 触媒 | 避让「促進剤」 |
 | Circulation | 環流 | — |
-| Clear World | 氷封世界 | 与 Purify Sin 差异化；不共用「浄化」 |
+| Clear World | 氷結世界 | 与 Purify Sin 差异化；不共用「浄化」 |
 | Cold Wave | 大寒波 | 避让 COLD_SNAP「寒波」 |
 | Concentrate | 精神集中 | 避让 FOCUS「集中力」 |
 | Dark Mysticism | 暗黒神秘学 | — |
@@ -54,7 +54,7 @@
 | Omniscient Form | 全知化 | 原版 FORM 系均译「〜化」 |
 | Ponder | 思案 | — |
 | Puncture | 貫通 | 避让 IMPALE「インペイル」 |
-| Purify Sin | 浄罪 | 不译「罪の浄化」，避免与 Clear World 重复 |
+| Purify Sin | 祓罪 | 不译「罪の浄化」，避免与 Clear World 重复 |
 | Pyromaniac | 放火魔 | — |
 | Pyro Judgment | 火刑 | — |
 | Quick Chant | クイックチャント | — |
