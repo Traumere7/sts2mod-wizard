@@ -13,6 +13,7 @@ using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
 using Wizard.Scripts.Utils;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 namespace Wizard.Scripts.Cards;
 
@@ -113,12 +114,20 @@ public class ClearWorld : WizardSpellCard
             return;
         }
 
+        // 演出（G03）：每个敌人头顶先落下一枚小魔法飞弹（"下落"观感）。
+        //   用 NSmallMagicMissileVfx（原版「彗星」那枚），染冰蓝。
+        foreach (Creature enemy in enemies)
+        {
+            WizardVfx.SmallMissileOn(enemy, WizardVfx.IceTint);
+        }
+
         // ① 先造成群体寒冰伤害。
+        //   命中特效换成「与冰矢相同的细切闪光」（NThinSliceVfx，Cyan），每命中一个目标各闪一次。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
-            .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
+            .WithHitVfxNode(t => NThinSliceVfx.Create(t, VfxColor.Cyan))
             .Execute(choiceContext);
 
         // ② 再给每个敌人上虚弱与冻结。

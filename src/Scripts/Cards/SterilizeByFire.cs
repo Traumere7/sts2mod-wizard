@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -94,6 +95,9 @@ public class SterilizeByFire : WizardCardModel
 
         // 清完才上燃烧，否则会被上面的循环一并清掉。
         await SpellCmd.ApplyBurn(choiceContext, self, DynamicVars[BurnKey].BaseValue, self, this);
+
+        // 演出（G02）：给自己上燃烧时，脚下也燃起一圈地火 —— 同「决心」。
+        WizardVfx.GroundFire(self);
     }
 
     /// <summary>升级移除「消耗」（照抄原版「蜃景」<c>Mirage</c>）。</summary>

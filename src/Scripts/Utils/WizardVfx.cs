@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.Nodes;
+using MegaCrit.Sts2.Core.Nodes.Combat;
 using MegaCrit.Sts2.Core.Nodes.CommonUi;
 using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
 using MegaCrit.Sts2.Core.Nodes.Rooms;
@@ -231,6 +232,35 @@ public static class WizardVfx
     // ══════════════════════════════════════════════════════════════
     // 冰霜系
     // ══════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// 在**某个生物身上**从天上落下一枚小型魔法飞弹（"下落"观感的打击特效）。
+    ///
+    /// <para>
+    /// 出处：原版「彗星」<c>Comet</c> / 「指引之星」<c>GuidingStar</c> →
+    /// <c>NSmallMagicMissileVfx.Create(nCreature.GetBottomOfHitbox(), tint)</c>。
+    /// 这里改用 <c>NCreature.VfxSpawnPosition</c>（原版「泡泡」<c>BubbleBubble</c> 用的那个），
+    /// 对任何生物（含自绘立绘的巫师）都能取到坐标 —— 不需要 spine。
+    /// </para>
+    /// </summary>
+    public static void SmallMissileOn(Creature target, Color tint)
+    {
+        try
+        {
+            NCreature? node = NCombatRoom.Instance?.GetCreatureNode(target);
+            if (node == null)
+            {
+                Entry.Logger.Warn($"演出：{nameof(NSmallMagicMissileVfx)} 取不到 {target?.Name} 的节点，跳过");
+                return;
+            }
+
+            Attach(NSmallMagicMissileVfx.Create(node.VfxSpawnPosition, tint), nameof(NSmallMagicMissileVfx));
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：{nameof(NSmallMagicMissileVfx)} 播放失败（不影响结算）：{e.Message}");
+        }
+    }
 
     /// <summary>
     /// 极细的一闪切痕（可染色；冰系用 <see cref="VfxColor.Cyan"/>）。

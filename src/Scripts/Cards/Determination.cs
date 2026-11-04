@@ -14,6 +14,7 @@ using Wizard.Scripts.Spells;
 // ⚠️ 原版状态牌「灼伤」的类名就叫 Burn，与本 mod 的 BurnPower（燃烧，减益）不是一回事。
 //    用别名避免歧义：BurnCard = 卡牌「灼伤」，BurnPower = 减益「燃烧」。
 using BurnCard = MegaCrit.Sts2.Core.Models.Cards.Burn;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -130,6 +131,9 @@ public class Determination : WizardCardModel
         //    都订阅它。applier 传 self 表示"自己给自己的"。
         await SpellCmd.ApplyBurn(
             choiceContext, self, DynamicVars[BurnKey].BaseValue, self, this);
+
+        // 演出（G01）：给自己上燃烧时，脚下也燃起一圈地火 —— 原版「燃烧」的 NGroundFireVfx。
+        WizardVfx.GroundFire(self);
 
         // ③ 把 1 张「灼伤」（原版状态牌）加入抽牌堆。
         for (int i = 0; i < BurnCards; i++)
