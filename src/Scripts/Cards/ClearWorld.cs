@@ -114,17 +114,18 @@ public class ClearWorld : WizardSpellCard
             return;
         }
 
-        // 演出（G03）：每个敌人头顶先落下一枚小魔法飞弹（"下落"观感），
-        //   **等它们真的砸到**再进伤害结算 —— 否则会出现"刀光先命中、飞弹后落下"的时序错位。
-        //   0.4 秒 = 前摇 0.2 + 飞行 0.2（见 WizardVfx.SmallMissileFallDuration）。
-        await WizardVfx.SmallMissileRain(enemies, WizardVfx.IceTint);
-
         // ① 先造成群体寒冰伤害。
-        //   命中特效换成「与冰矢相同的细切闪光」（NThinSliceVfx，Cyan），每命中一个目标各闪一次。
+        //
+        // 演出（G03）：命中特效改用原版「重锤」Bludgeon 的那套 ——
+        //   vfx/vfx_heavy_blunt + "heavy_attack.mp3"，并且 WithHitVfxSpawnedAtBase()
+        //   让特效砸在目标的**脚下**（原版 Bludgeon 就是这么写的，下砸感更强）。
+        //   再叠一层「与冰矢相同的细切闪光」（NThinSliceVfx，Cyan），每命中一个目标各闪一次。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
+            .WithHitFx("vfx/vfx_heavy_blunt", null, "heavy_attack.mp3")
+            .WithHitVfxSpawnedAtBase()
             .WithHitVfxNode(t => NThinSliceVfx.Create(t, VfxColor.Cyan))
             .Execute(choiceContext);
 
