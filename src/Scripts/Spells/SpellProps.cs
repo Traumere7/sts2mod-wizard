@@ -50,6 +50,31 @@ public static class SpellProps
         if (props.HasFlag(Lightning)) return SpellSchool.Lightning;
         if (props.HasFlag(Ice)) return SpellSchool.Ice;
 
+        // ⚠️⚠️ 回退到"看卡牌接口"之前，必须先排除**非攻击性伤害**。⚠️⚠️
+        //
+        // 2026-11-04 实测 bug：一张法术牌被附魔「腐化」Corrupted 之后，
+        // 该附魔的 OnPlay 会这样扣自己的血：
+        //     CreatureCmd.Damage(ctx, Owner.Creature, 2m,
+        //         ValueProp.Unblockable | ValueProp.Unpowered | ValueProp.Move,
+        //         base.Card, cardPlay);          // ← cardSource 就是那张法术牌
+        // 它的 props 里**没有**我们的法术标记位，但 cardSource 是法术牌，
+        // 于是这里的回退把"附魔自伤 2 点"误判成法术伤害 ⇒
+        // 「法术增益」SpellPowerPower 的 ModifyDamageAdditive 再加上 Amount
+        // ⇒ 玩家扣 2 + 法术增益 层数 的血。
+        //
+        // 修法：这类伤害一律视为"非法术"——
+        //   · Unpowered  ：能力/遗物/附魔/药水等非卡牌攻击来源（Corrupted 就带这个）
+        //   · Unblockable：直接扣血（中毒等），不可能是法术攻击
+        //   · 不含 Move  ：不是攻击
+        // 我们自己的法术伤害一律显式带 SpellProps 标记位，前面三个 HasFlag 就返回了，
+        // 根本走不到这里，所以这条限制不会影响任何正常法术。
+        if (props.HasFlag(ValueProp.Unpowered)
+            || props.HasFlag(ValueProp.Unblockable)
+            || !props.HasFlag(ValueProp.Move))
+        {
+            return SpellSchool.None;
+        }
+
         return cardSource.SchoolOf();
     }
 
