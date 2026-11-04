@@ -242,3 +242,37 @@ await DamageCmd.Attack(...)
   所以之前那段 `await SmallMissileRain(...)` 已经删掉，卡牌手感恢复即时结算。
 - `WizardVfx.SmallMissileRain` / `SmallMissileFallDuration` 仍保留在工具类里（带注释），
   以后想给别的牌做"天降"演出可以直接用。
+
+---
+
+## 第六轮 · 三修正（2026-11-04）—— 重锤也要等落地
+
+**问题**：换成重锤后又是"还没落下就已击中"。
+
+**原因**：重锤特效自己有前摇。`NHeavyBluntVfx.PlaySequence`：
+```csharp
+重启 _anticipationParticles;            // 举起/预兆
+await WaitForSeconds(0.2f);             // ← 0.2 秒后才真正"落下"
+NGame.ScreenShake(Strong, Short);       // 震屏
+重启 _impactParticles;                  // 冲击
+```
+而 `.WithHitFx(...)` 是**伤害结算那一刻**才开始播特效，
+所以"数字 + 闪光"必然早于"锤子落下"0.2 秒。
+
+**修法**：`WizardVfx.HeavyBluntRain(targets)`
+```csharp
+foreach (var t in targets)
+    VfxCmd.PlayOnCreature(t, VfxCmd.heavyBluntPath);   // 播在脚下（同 Bludgeon 的 SpawnedAtBase）
+await Cmd.Wait(HeavyBluntFallDuration);                // 0.2f，等它砸到
+```
+`ClearWorld`：
+```csharp
+await WizardVfx.HeavyBluntRain(enemies);   // 锤子先落
+await DamageCmd.Attack(...)                 // 同一时刻：冲击粒子 + 震屏 + 细切闪光 + 伤害数字
+    .WithHitVfxNode(t => NThinSliceVfx.Create(t, VfxColor.Cyan))
+    .Execute(choiceContext);
+```
+
+> 现在有一条通用规律：**带前摇的特效必须"先播、再等、后结算"**，
+> 不能用 `.WithHitFx()`（那是"结算时才开播"）。
+> 已按此处理过：末日降临飞弹（`PlayLargeMagicMissile`）、小魔法飞弹（`SmallMissileRain`）、重锤（`HeavyBluntRain`）。
