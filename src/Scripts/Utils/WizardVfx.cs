@@ -262,6 +262,9 @@ public static class WizardVfx
     /// </summary>
     public const string BlueHeavyBluntScenePath = "res://Wizard/scenes/vfx/vfx_heavy_blunt_blue.tscn";
 
+    /// <summary>原版（红色）重锤场景，仅作蓝色版加载失败时的回退。</summary>
+    public const string VanillaHeavyBluntScenePath = "res://scenes/vfx/vfx_heavy_blunt.tscn";
+
     /// <summary>
     /// 让一组目标先各自挨一记**蓝色**「重锤」特效，并<b>等它真的砸到</b>之后再返回。
     ///
@@ -286,7 +289,15 @@ public static class WizardVfx
             scene = ResourceLoader.Load<PackedScene>(BlueHeavyBluntScenePath);
             if (scene == null)
             {
-                Entry.Logger.Warn($"演出：蓝色重锤场景加载失败（{BlueHeavyBluntScenePath}），本次跳过");
+                // 回退：原版红色重锤，至少保证有"下砸"演出，不会彻底没效果。
+                Entry.Logger.Warn(
+                    $"演出：蓝色重锤场景加载失败（{BlueHeavyBluntScenePath}），回退到原版红色重锤");
+                scene = ResourceLoader.Load<PackedScene>(VanillaHeavyBluntScenePath);
+            }
+
+            if (scene == null)
+            {
+                Entry.Logger.Warn("演出：原版重锤场景也加载失败，本次跳过");
                 return;
             }
         }
