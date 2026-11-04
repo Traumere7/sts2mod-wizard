@@ -276,3 +276,45 @@ await DamageCmd.Attack(...)                 // 同一时刻：冲击粒子 + 震
 > 现在有一条通用规律：**带前摇的特效必须"先播、再等、后结算"**，
 > 不能用 `.WithHitFx()`（那是"结算时才开播"）。
 > 已按此处理过：末日降临飞弹（`PlayLargeMagicMissile`）、小魔法飞弹（`SmallMissileRain`）、重锤（`HeavyBluntRain`）。
+
+---
+
+## 第六轮 · 四修正（2026-11-04）—— 重锤改成**蓝色调**（复制 + 改色）
+
+**做法**：重锤特效的贴图是**灰度图**（平均 RGB 三通道相等），红/白来自材质里的 LUT 渐变：
+
+```ini
+# 原版 heavy_blunt_hit_core.tres
+colors = PackedColorArray(1, 0.4, 0.4, 1,  1, 1, 1, 1)   # 暗端=红、亮端=白
+⇒ 改成
+colors = PackedColorArray(0.35, 0.62, 1, 1,  1, 1, 1, 1)  # 暗端=冰蓝、亮端=白
+```
+
+所以**不需要碰贴图**，只要复制并改色 11 个小文件（生成脚本
+`reference/tools/make_blue_heavy_blunt.py`）：
+
+| 产物 | 数量 | 改动 |
+|---|---|---|
+| `src/Wizard/materials/vfx/heavy_blunt_blue/*.tres` | 5 | LUT 暗端 → 冰蓝 |
+| `src/Wizard/materials/vfx/common/vfx_speck_glow_blue.tres` | 1 | 红色火星材质 → 蓝色 |
+| `src/Wizard/scenes/vfx/heavy_blunt_blue/*.tscn` | 5 | 只把材质路径指向上面 5 个 |
+| `src/Wizard/scenes/vfx/vfx_heavy_blunt_blue.tscn` | 1 | 只把 5 个组件 + 火星材质指向我们的副本 |
+
+其余（贴图、着色器、公共特效、以及**根节点的脚本**
+`res://src/Core/Nodes/Vfx/NHeavyBluntVfx.cs`）**继续引用游戏本体资源** ——
+和 `wizard_character.tscn` 引用 `NCreatureVisuals.cs` 是同一套做法。
+
+`WizardVfx.HeavyBluntRain` 现在自己实例化这个蓝色场景：
+```csharp
+scene = ResourceLoader.Load<PackedScene>(BlueHeavyBluntScenePath);
+if (scene == null) {                       // 回退：原版红色重锤
+    Log.Warn("…回退到原版红色重锤");
+    scene = ResourceLoader.Load<PackedScene>(VanillaHeavyBluntScenePath);
+}
+node = scene.Instantiate<Node2D>();
+target.GetVfxContainer()?.AddChildSafely(node);   // 容器/位置照抄 VfxCmd.PlayOnCreature
+node.GlobalPosition = creatureNode.GlobalPosition;
+await Cmd.Wait(HeavyBluntFallDuration);           // 0.2s 等它砸到
+```
+
+> 配色想微调只改那 5 个 `.tres` 的第一个颜色档（`0.25,0.55,1` 这类）。
