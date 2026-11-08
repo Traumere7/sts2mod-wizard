@@ -89,7 +89,7 @@
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.description": "ターン終了時、これによって得た[purple]魔法威力[/purple]を失う。",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.smartDescription": "ターン終了時、これによって得た[purple]魔法威力[/purple][blue]{Amount}[/blue]を失う。",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "クイックチャント",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "ターン開始時、エーテルアローを1枚手札に加える。",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "ターン開始時、[blue]{Amount}[/blue]枚のエーテルアローを[gold]手札[/gold]に加える。",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "ターン開始時、[gold]エーテルアロー[/gold]を1枚手札に加える。",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "ターン開始時、[blue]{Amount}[/blue]枚の[gold]エーテルアロー[/gold]を[gold]手札[/gold]に加える。",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "第四元素"
 }

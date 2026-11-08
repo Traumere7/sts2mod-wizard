@@ -89,7 +89,7 @@
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.description": "回合結束時，失去本回合以此獲得的[purple]魔法威力[/purple]。",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.smartDescription": "回合結束時，失去 [blue]{Amount}[/blue] 層以此獲得的[purple]魔法威力[/purple]。",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "快速詠唱",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "在你的回合開始時，將 1 張乙太箭加入你的手牌。",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "在你的回合開始時，將 [blue]{Amount}[/blue] 張乙太箭加入你的[gold]手牌[/gold]。",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "在你的回合開始時，將 1 張[gold]乙太箭[/gold]加入你的手牌。",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "在你的回合開始時，將 [blue]{Amount}[/blue] 張[gold]乙太箭[/gold]加入你的[gold]手牌[/gold]。",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "第四元素"
 }
