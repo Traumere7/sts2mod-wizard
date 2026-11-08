@@ -126,7 +126,7 @@
   "WIZARD-SCREEN.title": "屏蔽",
   "WIZARD-SKYFIRE_RAMPAGE.description": "将所有敌人的[gold]燃烧[/gold]层数增加{BurnPower:diff()}层。\n立刻触发一次[gold]燃烧[/gold]结算。",
   "WIZARD-SKYFIRE_RAMPAGE.title": "天火浩荡",
-  "WIZARD-SPEED_READ.description": "抽1张牌。\n如果你有[gold]保留[/gold]牌，则获得{energyPrefix:energyIcons(1)}。",
+  "WIZARD-SPEED_READ.description": "抽1张牌。\n如果你的[gold]手牌[/gold]中有[gold]保留[/gold]牌，则获得{energyPrefix:energyIcons(1)}。",
   "WIZARD-SPEED_READ.title": "速读",
   "WIZARD-STATIC_CHARGE.description": "造成{Damage:diff()}点[blue]雷电伤害[/blue]{Repeat:diff()}次。",
   "WIZARD-STATIC_CHARGE.title": "静电",
