@@ -42,6 +42,8 @@ public class TheFourthElement : WizardCardModel
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
         WizardTips.Aether,
+        // 与「勿忘我」显示「失忆」同款：悬停时把这张能力会生成的牌也做成提示。
+        HoverTipFactory.FromCard<AetherArrow>(),
     ];
 
     public TheFourthElement()

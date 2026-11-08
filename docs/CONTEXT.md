@@ -4682,3 +4682,35 @@ public bool ShouldGlowGold => ShouldGlowGoldInternal || (Enchantment?.ShouldGlow
 
 `reference/tools/add_new_cards_loc.py` 已加 `WRITABLE = ("zhs", "eng")` 白名单：
 脚本即使用 CARDS/POWERS 里仍有 zht/jpn 的文案，也**只会写 zhs/eng**，其余跳过。
+
+### 28.11 魔力爆发文案 + 第四元素悬停（2026-11-08）
+
+#### (1) 「魔力爆发」卡面：卡组里按设计稿，战斗中多一行实时伤害
+
+原版同款手法（两个都是既有卡牌的写法）：
+
+| 需求 | 手法 | 出处 |
+|---|---|---|
+| 战斗里显示**实时**伤害 | `{CalculatedDamage:diff()}`（`CalculatedDamageVar` 的 multiplier 就是法术增益层数） | 「落日」`Sunset` |
+| **只在战斗中**多写一行 | `{InCombat:\n（…）\|}`（SmartFormat 的条件分支） | 「降雷」`LightningFall` |
+
+最终 zhs 文案：
+```
+对所有敌人造成等同于你的[purple]法术增益[/purple]层数的[blue]以太伤害[/blue]。
+将你的[purple]法术增益[/purple]层数翻倍。{InCombat:
+（造成{CalculatedDamage:diff()}点伤害。）|}
+```
+⇒ 卡组/图鉴里只有设计稿那两句；进战斗后底部多出「（造成 N 点伤害。）」，N 随法术增益实时变化。
+
+#### (2) 「第四元素」悬停显示关联卡「以太箭」
+
+与「勿忘我」显示「失忆」完全同款：
+
+```csharp
+protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+[
+    WizardTips.Aether,
+    HoverTipFactory.FromCard<AetherArrow>(),   // ← 悬停时把会生成的牌做成提示
+];
+```
+（原版同类写法：`SentryMode` → `HoverTipFactory.FromCard<SweepingGaze>()`。）
