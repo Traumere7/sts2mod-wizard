@@ -10,7 +10,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 速读 - 0 费 - 技能 - 罕见
-/// （固有。）抽 1 张牌。如果你的手牌中存在[保留]牌，则获得 1 费。
+/// 抽 1 张牌。如果你的手牌中存在[保留]牌，则获得 1 费。升级后获得「固有」。
 ///
 /// <para>
 /// <b>技术口径（设计文档明确）：先抽牌，再判定当前手牌</b> ——
@@ -39,15 +39,8 @@ public class SpeedRead : WizardCardModel
     /// <summary>手牌里有保留牌时给的能量（固定 1）。</summary>
     private const decimal EnergyGain = 1m;
 
-    /// <summary>「固有」。</summary>
-    public override IEnumerable<CardKeyword> CanonicalKeywords =>
-    [
-        CardKeyword.Innate,
-    ];
-
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
-        HoverTipFactory.FromKeyword(CardKeyword.Innate),
         HoverTipFactory.FromKeyword(CardKeyword.Retain),
     ];
 
@@ -73,8 +66,9 @@ public class SpeedRead : WizardCardModel
         }
     }
 
-    /// <summary>本牌没有可升级的数值（设计文档「0」无括号），空实现。</summary>
+    /// <summary>升级后获得「固有」（升级前没有该词条，也不在文案里写）。</summary>
     protected override void OnUpgrade()
     {
+        AddKeyword(CardKeyword.Innate);
     }
 }

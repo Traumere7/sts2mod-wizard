@@ -12,7 +12,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 第四元素 - 1 费 - 能力 - 稀有
-/// （固有。）在你的回合开始时，将 1 张「以太箭」加入你的手牌。
+/// 在你的回合开始时，将 1 张「以太箭」加入你的手牌。升级后获得「固有」。
 ///
 /// <para>
 /// 本身没有数值可升级（设计文档只给了「固有」与固定 1 张），
@@ -32,21 +32,10 @@ public class TheFourthElement : WizardCardModel
 
     private const string PowerKey = nameof(TheFourthElementPower);
 
-    /// <summary>「固有」是初始就有的词条（不涉及升级）。</summary>
-    public override IEnumerable<CardKeyword> CanonicalKeywords =>
-    [
-        CardKeyword.Innate,
-    ];
-
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
         // 层数 = 每回合生成几张「以太箭」；目前设计固定 1 张。
         new PowerVar<TheFourthElementPower>(1m),
-    ];
-
-    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
-    [
-        HoverTipFactory.FromKeyword(CardKeyword.Innate),
     ];
 
     public TheFourthElement()
@@ -64,8 +53,9 @@ public class TheFourthElement : WizardCardModel
             this);
     }
 
-    /// <summary>本牌没有可升级的数值（设计文档未给升级项），空实现。</summary>
+    /// <summary>升级后获得「固有」（升级前没有该词条，也不在文案里写）。</summary>
     protected override void OnUpgrade()
     {
+        AddKeyword(CardKeyword.Innate);
     }
 }

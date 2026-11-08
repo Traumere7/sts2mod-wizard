@@ -26,7 +26,7 @@ namespace Wizard.Scripts.Cards;
 /// 「降雷」<see cref="LightningFall"/> 的写法）：
 /// <code>
 /// new CalculationBaseVar(0m),
-/// new CalculationExtraVar(1m),      // ← CalculatedVar 的硬前置
+/// new ExtraDamageVar(1m),           // ← CalculatedDamageVar 的硬前置（不是 CalculationExtraVar！）
 /// new CalculatedDamageVar(props).WithMultiplier((card, _) =&gt; 法术增益层数)
 /// </code>
 /// </para>
@@ -56,9 +56,12 @@ public class ManaBurst : WizardSpellCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        // CalculatedDamageVar 的硬前置（缺了会在 ToMutable 时抛 KeyNotFoundException）。
+        // ⚠️ CalculatedDamageVar 的硬前置是 **CalculationBaseVar + ExtraDamageVar**
+        //    （不是 CalculationExtraVar —— 那个是给 CalculatedVar 用的）。
+        //    写错会在卡牌实例化时抛 KeyNotFoundException 'ExtraDamage'，
+        //    表现为"连控制台加牌都加不出来"。
         new CalculationBaseVar(0m),
-        new CalculationExtraVar(1m),
+        new ExtraDamageVar(1m),
 
         new CalculatedDamageVar(ValueProp.Move | SpellProps.For(SpellSchool.Aether))
             .WithMultiplier((CardModel card, Creature? _) => SpellPowerStacks(card)),

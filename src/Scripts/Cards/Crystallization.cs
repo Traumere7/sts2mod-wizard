@@ -78,10 +78,26 @@ public class Crystallization : WizardCardModel
             return false;
         }
 
-        return CombatManager.Instance.History
+        List<CardGeneratedEntry> matched = CombatManager.Instance.History
             .Entries
             .OfType<CardGeneratedEntry>()
-            .Any(e => e.Creator == Owner && e.HappenedThisTurn(combatState));
+            .Where(e => e.Creator == Owner && e.HappenedThisTurn(combatState))
+            .ToList();
+
+        // 【临时诊断，定位后删除】把命中的历史条目打出来，
+        // 便于区分"真的没实现判断"和"本回合确实生成过牌（比如起手遗物 魔法卷轴 的思索）"。
+        if (matched.Count > 0)
+        {
+            Entry.Logger.Info(
+                $"[诊断/结晶] 本回合生成过 {matched.Count} 张牌 -> 命中："
+                + string.Join(" | ", matched.Select(e => e.HumanReadableString)));
+        }
+        else
+        {
+            Entry.Logger.Info("[诊断/结晶] 本回合没有生成记录 -> 只结算一次");
+        }
+
+        return matched.Count > 0;
     }
 
     protected override void OnUpgrade()

@@ -4576,3 +4576,34 @@ SpellProps.HasSchool(props, cardSource, SpellSchool.Lightning)   // 以太 → t
 5. 「置换」满格挡时的层数换算；
 6. 「结晶」在生成过卡牌的回合是否给两次格挡；
 7. 「脆化」只对**具有麻痹**的目标翻倍、且回合结束自动消失。
+
+### 28.7 第一轮反馈修复（2026-11-08 下午）
+
+| # | 问题 | 根因 / 修法 |
+|---|---|---|
+| ① | 第四元素 / 速读 的「固有」应当是**升级后**获得 | 原来写在 `CanonicalKeywords`（等于初始就有）；改成 `OnUpgrade` 里 `AddKeyword(CardKeyword.Innate)`，并从悬停提示移除（与「镜像」「净罪」的"升级才给词条"处理一致） |
+| ② | 魔力爆发的卡连控制台都加不出来 | `CalculatedDamageVar` 的硬前置是 **`CalculationBaseVar` + `ExtraDamageVar`**，我错写成了 `CalculationExtraVar`（那是 `CalculatedVar` 的配套）⇒ 实例化时 `KeyNotFoundException 'ExtraDamage'`。改回 `ExtraDamageVar(1m)` |
+| ③ | 结晶"总是 16 格挡" | 见下 28.8（实现本身在跑，怀疑是"起手遗物在回合 1 生成过卡牌"被合法计入）。已加**临时诊断日志** `[诊断/结晶]`，命中时会打印具体历史条目 |
+| ④ | 以太箭应出现在手牌**最左侧** | 原来用 `AfterSideTurnStart`（抽牌之后）⇒ 卡排在最右；改成 `BeforeHandDraw`，照抄原版「哨卫模式」`SentryModePower` 的钩子 |
+
+### 28.8 「结晶」为什么可能是 16 格挡（待日志确认）
+
+判定用的是原版同款口径（`Supermassive` 也这么写）：
+```csharp
+CombatManager.Instance.History.Entries
+    .OfType<CardGeneratedEntry>()
+    .Any(e => e.Creator == Owner && e.HappenedThisTurn(combatState));
+```
+`HappenedThisTurn` 同时比对 `RoundNumber` + `CurrentSide` + **该玩家的 TurnNumber**，所以理论上
+只统计"本回合"。
+
+但本 mod 的**初始遗物「魔法卷轴」**在**战斗开始时**用
+`CardPileCmd.AddGeneratedCardToCombat` 把「思索」塞进手牌
+（`SpellScroll.cs:99`）—— 这条记录发生在**第 1 回合内**，
+所以第 1 回合打「结晶」时判定为 true 是**正确**的（16 格挡）。
+
+控制台加牌走的是 `CardPileCmd.Add`（`CardConsoleCmd.cs:67`），
+**不写** `CardGeneratedEntry`，所以"控制台加牌"本身不会被计入。
+
+⇒ 验证方法：**第 2 回合及以后、且本回合没有生成过任何卡牌时**再打「结晶」，应当是 8 点；
+若那时仍是 16，日志里 `[诊断/结晶]` 会打印命中的具体条目，据此再修。

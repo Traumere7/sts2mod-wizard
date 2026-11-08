@@ -43,19 +43,23 @@ public class TheFourthElementPower : CustomPowerModel
 
     public override string? CustomBigIconPath => "res://Wizard/images/powers/the_fourth_element_power_big.png";
 
-    public override async Task AfterSideTurnStart(
-        CombatSide side,
-        IReadOnlyList<Creature> participants,
+    /// <summary>
+    /// ⚠️ 用 <c>BeforeHandDraw</c>（抽牌**之前**），照抄原版「哨卫模式」<c>SentryModePower</c>：
+    /// <code>
+    /// public override async Task BeforeHandDraw(Player player, PlayerChoiceContext choiceContext, ICombatState combatState)
+    /// {
+    ///     if (player == base.Owner.Player) { ... AddGeneratedCardToCombat(card, PileType.Hand, ...) }
+    /// }
+    /// </code>
+    /// 这样生成的牌会排在**手牌最左侧**（先加进来、再抽 5 张）。
+    /// 如果放在 <c>AfterSideTurnStart</c>，卡会跑到手牌最右边（抽完才加）。
+    /// </summary>
+    public override async Task BeforeHandDraw(
+        Player player,
+        PlayerChoiceContext choiceContext,
         ICombatState combatState)
     {
-        // 只在"自己这方的回合开始"触发（即玩家回合）。
-        if (side != CombatSide.Player || !participants.Contains(Owner))
-        {
-            return;
-        }
-
-        Player? player = Owner.Player;
-        if (player == null)
+        if (player != Owner.Player)
         {
             return;
         }
