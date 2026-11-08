@@ -38,9 +38,6 @@
   "WIZARD-CURRENT_OVERFLOW_POWER.description": "この敵が[blue]雷[/blue]属性ダメージを受けるたび、ランダムな他の敵1体がその50%のダメージを受ける。付与された値ごとに個別に発動する。",
   "WIZARD-CURRENT_OVERFLOW_POWER.smartDescription": "この敵が[blue]雷[/blue]属性ダメージを受けるたび、ランダムな他の敵1体にそのダメージの[blue]{SplashRatio:percentLess()}%[/blue]を与える。[blue]{Amount}[/blue]回発動する。",
   "WIZARD-CURRENT_OVERFLOW_POWER.title": "電流溢れ",
-  "WIZARD-EMBRITTLEMENT_POWER.description": "このターン中、[gold]麻痺[/gold]状態の敵に与える[blue]氷[/blue]属性ダメージが2倍になる。",
-  "WIZARD-EMBRITTLEMENT_POWER.smartDescription": "このターン中、[gold]麻痺[/gold]状態の敵に与える[blue]氷[/blue]属性ダメージが2倍になる。",
-  "WIZARD-EMBRITTLEMENT_POWER.title": "脆化",
   "WIZARD-FIRE_SPIT_POWER.description": "火炎攻撃を使用する時、付与された値に等しい[gold]燃焼[/gold]を付与する。",
   "WIZARD-FIRE_SPIT_POWER.smartDescription": "火炎攻撃を使用する時、[gold]燃焼[/gold][blue]{Amount}[/blue]を付与する。",
   "WIZARD-FIRE_SPIT_POWER.title": "火炎吐き",
@@ -88,8 +85,5 @@
   "WIZARD-TELEPATHY_POWER.title": "テレパシー",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.description": "ターン終了時、これによって得た[purple]魔法威力[/purple]を失う。",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.smartDescription": "ターン終了時、これによって得た[purple]魔法威力[/purple][blue]{Amount}[/blue]を失う。",
-  "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "クイックチャント",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "ターン開始時、[gold]手札[/gold]に「エーテルの矢」を加える。",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "ターン開始時、[gold]手札[/gold]に「エーテルの矢」を[blue]{Amount}[/blue]枚加える。",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "第四元素"
+  "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "クイックチャント"
 }
