@@ -51,3 +51,4 @@
 - Aether 版本新增 8 卡 + 2 能力：zht/jpn 已按 zhs 对齐；`Aether` zht = 乙太，jpn = エーテル。
 - Aether 相关高亮统一为 `[gold]`（eng/zhs/zht/jpn）；不再用 `[blue]` 修饰 Aether / 以太 / 乙太 / エーテル。
 - 新内容 eng 标签对齐：`SPEED_READ` 补 `[gold]Hand[/gold]`；`THE_FOURTH_ELEMENT` 补 `[gold]Aether Arrow[/gold]`（见 `ENG_FIXES.md`）。
+- `MANA_BURST` 新文案已同步 zht/jpn（Aether 伤害改为按魔法威力结算，并加 `InCombat` 预览）；Aether 仍用 `[gold]`。

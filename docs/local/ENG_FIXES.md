@@ -31,6 +31,12 @@
 - 改：`At the start of your turn, add an [gold]Aether Arrow[/gold] into your [gold]Hand[/gold].`
 - 理由：`zhs` 已高亮 `[gold]以太箭[/gold]`；eng 只高亮了 Hand，补上卡名标签。
 
+### 5. `WIZARD-MANA_BURST.description`（新文案）
+
+- 新文案：`Deal [blue]Aether damage[/blue] to ALL enemies equal to your [purple]Spell Power[/purple]...`
+- 改：`[blue]Aether damage[/blue]` → `[gold]Aether damage[/gold]`
+- 理由：沿用 2026-11-08 的 Aether 高亮规则；新文案重新引入了 `[blue]`，eng/zhs 一并改回 `[gold]`，zht/jpn 直接使用 `[gold]`。
+
 ## 待观察（暂不改）
 
 - `WIZARD-AMNESIA.description`：`eng` 保留 `{AmnesiaPower:diff()}`，`zhs` 省略。两者语义都通；暂不改 `eng`，zht 保留变量。

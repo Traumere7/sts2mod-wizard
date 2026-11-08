@@ -94,7 +94,7 @@
   "WIZARD-MAGNUM_OPUS.skipKeyword.description": "ターン開始時、ターンを終了する。",
   "WIZARD-MAGNUM_OPUS.skipKeyword.title": "ターンをスキップ",
   "WIZARD-MAGNUM_OPUS.title": "マグヌム・オプス",
-  "WIZARD-MANA_BURST.description": "すべての敵に[gold]エーテル[/gold]属性の{CalculatedDamage:diff()}ダメージを与える。\n自身の[purple]魔法威力[/purple]を2倍にする。",
+  "WIZARD-MANA_BURST.description": "すべての敵に自身の[purple]魔法威力[/purple]に等しい[gold]エーテル[/gold]属性ダメージを与える。\n自身の[purple]魔法威力[/purple]を2倍にする。{InCombat:\n({CalculatedDamage:diff()}ダメージを与える)|}",
   "WIZARD-MANA_BURST.title": "マナバースト",
   "WIZARD-MANA_CONDENSE.description": "ターン終了時、[purple]魔法威力[/purple]に等しい[gold]ブロック[/gold]を得る。",
   "WIZARD-MANA_CONDENSE.title": "マナ凝縮",
