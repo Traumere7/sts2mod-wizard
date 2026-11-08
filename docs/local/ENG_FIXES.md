@@ -17,6 +17,20 @@
 - 改：`... you [gold]do not fear[/gold] the fight.`
 - 理由：`zhs` 用 `[gold]无惧[/gold]`；`[red]` 留给“何人/危险/代价”等负面语义，正面意志用 `[gold]`。
 
+## 2026-11-08（Aether 新内容）
+
+### 3. `WIZARD-SPEED_READ.description`
+
+- 原：`Draw 1 card.\nIf you have a [gold]Retain[/gold] card, gain {energyPrefix:energyIcons(1)}.`
+- 改：`Draw 1 card.\nIf you have a [gold]Retain[/gold] card in your [gold]Hand[/gold], gain {energyPrefix:energyIcons(1)}.`
+- 理由：`zhs` 已高亮 `[gold]手牌[/gold]`，eng 缺一个标签；补上以保持三语标签订数一致（原句措辞不变）。
+
+### 4. `WIZARD-THE_FOURTH_ELEMENT.description`
+
+- 原：`At the start of your turn, add an Aether Arrow into your [gold]Hand[/gold].`
+- 改：`At the start of your turn, add an [gold]Aether Arrow[/gold] into your [gold]Hand[/gold].`
+- 理由：`zhs` 已高亮 `[gold]以太箭[/gold]`；eng 只高亮了 Hand，补上卡名标签。
+
 ## 待观察（暂不改）
 
 - `WIZARD-AMNESIA.description`：`eng` 保留 `{AmnesiaPower:diff()}`，`zhs` 省略。两者语义都通；暂不改 `eng`，zht 保留变量。

@@ -2,10 +2,12 @@
 
 > 初稿，供团队复核。原则：2–4 字为主；法术牌可用「術」；与原版撞名一律改名。
 
-## 卡牌（65）
+## 卡牌（73）
 
 | 英文 | zht | 备注 |
 |---|---|---|
+| Aether | 乙太 | 新伤害类型；台湾用「乙太」 |
+| Aether Arrow | 乙太箭 | — |
 | Alternating Current | 交流電 | — |
 | Amnesia | 失憶 | — |
 | Ancient Fragment | 遠古殘章 | — |
@@ -18,6 +20,7 @@
 | Burn To Ashes | 焚盡 | — |
 | Calm Mind | 靜心 | — |
 | Catalyzation | 觸媒 | 避让「催化劑」 |
+| Crystallization | 結晶化 | — |
 | Circulation | 環流 | — |
 | Clear World | 清淨世界 | — |
 | Cold Wave | 大寒波 | 避让「寒流」 |
@@ -25,9 +28,11 @@
 | Dark Mysticism | 暗黑神祕學 | — |
 | Defend | 防禦 | 与基础牌一致 |
 | Determination | 決心 | — |
+| Displacement | 置換 | — |
 | Divination | 占卜 | — |
 | Double Ricochet | 雙重彈射 | 避让「彈射」 |
 | Electromagnetic Wave | 電磁波 | — |
+| Embrittlement | 脆化 | — |
 | Endnote | 尾註 | — |
 | Epiphany | 頓悟 | — |
 | Fireball | 火球術 | — |
@@ -46,6 +51,7 @@
 | Lightning Fall | 降雷 | — |
 | Magical Index | 禁書目錄 | — |
 | Magnum Opus | 畢生之作 | — |
+| Mana Burst | 魔力爆發 | — |
 | Mana Condense | 魔力凝聚 | — |
 | Mana Drain | 汲魔 | 避让「能量汲取」 |
 | Mind Flow | 心流 | — |
@@ -61,18 +67,20 @@
 | Recollection | 回憶 | — |
 | Screen | 屏蔽 | — |
 | Skyfire Rampage | 天火浩蕩 | — |
+| Speed Read | 速讀 | — |
 | Static Charge | 靜電 | — |
 | Sterilize by Fire | 高溫消毒 | — |
 | Strike | 打擊 | 与基础牌一致 |
 | Sunset | 落日 | — |
 | Superconduct | 超導 | — |
 | Telepathy | 通靈 | — |
+| The Fourth Element | 第四元素 | — |
 | Tidy Up | 整理 | — |
 | Transmogrify | 幻化 | — |
 | Truth Party | 真理派對 | — |
 | Watch Fire | 觀火 | — |
 
-## 能力（29）
+## 能力（31）
 
 | 英文 | zht |
 |---|---|
@@ -89,6 +97,7 @@
 | Cold Wave | 大寒波 |
 | Concentrate | 凝神 |
 | Current Overflow | 電流外溢 |
+| Embrittlement | 脆化 |
 | Fire Spit | 噴火 |
 | Freeze | 凍結 |
 | Free This Turn | 本回合免費 |
@@ -105,6 +114,7 @@
 | Superconduct | 超導 |
 | Telepathy | 通靈 |
 | Quick Chant | 快速詠唱 |
+| The Fourth Element | 第四元素 |
 
 ## 遗物（9）
 

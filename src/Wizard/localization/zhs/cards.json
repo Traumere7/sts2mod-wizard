@@ -1,7 +1,7 @@
 {
   "WIZARD-AETHER.description": "同时被视作火焰、雷电、寒冰三种类型的法术。",
   "WIZARD-AETHER.title": "以太",
-  "WIZARD-AETHER_ARROW.description": "造成{Damage:diff()}点[blue]以太伤害[/blue]。",
+  "WIZARD-AETHER_ARROW.description": "造成{Damage:diff()}点[gold]以太伤害[/gold]。",
   "WIZARD-AETHER_ARROW.title": "以太箭",
   "WIZARD-ALTERNATING_CURRENT.description": "你的每次[blue]雷电伤害[/blue]额外给予1层[gold]电流外溢[/gold]。",
   "WIZARD-ALTERNATING_CURRENT.title": "交流电",
@@ -94,7 +94,7 @@
   "WIZARD-MAGNUM_OPUS.skipKeyword.description": "在你的回合开始时，结束你的回合。",
   "WIZARD-MAGNUM_OPUS.skipKeyword.title": "跳过回合",
   "WIZARD-MAGNUM_OPUS.title": "杰作",
-  "WIZARD-MANA_BURST.description": "对所有敌人造成{CalculatedDamage:diff()}点[blue]以太伤害[/blue]。\n将你的[purple]法术增益[/purple]层数翻倍。",
+  "WIZARD-MANA_BURST.description": "对所有敌人造成{CalculatedDamage:diff()}点[gold]以太伤害[/gold]。\n将你的[purple]法术增益[/purple]层数翻倍。",
   "WIZARD-MANA_BURST.title": "魔力爆发",
   "WIZARD-MANA_CONDENSE.description": "在你的回合结束时，获得等同于你的[purple]法术增益[/purple]的[gold]格挡[/gold]。",
   "WIZARD-MANA_CONDENSE.title": "魔力凝聚",

@@ -79,6 +79,15 @@
 | Skip Turn | 跳过回合 | 略過回合 | ターンスキップ | — |
 | Free This Turn | 本回合免费 | 本回合免費 | このターン無料 | — |
 | Temporary Spell Power | （Quick Chant） | 快速詠唱 | クイックチャント | 标题跟卡名 |
+| Aether | 以太 | **乙太** | エーテル | 新伤害类型；zht 用台湾「乙太」；统一用 `[gold]` 修饰 |
+| Aether Arrow | 以太箭 | 乙太箭 | エーテルアロー | 卡名用 `[gold]` |
+| Aether damage | 以太伤害 | 乙太傷害 | エーテル属性ダメージ | 伤害词统一用 `[gold]`，不用 `[blue]` |
+| Crystallization | 结晶 | 結晶化 | 結晶化 | — |
+| Displacement | 置换 | 置換 | 置換 | — |
+| Embrittlement | 脆化 | 脆化 | 脆化 | — |
+| Mana Burst | 魔力爆发 | 魔力爆發 | マナバースト | — |
+| Speed Read | 速读 | 速讀 | 速読 | — |
+| The Fourth Element | 第四元素 | 第四元素 | 第四元素 | — |
 
 ## 四、命名冲突与处理
 

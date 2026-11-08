@@ -2,10 +2,12 @@
 
 > 初稿，供团队复核。原则：招式/专名用片假名，概念/状态用汉字；与原版撞名一律改名。
 
-## 卡牌（65）
+## 卡牌（73）
 
 | 英文 | jpn | 备注 |
 |---|---|---|
+| Aether | エーテル | 新伤害类型 |
+| Aether Arrow | エーテルアロー | — |
 | Alternating Current | 交流電流 | — |
 | Amnesia | 記憶喪失 | — |
 | Ancient Fragment | 古代の断章 | — |
@@ -18,6 +20,7 @@
 | Burn To Ashes | 灰燼と化す | — |
 | Calm Mind | 精神統一 | — |
 | Catalyzation | 触媒 | 避让「促進剤」 |
+| Crystallization | 結晶化 | — |
 | Circulation | 環流 | — |
 | Clear World | 氷結世界 | 与 Purify Sin 差异化；不共用「浄化」 |
 | Cold Wave | 大寒波 | 避让 COLD_SNAP「寒波」 |
@@ -25,9 +28,11 @@
 | Dark Mysticism | 暗黒神秘学 | — |
 | Defend | 防御 | 与基础牌一致 |
 | Determination | 決意 | — |
+| Displacement | 置換 | — |
 | Divination | 占い | — |
 | Double Ricochet | ダブルリコシェ | 避让 RICOCHET「跳弾」 |
 | Electromagnetic Wave | 電磁波 | — |
+| Embrittlement | 脆化 | — |
 | Endnote | エンドノート | — |
 | Epiphany | 悟り | — |
 | Fireball | ファイアボール | — |
@@ -46,6 +51,7 @@
 | Lightning Fall | 落雷 | — |
 | Magical Index | 禁書目録 | — |
 | Magnum Opus | マグヌム・オプス | — |
+| Mana Burst | マナバースト | — |
 | Mana Condense | マナ凝縮 | — |
 | Mana Drain | マナ吸収 | 避让 DRAIN_POWER「力の吸収」 |
 | Mind Flow | マインドフロー | — |
@@ -61,18 +67,20 @@
 | Recollection | 追憶 | — |
 | Screen | 遮蔽 | 避让 BARRICADE「バリケード」 |
 | Skyfire Rampage | 天火暴走 | — |
+| Speed Read | 速読 | — |
 | Static Charge | 静電気 | — |
 | Sterilize by Fire | 焼却消毒 | — |
 | Strike | ストライク | 与基础牌一致 |
 | Sunset | 落日 | — |
 | Superconduct | 超伝導 | — |
 | Telepathy | テレパシー | — |
+| The Fourth Element | 第四元素 | — |
 | Tidy Up | 片付け | — |
 | Transmogrify | 変質 | 避让 METAMORPHOSIS「羽化」 |
 | Truth Party | 真実の宴 | — |
 | Watch Fire | 見張り火 | 避让 PYRE「かがり火」 |
 
-## 能力（29）
+## 能力（31）
 
 | 英文 | jpn |
 |---|---|
@@ -89,6 +97,7 @@
 | Cold Wave | 大寒波 |
 | Concentrate | 精神集中 |
 | Current Overflow | 電流溢れ |
+| Embrittlement | 脆化 |
 | Fire Spit | 火炎吐き |
 | Freeze | 凍結 |
 | Free This Turn | このターン無料 |
@@ -105,6 +114,7 @@
 | Superconduct | 超伝導 |
 | Telepathy | テレパシー |
 | Quick Chant | クイックチャント |
+| The Fourth Element | 第四元素 |
 
 ## 遗物（9）
 
