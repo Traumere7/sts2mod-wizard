@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using Wizard.Scripts.Spells;
 
 namespace Wizard.Scripts.Cards;
 
@@ -36,6 +37,11 @@ public class TheFourthElement : WizardCardModel
     [
         // 层数 = 每回合生成几张「以太箭」；目前设计固定 1 张。
         new PowerVar<TheFourthElementPower>(1m),
+    ];
+
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        WizardTips.Aether,
     ];
 
     public TheFourthElement()

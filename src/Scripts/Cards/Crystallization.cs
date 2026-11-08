@@ -52,6 +52,12 @@ public class Crystallization : WizardCardModel
         HoverTipFactory.Static(StaticHoverTip.Block),
     ];
 
+    /// <summary>
+    /// 「如果本回合生成过卡牌」已经满足时，手牌里这张卡会**金边亮起**
+    /// （原版「邪眼」<c>EvilEye</c> / 「死亡之门」<c>DeathsDoor</c> 同一条机制）。
+    /// </summary>
+    protected override bool ShouldGlowGoldInternal => GeneratedCardThisTurn();
+
     public Crystallization()
         : base(Cost, CardType.Skill, CardRarity.Uncommon, TargetType.Self)
     {

@@ -1,4 +1,6 @@
 {
+  "WIZARD-AETHER.description": "同时被视作火焰、雷电、寒冰三种类型的法术。",
+  "WIZARD-AETHER.title": "以太",
   "WIZARD-AETHER_ARROW.description": "造成{Damage:diff()}点[blue]以太伤害[/blue]。",
   "WIZARD-AETHER_ARROW.title": "以太箭",
   "WIZARD-ALTERNATING_CURRENT.description": "你的每次[blue]雷电伤害[/blue]额外给予1层[gold]电流外溢[/gold]。",
@@ -138,7 +140,7 @@
   "WIZARD-SUPERCONDUCT.title": "超导",
   "WIZARD-TELEPATHY.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n下个回合你的第1张牌可免费打出。",
   "WIZARD-TELEPATHY.title": "通灵",
-  "WIZARD-THE_FOURTH_ELEMENT.description": "在你的回合开始时，将1张「以太箭」加入你的[gold]手牌[/gold]。",
+  "WIZARD-THE_FOURTH_ELEMENT.description": "在你的回合开始时，将1张[gold]以太箭[/gold]加入你的[gold]手牌[/gold]。",
   "WIZARD-THE_FOURTH_ELEMENT.title": "第四元素",
   "WIZARD-TIDY_UP.description": "将[gold]弃牌堆[/gold]1张牌放入你的[gold]手牌[/gold]。\n将你[gold]手牌[/gold]中的1张牌放到[gold]抽牌堆[/gold]顶部。\n下回合获得{Energy:energyIcons()}。",
   "WIZARD-TIDY_UP.selectionScreenPrompt": "选择{Amount}张牌。",

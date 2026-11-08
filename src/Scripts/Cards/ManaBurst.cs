@@ -69,6 +69,7 @@ public class ManaBurst : WizardSpellCard
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
+        WizardTips.Aether,
         HoverTipFactory.FromPower<SpellPowerPower>(),
     ];
 

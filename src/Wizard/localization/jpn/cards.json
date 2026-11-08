@@ -1,4 +1,6 @@
 {
+  "WIZARD-AETHER.description": "火・雷・氷の3属性として同時に扱われる。",
+  "WIZARD-AETHER.title": "エーテル",
   "WIZARD-AETHER_ARROW.description": "[blue]エーテル[/blue]属性の{Damage:diff()}ダメージを与える。",
   "WIZARD-AETHER_ARROW.title": "エーテルの矢",
   "WIZARD-ALTERNATING_CURRENT.description": "あなたが[blue]雷[/blue]属性ダメージを与えるたび、追加で[gold]電流溢れ[/gold]1を付与する。",

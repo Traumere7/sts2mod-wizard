@@ -1,4 +1,6 @@
 {
+  "WIZARD-AETHER.description": "同時被視作火焰、雷電、寒冰三種類型的法術。",
+  "WIZARD-AETHER.title": "以太",
   "WIZARD-AETHER_ARROW.description": "造成 {Damage:diff()} 點[blue]以太傷害[/blue]。",
   "WIZARD-AETHER_ARROW.title": "以太箭",
   "WIZARD-ALTERNATING_CURRENT.description": "每當你造成[blue]雷電傷害[/blue]時，額外施加 1 層[gold]電流外溢[/gold]。",

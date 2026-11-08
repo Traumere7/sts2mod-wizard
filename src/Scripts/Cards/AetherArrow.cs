@@ -57,6 +57,7 @@ public class AetherArrow : WizardSpellCard
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
+        WizardTips.Aether,
         HoverTipFactory.FromKeyword(CardKeyword.Retain),
         HoverTipFactory.FromKeyword(CardKeyword.Exhaust),
     ];

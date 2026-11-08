@@ -12,6 +12,7 @@ using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
 using Wizard.Scripts.Utils;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 
 namespace Wizard.Scripts.Cards;
 
@@ -82,6 +83,14 @@ public class IceArrow : WizardSpellCard
         new DamageVar(Damage, ValueProp.Move | SpellProps.For(School)),
         new PowerVar<ChillPower>(Chill),
     ];
+
+    /// <summary>
+    /// 「如果敌人的意图是攻击」已经满足时金边亮起。
+    /// 口径照抄原版「眼部攻击」<c>GoForTheEyes</c>：**任一**可命中敌人意图为攻击即亮
+    /// （本牌是单体，但手上时没有具体目标，只能按"场上有没有这样的敌人"提示）。
+    /// </summary>
+    protected override bool ShouldGlowGoldInternal
+        => CombatState?.HittableEnemies.Any(e => e.Monster?.IntendsToAttack ?? false) ?? false;
 
     public IceArrow()
         : base(Cost, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy)

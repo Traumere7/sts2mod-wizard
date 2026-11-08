@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Pools;
+using System.Linq;
 
 namespace Wizard.Scripts.Cards;
 
@@ -43,6 +44,19 @@ public class SpeedRead : WizardCardModel
     [
         HoverTipFactory.FromKeyword(CardKeyword.Retain),
     ];
+
+    /// <summary>
+    /// 手上**当前**就有「保留」牌时金边亮起。
+    ///
+    /// <para>
+    /// ⚠️ 结算口径是"先抽 1 张、再判定"，所以金边只是"打出前就已满足"的提示
+    /// —— 即使此刻没有保留牌、但抽上来的那张是保留牌，打出后仍会给费（只是不预先亮）。
+    /// 这与用户的要求一致（"如果打出之前手中已有保留牌，则它也会亮起"）。
+    /// </para>
+    /// </summary>
+    protected override bool ShouldGlowGoldInternal
+        => CombatState != null
+           && PileType.Hand.GetPile(Owner).Cards.Any(c => c.Keywords.Contains(CardKeyword.Retain));
 
     public SpeedRead()
         : base(Cost, CardType.Skill, CardRarity.Uncommon, TargetType.Self)

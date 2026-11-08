@@ -4607,3 +4607,40 @@ CombatManager.Instance.History.Entries
 
 ⇒ 验证方法：**第 2 回合及以后、且本回合没有生成过任何卡牌时**再打「结晶」，应当是 8 点；
 若那时仍是 16，日志里 `[诊断/结晶]` 会打印命中的具体条目，据此再修。
+
+### 28.9 「以太」悬停提示 + 「如果」牌的金边亮起（2026-11-08）
+
+#### (1) 自定义悬停提示「以太」
+
+不是原版关键词/能力，所以自己拼 `HoverTip`（`src/Scripts/Spells/WizardTips.cs`）：
+
+```csharp
+public static IHoverTip Aether => new HoverTip(
+    new LocString("cards", "WIZARD-AETHER.title"),
+    new LocString("cards", "WIZARD-AETHER.description"));
+```
+
+文案放 `localization/{lang}/cards.json`（表名 `cards`，四语言各一条）：
+「以太 / Aether —— 同时被视作火焰、雷电、寒冰三种类型的法术。」
+挂在 **第四元素 / 以太箭 / 魔力爆发** 三张牌上。
+
+#### (2) 金边亮起 = `ShouldGlowGoldInternal`
+
+原版机制（`CardModel.cs:859`，`protected virtual bool`）：
+```csharp
+public bool ShouldGlowGold => ShouldGlowGoldInternal || (Enchantment?.ShouldGlowGold ?? false);
+```
+原版例子：`EvilEye`（本回合消耗过牌）、`DeathsDoor`（本回合施加过厄运）、
+`GoForTheEyes`（任一敌人意图为攻击）。
+
+本 mod 已挂的 4 张「如果」牌：
+
+| 卡 | 亮起条件 |
+|---|---|
+| **结晶** `Crystallization` | 本回合生成过卡牌（复用 `GeneratedCardThisTurn()`） |
+| **冰矢** `IceArrow` | 任一可命中敌人意图为攻击（照抄 `GoForTheEyes`） |
+| **引燃** `Ignite` | 同上 |
+| **速读** `SpeedRead` | **手上当前**有「保留」牌 |
+
+⚠️ 「速读」有个刻意的口径差异：**结算**是"先抽 1 张再判定"，而**金边**只看"打出前手上是否已有保留牌"
+（用户明确要求）。所以"抽上来的那张是保留牌"时不会预先亮边，但打出后仍会给费。

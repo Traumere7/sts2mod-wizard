@@ -12,6 +12,7 @@ using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
 using Wizard.Scripts.Utils;
+using MegaCrit.Sts2.Core.Entities.Creatures;
 
 namespace Wizard.Scripts.Cards;
 
@@ -130,6 +131,12 @@ public class Ignite : WizardSpellCard
         new PowerVar<SpellPowerPower>(SpellPowerOnAttack),
         new EnergyVar(EnergyOnAttack),
     ];
+
+    /// <summary>
+    /// 「如果敌人的意图是攻击」已经满足时金边亮起（同「冰矢」，照抄 <c>GoForTheEyes</c> 口径）。
+    /// </summary>
+    protected override bool ShouldGlowGoldInternal
+        => CombatState?.HittableEnemies.Any(e => e.Monster?.IntendsToAttack ?? false) ?? false;
 
     public Ignite()
         : base(Cost, CardType.Attack, CardRarity.Uncommon, TargetType.AnyEnemy)

@@ -1,4 +1,6 @@
 {
+  "WIZARD-AETHER.description": "Counts as Fire, Lightning, and Ice damage at the same time.",
+  "WIZARD-AETHER.title": "Aether",
   "WIZARD-AETHER_ARROW.description": "Deal {Damage:diff()} [blue]Aether damage[/blue].",
   "WIZARD-AETHER_ARROW.title": "Aether Arrow",
   "WIZARD-ALTERNATING_CURRENT.description": "Whenever you deal [blue]Lightning damage[/blue], also apply 1 [gold]Current Overflow[/gold].",
