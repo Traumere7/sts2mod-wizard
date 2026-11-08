@@ -38,6 +38,9 @@
   "WIZARD-CURRENT_OVERFLOW_POWER.description": "该敌人每次受到[blue]雷电伤害[/blue]时，随机另一名敌人受到该伤害50%的伤害。每层独立结算。",
   "WIZARD-CURRENT_OVERFLOW_POWER.smartDescription": "该敌人每次受到[blue]雷电伤害[/blue]时，对另一名敌人造成该伤害[blue]{SplashRatio:percentLess()}%[/blue]的伤害。结算[blue]{Amount}[/blue]次。",
   "WIZARD-CURRENT_OVERFLOW_POWER.title": "电流外溢",
+  "WIZARD-EMBRITTLEMENT_POWER.description": "本回合内，你对具有[gold]麻痹[/gold]的敌人造成的[blue]寒冰伤害[/blue]变为2倍。",
+  "WIZARD-EMBRITTLEMENT_POWER.smartDescription": "本回合内，你对具有[gold]麻痹[/gold]的敌人造成的[blue]寒冰伤害[/blue]变为2倍。",
+  "WIZARD-EMBRITTLEMENT_POWER.title": "脆化",
   "WIZARD-FIRE_SPIT_POWER.description": "发动喷火攻击时，给予玩家等同于层数的[gold]燃烧[/gold]。",
   "WIZARD-FIRE_SPIT_POWER.smartDescription": "发动喷火攻击时，给予玩家[blue]{Amount}[/blue]层[gold]燃烧[/gold]。",
   "WIZARD-FIRE_SPIT_POWER.title": "喷火",
@@ -85,5 +88,8 @@
   "WIZARD-TELEPATHY_POWER.title": "通灵",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.description": "回合结束时，失去本回合以此获得的[purple]法术增益[/purple]。",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.smartDescription": "回合结束时，失去[blue]{Amount}[/blue]点以此获得的[purple]法术增益[/purple]。",
-  "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "快速咏唱"
+  "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "快速咏唱",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "在你的回合开始时，将「以太箭」加入你的手牌。",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "在你的回合开始时，将[blue]{Amount}[/blue]张「以太箭」加入你的[gold]手牌[/gold]。",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "第四元素"
 }

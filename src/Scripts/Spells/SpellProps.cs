@@ -30,14 +30,72 @@ public static class SpellProps
     /// <summary>所有法术标记位的合集。</summary>
     public static ValueProp All => Fire | Lightning | Ice;
 
+    /// <summary>
+    /// 「以太」伤害的标记位 = **Fire | Lightning | Ice 三位的并集**。
+    ///
+    /// <para>
+    /// 设计的原文是"以太伤害：同时被视作火焰伤害、雷电伤害、寒冰伤害"。
+    /// 所以它不是第四个独立位，而是三位的并集 —— 这样：
+    /// <list type="bullet">
+    ///   <item>「寒冷」看 <c>Fire|Lightning</c> ⇒ 以太吃寒冷 ✅</item>
+    ///   <item>「超导」看 <c>Lightning</c> ⇒ 以太吃超导 ✅</item>
+    ///   <item>「电流外溢」看 <c>Lightning</c> ⇒ 以太触发溅射 ✅</item>
+    ///   <item>「三原素」看三系各自是否命中 ⇒ 一发以太同时点亮三系 ✅</item>
+    ///   <item>「法术增益」只看"是不是法术" ⇒ 以太吃法术增益 ✅</item>
+    /// </list>
+    /// 反过来，如果新增一个独立位，上面每一处都得单独加"以太也算"的分支，
+    /// 漏一处就是隐性 bug。
+    /// </para>
+    /// </summary>
+    public static ValueProp Aether => Fire | Lightning | Ice;
+
     /// <summary>取某个法术流派对应的标记位。</summary>
     public static ValueProp For(SpellSchool school) => school switch
     {
         SpellSchool.Fire => Fire,
         SpellSchool.Lightning => Lightning,
         SpellSchool.Ice => Ice,
+        SpellSchool.Aether => Aether,
         _ => default,
     };
+
+    /// <summary>该伤害是否为「以太」伤害（三个标记位同时存在）。</summary>
+    public static bool IsAether(ValueProp props)
+        => props.HasFlag(Fire) && props.HasFlag(Lightning) && props.HasFlag(Ice);
+
+    /// <summary>
+    /// 该伤害是否属于 <paramref name="school"/> 这一系。
+    ///
+    /// <para>
+    /// 与 <see cref="Resolve"/> 的区别：<c>Resolve</c> 只能返回**一个**流派
+    /// （以太会返回 Fire，因为它是第一位命中的），
+    /// 所以凡是"多系都算"的判断（超导只看雷电、寒冷看火/雷、三原素看三系）
+    /// 都必须用这个 <c>HasSchool</c>。
+    /// </para>
+    /// </summary>
+    public static bool HasSchool(ValueProp props, CardModel? cardSource, SpellSchool school)
+    {
+        if (school == SpellSchool.None)
+        {
+            return false;
+        }
+
+        bool flagged = school switch
+        {
+            SpellSchool.Fire => props.HasFlag(Fire),
+            SpellSchool.Lightning => props.HasFlag(Lightning),
+            SpellSchool.Ice => props.HasFlag(Ice),
+            _ => false,
+        };
+
+        if (flagged)
+        {
+            return true;
+        }
+
+        // 标记位没有 → 回退到卡牌接口（逻辑与 Resolve 完全一致，含"必须是攻击"的前置判断）。
+        return Resolve(props, cardSource) == school;
+    }
 
     /// <summary>
     /// 判定一次伤害的法术流派。

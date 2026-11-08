@@ -207,19 +207,33 @@ public class TriaPrima : ArcaneRelicModel
         }
 
         // ④ 按伤害自带的学派标记归类。
-        switch (SpellProps.Resolve(props, cardSource))
+        //
+        // ⚠️ 这里**不能**用 switch + Resolve：Resolve 只返回一个流派，
+        //    而以太伤害同时算火/雷/冰三系（SpellProps.Aether = 三位并集），
+        //    一发以太应当同时点亮三个标记。所以三系各自独立判断。
+        bool matched = false;
+
+        if (SpellProps.HasSchool(props, cardSource, SpellSchool.Fire))
         {
-            case SpellSchool.Fire:
-                _hitFire = true;
-                break;
-            case SpellSchool.Lightning:
-                _hitLightning = true;
-                break;
-            case SpellSchool.Ice:
-                _hitIce = true;
-                break;
-            default:
-                return;
+            _hitFire = true;
+            matched = true;
+        }
+
+        if (SpellProps.HasSchool(props, cardSource, SpellSchool.Lightning))
+        {
+            _hitLightning = true;
+            matched = true;
+        }
+
+        if (SpellProps.HasSchool(props, cardSource, SpellSchool.Ice))
+        {
+            _hitIce = true;
+            matched = true;
+        }
+
+        if (!matched)
+        {
+            return;
         }
 
         if (!_hitFire || !_hitLightning || !_hitIce)

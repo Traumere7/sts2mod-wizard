@@ -93,7 +93,8 @@ public class SuperconductPower : CustomPowerModel
             return 1m;
         }
 
-        if (SpellProps.Resolve(props, cardSource) != SpellSchool.Lightning)
+        // 以太伤害也算雷电（见 SpellProps.Aether），所以这里用 HasSchool。
+        if (!SpellProps.HasSchool(props, cardSource, SpellSchool.Lightning))
         {
             return 1m;
         }

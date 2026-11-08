@@ -81,8 +81,8 @@ public class CurrentOverflowPower : CustomPowerModel
             return;
         }
 
-        // 只响应雷电法术伤害。
-        if (SpellProps.Resolve(props, cardSource) != SpellSchool.Lightning)
+        // 只响应雷电法术伤害（以太也算雷电）。
+        if (!SpellProps.HasSchool(props, cardSource, SpellSchool.Lightning))
         {
             return;
         }

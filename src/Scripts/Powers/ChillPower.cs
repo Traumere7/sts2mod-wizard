@@ -53,8 +53,10 @@ public class ChillPower : CustomPowerModel
             return 1m;
         }
 
-        SpellSchool school = SpellProps.Resolve(props, cardSource);
-        if (school != SpellSchool.Fire && school != SpellSchool.Lightning)
+        // ⚠️ 用 HasSchool 而不是 Resolve：以太伤害同时算火焰与雷电，
+        //    而 Resolve 只会返回第一个命中的流派（以太 → Fire）。
+        if (!SpellProps.HasSchool(props, cardSource, SpellSchool.Fire)
+            && !SpellProps.HasSchool(props, cardSource, SpellSchool.Lightning))
         {
             return 1m;
         }
