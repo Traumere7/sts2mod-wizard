@@ -4644,3 +4644,41 @@ public bool ShouldGlowGold => ShouldGlowGoldInternal || (Enchantment?.ShouldGlow
 
 ⚠️ 「速读」有个刻意的口径差异：**结算**是"先抽 1 张再判定"，而**金边**只看"打出前手上是否已有保留牌"
 （用户明确要求）。所以"抽上来的那张是保留牌"时不会预先亮边，但打出后仍会给费。
+
+### 28.10 ⚠️ 本地化职责边界（用户 2026-11-08 明确）+ 一次事故
+
+**规则**：本 Mod 的本地化，AI 只负责 **`zhs`（简体中文）** 与 **`eng`（英文）**；
+**`zht`（繁中）与 `jpn`（日文）由用户自己维护，一律不要写。**
+
+本次（新增 6 张卡）我越界写了 zht/jpn 的 22 条/语言（卡名+描述+能力文案+「以太」悬停），
+内容如下（供用户斟酌，保留与否由用户决定）：
+
+| 键 | zht | jpn |
+|---|---|---|
+| THE_FOURTH_ELEMENT.title | 第四元素 | 第四元素 |
+| AETHER_ARROW.title | 以太箭 | エーテルの矢 |
+| MANA_BURST.title | 魔力爆發 | 魔力爆発 |
+| SPEED_READ.title | 速讀 | 速読 |
+| DISPLACEMENT.title | 置換 | 置換 |
+| CRYSTALLIZATION.title | 結晶 | 結晶 |
+| EMBRITTLEMENT.title | 脆化 | 脆化 |
+| AETHER.title | 以太 | エーテル |
+| THE_FOURTH_ELEMENT_POWER.title | 第四元素 | 第四元素 |
+| EMBRITTLEMENT_POWER.title | 脆化 | 脆化 |
+
+（描述文案见 git 提交 `dbbfc8a` / `a885d65`。）
+
+#### 事故：整文件换行被改（已修复）
+
+`zht` / `jpn` 的 4 个 json 原本是 **LF**，而 `zhs` / `eng` 是 **CRLF**。
+我当时的写入脚本一律用 `newline="\r\n"`，于是把 zht/jpn 的换行全换成了 CRLF
+⇒ git 里 454 行被判定"改动"（内容其实没变）。
+已用 `dbbfc8e`（chore(loc)）只还原换行、不动内容；现在 `git diff` 只剩**新增行**。
+
+**教训**：改任何文本文件前先探测它自己的换行（`b"\r\n" in raw`），不要一律 CRLF。
+本仓库不同目录的换行并不统一：`docs/*.md`、`build.ps1` 是 CRLF，`localization/zht|jpn` 是 LF。
+
+#### 护栏
+
+`reference/tools/add_new_cards_loc.py` 已加 `WRITABLE = ("zhs", "eng")` 白名单：
+脚本即使用 CARDS/POWERS 里仍有 zht/jpn 的文案，也**只会写 zhs/eng**，其余跳过。
