@@ -32,17 +32,26 @@ namespace Wizard.Scripts.Powers;
 /// </para>
 ///
 /// <para>
-/// ⚠️ <b>不叠层</b>：<c>PowerStackType.Single</c> —— 打两张「脆化」仍是 ×2（不是 ×4）。
+/// <b>叠层</b>：<c>PowerStackType.Counter</c>，倍率 = <c>1 + 层数</c>
+/// （1 层 ×2、2 层 ×3、3 层 ×4 …），与卡面/buff 描述"增加 N 倍"一致。
 /// </para>
 /// </summary>
 public class EmbrittlementPower : CustomPowerModel
 {
-    /// <summary>寒冰伤害的放大倍率。</summary>
-    private const decimal Multiplier = 2m;
+    /// <summary>
+    /// 每层让"寒冰伤害"多一倍：倍率 = <c>1 + Amount</c>。
+    /// 1 层 → ×2（"增加 1 倍"）、2 层 → ×3、3 层 → ×4 …
+    /// </summary>
+    private const decimal PerStack = 1m;
 
     public override PowerType Type => PowerType.Buff;
 
-    public override PowerStackType StackType => PowerStackType.Single;
+    /// <summary>
+    /// ⚠️ 2026-11-08 改：原来是 <c>Single</c>（打两张仍是 ×2），
+    /// 用户要求"层数就是那个 1，后续叠加就是 2、3、4，对应倍率 3×、4×、5×"
+    /// ⇒ 改成 <c>Counter</c>，倍率用 <c>1 + Amount</c>。
+    /// </summary>
+    public override PowerStackType StackType => PowerStackType.Counter;
 
     public override string? CustomPackedIconPath => "res://Wizard/images/powers/embrittlement_power.png";
 
@@ -74,7 +83,7 @@ public class EmbrittlementPower : CustomPowerModel
             return 1m;
         }
 
-        return Multiplier;
+        return 1m + PerStack * Amount;
     }
 
     /// <summary>玩家回合结束时移除（"本回合内"）。</summary>

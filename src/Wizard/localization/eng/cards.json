@@ -52,7 +52,7 @@
   "WIZARD-DOUBLE_RICOCHET.title": "Double Ricochet",
   "WIZARD-ELECTROMAGNETIC_WAVE.description": "Deal {Damage:diff()} [blue]Lightning damage[/blue] to ALL enemies. Draw {Cards:diff()} {Cards:plural:card|cards}.",
   "WIZARD-ELECTROMAGNETIC_WAVE.title": "Electromagnetic Wave",
-  "WIZARD-EMBRITTLEMENT.description": "Apply {ParalysisPower:diff()} [gold]Paralysis[/gold] to ALL enemies.\nThis turn, your [blue]Ice damage[/blue] to enemies with [gold]Paralysis[/gold] is doubled.",
+  "WIZARD-EMBRITTLEMENT.description": "Apply {ParalysisPower:diff()} [gold]Paralysis[/gold] to ALL enemies.\nThis turn, your [blue]Ice damage[/blue] to enemies with [gold]Paralysis[/gold] is increased by 100%.",
   "WIZARD-EMBRITTLEMENT.title": "Embrittlement",
   "WIZARD-ENDNOTE.description": "Draw 1 card. When this card is [gold]Exhausted[/gold], draw {Cards:diff()} cards.",
   "WIZARD-ENDNOTE.title": "Endnote",

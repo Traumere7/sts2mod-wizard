@@ -55,8 +55,8 @@ public class Embrittlement : WizardCardModel
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
+        // 只解释「麻痹」；本牌自己的 buff「脆化」不再额外弹提示（用户要求）。
         HoverTipFactory.FromPower<ParalysisPower>(),
-        HoverTipFactory.FromPower<EmbrittlementPower>(),
     ];
 
     public Embrittlement()

@@ -4714,3 +4714,28 @@ protected override IEnumerable<IHoverTip> ExtraHoverTips =>
 ];
 ```
 （原版同类写法：`SentryMode` → `HoverTipFactory.FromCard<SweepingGaze>()`。）
+
+### 28.12 第四元素 buff 文案格式 + 脆化叠层（2026-11-08）
+
+#### (1) 第四元素 buff：卡名用 `[gold]` 而不是「」
+
+`WIZARD-THE_FOURTH_ELEMENT_POWER.description / smartDescription`：
+`将「以太箭」加入你的手牌` → `将[gold]以太箭[/gold]加入你的手牌`。
+（卡面文本里对**本 mod 的卡名**统一用 `[gold]名称[/gold]` 修饰，与「手牌」等词一致。）
+
+#### (2) 脆化：去掉 buff 悬停 + 改为可叠层
+
+- 卡牌 `ExtraHoverTips` 只保留「麻痹」，**不再**弹「脆化」自己的解释（用户要求）。
+- `EmbrittlementPower`：
+  - `StackType`：`Single` → **`Counter`**；
+  - 倍率：`2m` 常量 → **`1m + Amount`**（1 层 ×2、2 层 ×3、3 层 ×4 …）；
+  - buff 文案改为"增加 N 倍"口径：
+    - `description`：`…造成的寒冰伤害增加 1 倍。`
+    - `smartDescription`：`…增加[blue]{Amount}[/blue]倍。`
+    - eng：`is increased by 100%` / `is increased by [blue]{Amount}[/blue]00%`
+- 卡面文案第二句（zhs/eng）：
+  `变为2倍` → `增加一倍` / `is doubled` → `is increased by 100%`。
+
+⚠️ 用户说"四种语言都改"，但 `zht` / `jpn` 的这张卡条目在上一轮已按用户要求**删除**
+（现在缺键回退英文），所以本次只改到 `zhs` / `eng`；是否把「脆化」这一条的 title+description
+写回 zht/jpn 待用户确认（涉及是否重新写入那两种语言）。

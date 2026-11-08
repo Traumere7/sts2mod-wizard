@@ -38,8 +38,8 @@
   "WIZARD-CURRENT_OVERFLOW_POWER.description": "Whenever this enemy takes [blue]Lightning damage[/blue], a random other enemy takes 50% of that damage. Each stack resolves separately.",
   "WIZARD-CURRENT_OVERFLOW_POWER.smartDescription": "Whenever this enemy takes [blue]Lightning damage[/blue], deal [blue]{SplashRatio:percentLess()}%[/blue] of that damage to a random other enemy. Resolves [blue]{Amount}[/blue] times.",
   "WIZARD-CURRENT_OVERFLOW_POWER.title": "Current Overflow",
-  "WIZARD-EMBRITTLEMENT_POWER.description": "This turn, your [blue]Ice damage[/blue] to enemies with [gold]Paralysis[/gold] is doubled.",
-  "WIZARD-EMBRITTLEMENT_POWER.smartDescription": "This turn, your [blue]Ice damage[/blue] to enemies with [gold]Paralysis[/gold] is doubled.",
+  "WIZARD-EMBRITTLEMENT_POWER.description": "This turn, your [blue]Ice damage[/blue] to enemies with [gold]Paralysis[/gold] is increased by 100%.",
+  "WIZARD-EMBRITTLEMENT_POWER.smartDescription": "This turn, your [blue]Ice damage[/blue] to enemies with [gold]Paralysis[/gold] is increased by [blue]{Amount}[/blue]00%.",
   "WIZARD-EMBRITTLEMENT_POWER.title": "Embrittlement",
   "WIZARD-FIRE_SPIT_POWER.description": "When it uses its fire attack, apply [gold]Burn[/gold] equal to its stacks.",
   "WIZARD-FIRE_SPIT_POWER.smartDescription": "When it uses its fire attack, apply [blue]{Amount}[/blue] [gold]Burn[/gold].",
@@ -89,7 +89,7 @@
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.description": "At the end of the turn, lose the [purple]Spell Power[/purple] gained this way.",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.smartDescription": "At the end of the turn, lose the [blue]{Amount}[/blue] [purple]Spell Power[/purple] gained this way.",
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "Quick Chant",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "At the start of your turn, add an Aether Arrow into your hand.",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "At the start of your turn, add [blue]{Amount}[/blue] Aether Arrow into your [gold]Hand[/gold].",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "At the start of your turn, add an [gold]Aether Arrow[/gold] into your hand.",
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "At the start of your turn, add [blue]{Amount}[/blue] [gold]Aether Arrow[/gold] into your [gold]Hand[/gold].",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "The Fourth Element"
 }
