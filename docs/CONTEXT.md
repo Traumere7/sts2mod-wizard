@@ -4489,3 +4489,90 @@ return cardSource.SchoolOf();      // 只有"卡牌发起的攻击"才允许回�
    即**附魔/关键词等以卡牌为 source 的附加伤害**；
 2. `SpellProps.Resolve` 这类"标记优先、卡牌兜底"的判定，
    兜底分支必须**加上"这确实是一次攻击"的前置条件**，否则会被附属效果骗过。
+
+---
+
+## 28. 2026-11-08 新增 6 张卡 + 1 张衍生牌（含全新伤害类型「以太」）
+
+> 设计稿：`docs/design.md`（「特殊伤害类型」+ 卡池 151~163 行、衍生牌 199 行）。
+> 卡牌数 **65 → 71 张常规 + 1 张衍生（共 72 个卡牌类）**。
+
+### 28.1 「以太」伤害：不是第四位，而是**三系并集**
+
+设计原文：**「以太伤害：同时被视作火焰伤害、雷电伤害、寒冰伤害」**。
+
+实现选择（关键决策）：
+
+```csharp
+// SpellProps
+[CustomEnum] public static ValueProp Fire;
+[CustomEnum] public static ValueProp Lightning;
+[CustomEnum] public static ValueProp Ice;
+public static ValueProp Aether => Fire | Lightning | Ice;   // ← 并集，不是新位
+```
+
+为什么**不**新开一个 `ValueProp` 位：
+
+| 消费者 | 判断方式 | 若用独立位 | 用并集 |
+|---|---|---|---|
+| 寒冷 `ChillPower` | 火 or 雷 | 需手加"以太也算" | 自动 ✅ |
+| 超导 `SuperconductPower` | 雷电 | 需手加 | 自动 ✅ |
+| 电流外溢 `CurrentOverflowPower` | 雷电 | 需手加 | 自动 ✅ |
+| 交流电 `AlternatingCurrentPower` | 雷电 | 需手加 | 自动 ✅ |
+| 三原素 `TriaPrima` | 三系**各自**是否命中 | 需手加 | 自动 ✅ |
+| 法术增益 `SpellPowerPower` | 是否法术 | 需手加 | 自动 ✅ |
+
+新增一个位 = 六处都要补分支，漏一处就是隐性 bug；并集方案让既有逻辑天然成立。
+
+### 28.2 但"取单一流派"的地方必须改成"问某一系"
+
+`SpellProps.Resolve()` 只能返回**一个**流派（以太会返回 Fire，因为它是第一个命中的标记），
+所以凡是**多系都可能命中**的判断都改用新加的：
+
+```csharp
+SpellProps.HasSchool(props, cardSource, SpellSchool.Lightning)   // 以太 → true
+```
+
+改造点：`ChillPower`、`SuperconductPower`、`CurrentOverflowPower`、
+`AlternatingCurrentPower`、`TriaPrima`（三系各自独立点亮）、以及新卡「脆化」的
+`EmbrittlementPower`（寒冰 ×2，以太也算寒冰）。
+
+`SpellSchool` 另外加了 `Aether = 4` —— 那只是**卡面/接口层的流派标签**
+（`ISpellCard.School`），真正的伤害判定永远走 `ValueProp` 标记位。
+
+### 28.3 七张新牌的实现要点
+
+| 卡（英文） | 费用 | 实现要点 |
+|---|---|---|
+| 第四元素 `TheFourthElement` | 1 - 稀有 - 能力 - 固有 | 给 `TheFourthElementPower`；该能力在 `AfterSideTurnStart(side=Player)` 生成 `Amount` 张「以太箭」进手牌（`CreateCard` + `AddGeneratedCardToCombat`，会被「催化」数到） |
+| 以太箭 `AetherArrow` | 1 - 衍生攻击 - 保留/消耗 | `School => Aether`、`SpellProps.For(Aether)`；9 点固定伤害；`TokenCardPool` + `CardRarity.Token` |
+| 魔力爆发 `ManaBurst` | 2(1) - 稀有 - 攻击 | 伤害 = **当前**法术增益层数（`CalculatedDamageVar` 实时显示）；**先伤害、后翻倍**；翻倍用"再施加等量层数"（走 `ModifyAmount`，保留钩子） |
+| 速读 `SpeedRead` | 0 - 罕见 - 技能 - 固有 | **先抽牌、再判定**手牌；「保留」判定用 `card.Keywords`（合并后的词条），不是 `CanonicalKeywords` |
+| 置换 `Displacement` | 1 - 罕见 - 技能 | 先读 `Block`（int）再 `LoseBlock`，再 `block / PerBlock(4→3)` 取整给法术增益 |
+| 结晶 `Crystallization` | 1 - 罕见 - 技能 | 8(10) 格挡；用 `History.Entries.OfType<CardGeneratedEntry>()` + `HappenedThisTurn` 判定"本回合生成过卡牌"，是则再来一次 |
+| 脆化 `Embrittlement` | 1 - 罕见 - 技能 | 群体麻痹 1(2) + 给自己挂 `EmbrittlementPower`（本回合寒冰伤害 ×2、`Single` 不叠层、玩家回合末移除） |
+
+### 28.4 占位素材（待用户替换）
+
+用户只提供了 6 张卡图。缺的两类由 `reference/tools/make_new_cards_assets.py` 生成：
+
+- `images/cards/AetherArrow.png` —— 衍生牌卡图，用 `make_new_placeholders.card_portrait`
+  生成的**占位图**（深色底 + 闪电符号 + "AETHER ARROW / PLACEHOLDER" 标签）。
+- `images/powers/the_fourth_element_power(_big).png`、
+  `images/powers/embrittlement_power(_big).png` —— 从**对应卡图中心正方形**裁剪缩放
+  （64 / 128），配色与卡面一致。
+
+### 28.5 本地化
+
+`cards.json` 136 → **150** 键、`powers.json` 87 → **93** 键，**四语言（zhs/zht/jpn/eng）键集合完全一致**。
+繁体沿用既有译法（魔法威力 / 麻痺 / 格擋 / 保留），日文沿用（魔法威力 / 麻痺 / ブロック / 保留）。
+
+### 28.6 待验证（下次进游戏时重点看）
+
+1. 「第四元素」每回合真的给 1 张以太箭（手牌满时的溢出行为）；
+2. 「以太箭」是否同时吃**寒冷 / 超导**、触发**电流外溢**、让「三原素」一次点亮三系；
+3. 「魔力爆发」卡面数字与实际伤害是否一致、翻倍是否为 ×2（不是 ×3）；
+4. 「速读」抽到保留牌时是否给费；
+5. 「置换」满格挡时的层数换算；
+6. 「结晶」在生成过卡牌的回合是否给两次格挡；
+7. 「脆化」只对**具有麻痹**的目标翻倍、且回合结束自动消失。
