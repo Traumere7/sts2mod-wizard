@@ -4736,6 +4736,13 @@ protected override IEnumerable<IHoverTip> ExtraHoverTips =>
 - 卡面文案第二句（zhs/eng）：
   `变为2倍` → `增加一倍` / `is doubled` → `is increased by 100%`。
 
-⚠️ 用户说"四种语言都改"，但 `zht` / `jpn` 的这张卡条目在上一轮已按用户要求**删除**
-（现在缺键回退英文），所以本次只改到 `zhs` / `eng`；是否把「脆化」这一条的 title+description
-写回 zht/jpn 待用户确认（涉及是否重新写入那两种语言）。
+**zht / jpn**：本地化团队已在别的会话里把新卡条目补齐；用户随后明确授权
+"脆化的 buff 文案和卡面文案直接改就行"，所以这 3 条（卡面描述 + buff 的
+description / smartDescription）在繁中、日文也一并改成"增加 N 倍"口径：
+
+| 语言 | 卡面第二句 | buff |
+|---|---|---|
+| zht | `…寒冰傷害[/blue]增加一倍。` | `增加 1 倍` / `增加[blue]{Amount}[/blue]倍` |
+| jpn | `…属性ダメージが100%増加する。` | `100%増加する` / `[blue]{Amount}[/blue]00%増加する` |
+
+（其他 zht/jpn 文案未动，换行仍保持它们原本的 **LF**。）
