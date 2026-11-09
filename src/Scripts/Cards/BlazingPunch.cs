@@ -10,6 +10,8 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Spells;
 using Wizard.Scripts.Utils;
+using MegaCrit.Sts2.Core.HoverTips;
+using Wizard.Scripts.Powers;
 
 namespace Wizard.Scripts.Cards;
 
@@ -129,6 +131,12 @@ public class BlazingPunch : WizardSpellCard
         // Props 带上火焰流派标记，保证寒冷/超导/法术增益等按流派生效。
         new CalculatedDamageVar(ValueProp.Move | SpellProps.For(School))
             .WithMultiplier((CardModel card, Creature? _) => TotalBurnAppliedThisCombat(card)),
+    ];
+
+    /// <summary>本牌伤害取决于本场已给予的「燃烧」层数 ⇒ 与其它燃烧牌一致，挂燃烧解释。</summary>
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromPower<BurnPower>(),
     ];
 
     public BlazingPunch()

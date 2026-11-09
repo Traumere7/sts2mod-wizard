@@ -19,9 +19,14 @@ public class Concentrate : WizardCardModel
 {
     private const int Cost = 1;
 
+    /// <summary>
+    /// 卡面**要**解释「消耗」（buff 侧不解释）—— 原版「无惧疼痛」`FeelNoPain` 就是这么分的：
+    /// 卡挂 `FromKeyword(CardKeyword.Exhaust)`，`FeelNoPainPower` 只挂 `Static(Block)`。
+    /// </summary>
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
         HoverTipFactory.FromPower<SpellPowerPower>(),
+        HoverTipFactory.FromKeyword(CardKeyword.Exhaust),
     ];
 
     public Concentrate()

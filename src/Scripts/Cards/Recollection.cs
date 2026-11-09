@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Cards;
 
@@ -51,6 +52,14 @@ public class Recollection : WizardCardModel
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
         new PowerVar<RecollectionPower>(CardsBack),
+    ];
+
+    /// <summary>
+    /// 卡面**要**解释「消耗」（buff 侧不解释）。
+    /// </summary>
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromKeyword(CardKeyword.Exhaust),
     ];
 
     public Recollection()

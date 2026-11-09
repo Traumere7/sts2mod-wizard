@@ -4884,3 +4884,32 @@ description / smartDescription）在繁中、日文也一并改成"增加 N 倍"
 
 复审结果仍是 **0 个缺解释**（「消耗」不再计入）。`reference/tools/add_missing_power_tips.py`
 的文档头已注明这条排除规则，避免下次又把它加回来。
+
+### 30.2 更正 + 卡面口径（2026-11-09 晚间）
+
+**更正上一轮的说法**：卡「凝神」`Concentrate` / 「回忆」`Recollection` 的悬停块**从来没有**被删过
+（`git log -- src/Scripts/Cards/Concentrate.cs` 只有初始提交）；它们本来就**没有**「消耗」解释。
+上一轮只动了 `src/Scripts/Powers/*`。用户看到"卡面提示没了"其实是因为原本就缺。
+
+**最终口径（与无惧疼痛对齐）**：
+
+| 层 | 消耗解释 |
+|---|---|
+| 卡 `Concentrate`（凝神） | ✅ 新加 `FromKeyword(CardKeyword.Exhaust)` |
+| 卡 `Recollection`（回忆） | ✅ 新加（原本连 `ExtraHoverTips` 都没有） |
+| buff `ConcentratePower` | ❌ 只留 `FromPower<SpellPowerPower>()` |
+| buff `RecollectionPower` | ❌ 整块删除 |
+
+顺手补的第三处：卡 `BlazingPunch` 描述里提到「燃烧」（伤害按本场已给予的燃烧层数），
+而本 mod 其它 16 张燃烧牌都挂 `FromPower<BurnPower>()` ⇒ 补上。
+
+#### 审计脚本要模拟引擎的**自动**悬停，否则会大量误报
+
+`CardModel.HoverTips`（`CardModel.cs:953-989`）会**自动**追加：
+- `GainsBlock == true` ⇒ `StaticHoverTip.Block`。而 BaseLib 的 `CustomCardModel`
+  用 **`DynamicVars` 里有没有 `BlockVar` / `CalculatedBlockVar`** 自动推导 `GainsBlock`
+  ⇒ 本 mod 的卡只要声明了 `BlockVar` 就自带格挡解释，**不需要**显式挂（上一轮审计误报了 6 张）。
+- 每个 `Keywords` 词条 ⇒ `FromKeyword(keyword)`；其中 `Ethereal` 还会额外带 `Exhaust`。
+
+修正后的审计（`reference/tools/add_missing_power_tips.py` 里的映射表同理）：
+**卡面 0 处缺解释、buff 0 处缺解释**（「消耗」对 buff 侧排除）。
