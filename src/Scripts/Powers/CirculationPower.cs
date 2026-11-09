@@ -1,5 +1,6 @@
 using BaseLib.Abstracts;
 using MegaCrit.Sts2.Core.Entities.Powers;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Powers;
 
@@ -46,6 +47,11 @@ namespace Wizard.Scripts.Powers;
 /// </summary>
 public class CirculationPower : CustomPowerModel
 {
+ 
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromPower<CurrentOverflowPower>(),
+    ];
     /// <summary>升级后的费用由卡牌自身处理，这里不需要额外数值。</summary>
     public override PowerType Type => PowerType.Buff;
 

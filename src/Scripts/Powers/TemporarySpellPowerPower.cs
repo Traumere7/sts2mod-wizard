@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Cards;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Powers;
 
@@ -45,6 +46,12 @@ namespace Wizard.Scripts.Powers;
 /// </summary>
 public class TemporarySpellPowerPower : CustomPowerModel
 {
+
+
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromPower<SpellPowerPower>(),
+    ];
     /// <summary>
     /// <b>刻意是 Debuff</b> —— 让「高温消毒」能移除它，从而固化临时法术增益。
     /// 详见类注释。

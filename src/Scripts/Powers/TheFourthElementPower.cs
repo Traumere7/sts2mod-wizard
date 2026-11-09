@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.Entities.Players;
 using Wizard.Scripts.Cards;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Powers;
 
@@ -35,6 +36,11 @@ namespace Wizard.Scripts.Powers;
 /// </summary>
 public class TheFourthElementPower : CustomPowerModel
 {
+ 
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromCard<AetherArrow>(),
+    ];
     public override PowerType Type => PowerType.Buff;
 
     public override PowerStackType StackType => PowerStackType.Counter;

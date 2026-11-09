@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Spells;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Powers;
 
@@ -38,6 +39,11 @@ namespace Wizard.Scripts.Powers;
 /// </summary>
 public class EmbrittlementPower : CustomPowerModel
 {
+ 
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromPower<ParalysisPower>(),
+    ];
     /// <summary>
     /// 每层让"寒冰伤害"多一倍：倍率 = <c>1 + Amount</c>。
     /// 1 层 → ×2（"增加 1 倍"）、2 层 → ×3、3 层 → ×4 …

@@ -5,6 +5,7 @@ using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Spells;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Powers;
 
@@ -56,6 +57,11 @@ namespace Wizard.Scripts.Powers;
 /// </summary>
 public class SuperconductPower : CustomPowerModel
 {
+ 
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromPower<ChillPower>(),
+    ];
     /// <summary>未升级卡牌贡献的百分点数。</summary>
     public const decimal BaseIncreasePercent = 50m;
 

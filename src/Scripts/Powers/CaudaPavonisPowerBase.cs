@@ -8,6 +8,8 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Utils;
+using MegaCrit.Sts2.Core.HoverTips;
+using Wizard.Scripts.Spells;
 
 namespace Wizard.Scripts.Powers;
 
@@ -48,6 +50,11 @@ namespace Wizard.Scripts.Powers;
 /// </summary>
 public abstract class CaudaPavonisPowerBase : CustomPowerModel
 {
+ 
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        WizardTips.RandomDebuff,
+    ];
     /// <summary>"每次给几层负面效果"的变量名（能力文案写 <c>{Layers}</c>）。</summary>
     public const string LayersKey = "Layers";
 

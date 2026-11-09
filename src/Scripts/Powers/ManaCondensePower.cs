@@ -68,7 +68,8 @@ public class ManaCondensePower : CustomPowerModel
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
         HoverTipFactory.FromPower<SpellPowerPower>(),
-    ];
+    
+        HoverTipFactory.Static(StaticHoverTip.Block),];
 
     /// <summary>
     /// 回合结束时按法术增益层数给格挡 —— **结算 <c>Amount</c> 次**

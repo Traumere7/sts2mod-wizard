@@ -6,6 +6,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Entities.Cards;
 
 namespace Wizard.Scripts.Powers;
 
@@ -91,7 +92,8 @@ public class ConcentratePower : CustomPowerModel
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
         HoverTipFactory.FromPower<SpellPowerPower>(),
-    ];
+    
+        HoverTipFactory.FromKeyword(CardKeyword.Exhaust),];
 
     public override async Task AfterCardExhausted(
         PlayerChoiceContext choiceContext,

@@ -4836,3 +4836,32 @@ description / smartDescription）在繁中、日文也一并改成"增加 N 倍"
 | `great_library_power(_big)` | 合上的立书：金色封面 + 左侧浅色书脊 + 底部页块 + 顶部垂下的紫色书签（V 形缺口）+ 右下小菱形 |
 
 ⚠️ 没做超采样：现有图标都是"像素边缘"风格，超采样会让这一批看起来比其它更"糊"。
+
+
+---
+
+## 30. 2026-11-09 capability buff 悬停提示补全（审计）
+
+规则：**buff 描述里用 `[gold]` / `[purple]` 修饰的专有名词，必须同时挂上它的解释悬停**。
+
+审计方式（一次性脚本，可重跑）：`reference/tools/add_missing_power_tips.py`
+—— 抓 `powers.json` 的 zhs 描述里所有 `[gold]`/`[purple]` 词，对照各 `<Power>Power.ExtraHoverTips`
+（含抽象基类继承），映射表见脚本里的 `TERM_TIP`。
+
+本次补了 **11 个能力**（12 个模型，孔雀之尾两版共用基类）：
+
+| 能力 | 缺的解释 | 补的悬停 |
+|---|---|---|
+| 孔雀之尾（未升级 / 升级两版） | 随机负面效果 | `WizardTips.RandomDebuff`（写在抽象基类，两版继承） |
+| 脆化 | 麻痹 | `FromPower<ParalysisPower>()` |
+| 电流循环 `CirculationPower` | 电流外溢 | `FromPower<CurrentOverflowPower>()` |
+| 聚魔 `ConcentratePower` | 消耗 | `FromKeyword(CardKeyword.Exhaust)` |
+| 喷火 `FireSpitPower` | 燃烧 | `FromPower<BurnPower>()` |
+| 冰墙 `FrostWallPower` | 冻结 + 寒冷 | `FromPower<FreezePower>()` + `FromPower<ChillPower>()` |
+| 魔力凝结 `ManaCondensePower` | 格挡 | `Static(StaticHoverTip.Block)` |
+| 追忆 `RecollectionPower` | 消耗 | `FromKeyword(CardKeyword.Exhaust)` |
+| 超导 `SuperconductPower` | 寒冷 | `FromPower<ChillPower>()` |
+| 第四元素 `TheFourthElementPower` | 以太箭 | `FromCard<AetherArrow>()` |
+| 快速咏唱 `TemporarySpellPowerPower` | 法术增益 | `FromPower<SpellPowerPower>()`（复审时补的最后一处） |
+
+复审结果：**21 个描述含专有名词的能力，0 个缺解释**。

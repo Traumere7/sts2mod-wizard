@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
+using MegaCrit.Sts2.Core.HoverTips;
 
 namespace Wizard.Scripts.Powers;
 
@@ -22,6 +23,12 @@ namespace Wizard.Scripts.Powers;
 /// </summary>
 public class FrostWallPower : CustomPowerModel
 {
+ 
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromPower<FreezePower>(),
+        HoverTipFactory.FromPower<ChillPower>(),
+    ];
     /// <summary>每层给予的冻结层数。</summary>
     public const decimal FreezePerStack = 1m;
 
