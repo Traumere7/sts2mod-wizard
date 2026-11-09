@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Spells;
 using BaseLib.Extensions;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -71,16 +72,13 @@ public class AetherArrow : WizardSpellCard
         // 单体攻击牌没有目标属于引擎级异常 —— 直接抛，不要静默跳过。
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
 
-        // 命中演出（2026-11-09 用户指定，全部换成"光"）：
-        // ① 目标身上十字圣光（原版治疗 VFX `vfx/vfx_cross_heal`）；
-        // ② 整屏圣光（原版事件治疗的全屏版 `vfx/vfx_cross_heal_fullscreen`）。
-        VfxCmd.PlayFullScreenInCombat("vfx/vfx_cross_heal_fullscreen", Owner.Creature);
+        // 命中演出：**白+金版**星星冲击（自制的改色场景，加载失败会回退原版紫色）。
+        WizardVfx.StarryImpactGold(cardPlay.Target);
 
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitFx("vfx/vfx_cross_heal")
             .Execute(choiceContext);
     }
 

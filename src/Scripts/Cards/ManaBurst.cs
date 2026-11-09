@@ -12,6 +12,7 @@ using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
 using BaseLib.Extensions;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -101,12 +102,16 @@ public class ManaBurst : WizardSpellCard
         // ① 按"当前层数"结算以太伤害（此时还没翻倍）。
         decimal stacks = SpellPowerStacks(this);
 
-        // 命中演出（2026-11-09 用户指定）：原版「稀有卡金光」`vfx/rare_glow_vfx`。
+        // 命中演出：**白+金版**星星冲击（每个目标各一个，加载失败回退原版紫色）。
+        foreach (Creature enemy in combatState.HittableEnemies.ToList())
+        {
+            WizardVfx.StarryImpactGold(enemy);
+        }
+
         await DamageCmd.Attack(stacks)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
-            .WithHitFx("vfx/rare_glow_vfx")
             .Execute(choiceContext);
 
         // ② 再翻倍：额外施加"当前层数"份 ⇒ 2×。

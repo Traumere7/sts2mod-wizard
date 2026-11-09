@@ -251,6 +251,73 @@ public static class WizardVfx
         => Attach(NGrandFinaleImpactVfx.Create(target), nameof(NGrandFinaleImpactVfx));
 
     /// <summary>
+    /// 我们自己的**白+金版**星星冲击场景（复制原版 <c>vfx_starry_impact</c> 只改颜色）。
+    ///
+    /// <para>
+    /// 紫色来自两处：材质里的 LUT 渐变 + 根场景里的两处内联色（烟雾 color_initial_ramp、
+    /// 辉光粒子 color）。资源由 <c>reference/tools/make_gold_starry_impact.py</c> 生成，
+    /// 贴图/着色器仍引用游戏本体资源。
+    /// </para>
+    /// </summary>
+    public const string StarryImpactGoldScenePath = "res://Wizard/scenes/vfx/vfx_starry_impact_gold.tscn";
+
+    private static PackedScene? _starryGoldScene;
+
+    private static bool _starryGoldLoadFailed;
+
+    /// <summary>
+    /// 在目标身上播放**白+金版**星星冲击（挂载位置照抄 <c>VfxCmd.PlayOnCreatureCenter</c>：
+    /// <c>target.GetVfxContainer()</c> + <c>creatureNode.VfxSpawnPosition</c>）。
+    /// 场景加载失败时自动回退到原版紫色 <see cref="StarryImpactFx"/>，不会没有演出。
+    /// </summary>
+    public static void StarryImpactGold(Creature? target)
+    {
+        if (target == null || target.IsDead)
+        {
+            return;
+        }
+
+        try
+        {
+            NCreature? node = NCombatRoom.Instance?.GetCreatureNode(target);
+            if (node == null)
+            {
+                return;
+            }
+
+            if (_starryGoldScene == null && !_starryGoldLoadFailed)
+            {
+                _starryGoldScene = ResourceLoader.Load<PackedScene>(StarryImpactGoldScenePath);
+                if (_starryGoldScene == null)
+                {
+                    _starryGoldLoadFailed = true;
+                    Entry.Logger.Warn(
+                        $"演出：白+金星星冲击加载失败（{StarryImpactGoldScenePath}），回退到原版紫色");
+                }
+            }
+
+            if (_starryGoldScene == null)
+            {
+                VfxCmd.PlayOnCreatureCenter(target, StarryImpactFx);
+                return;
+            }
+
+            Node2D? vfx = _starryGoldScene.Instantiate<Node2D>();
+            if (vfx == null)
+            {
+                return;
+            }
+
+            target.GetVfxContainer()?.AddChildSafely(vfx);
+            vfx.GlobalPosition = node.VfxSpawnPosition;
+        }
+        catch (Exception e)
+        {
+            Entry.Logger.Warn($"演出：白+金星星冲击播放失败（不影响结算）：{e.Message}");
+        }
+    }
+
+    /// <summary>
     /// 整屏**加法叠加**闪光（原版 <c>NHellraiserVfx</c> 的用法）：
     /// 0.5s 淡入 → 停留 0.5s → 0.5s 淡出，整块屏幕被染亮。
     /// <c>VfxColor.Gold</c> = 金光，<c>White</c> = 白光。
