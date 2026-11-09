@@ -1918,7 +1918,10 @@ foreach (var d in debuffs) await PowerCmd.Remove(d);
 
 ### 7.1 已封存：「法术伤害不享受活力」报告
 
-**状态：暂停，不处理。** 作者本地与报错玩家**都无法复现**。
+**状态：已于 2026-11-09 找到根因并修复** —— 见 §31（`VigorTrackingPatch`）。
+原记录保留在下方存档。
+
+**状态（存档）：暂停，不处理。** 作者本地与报错玩家**都无法复现**。
 
 **静态分析结论（重要，避免以后重复排查）：**
 mod 侧**没有任何**阻止活力生效的代码 ——
@@ -4914,3 +4917,63 @@ description / smartDescription）在繁中、日文也一并改成"增加 N 倍"
 
 修正后的审计（`reference/tools/add_missing_power_tips.py` 里的映射表同理）：
 **卡面 0 处缺解释、buff 0 处缺解释**（「消耗」对 buff 侧排除）。
+
+
+---
+
+## 31. 2026-11-09 「法术伤害不享受活力」根因定位与修复
+
+### 31.1 根因：`VigorPower` 的跟踪状态**从不清空**
+
+原版 `VigorPower` 用一份私有状态只"认一次攻击"：
+
+```csharp
+private class Data { public AttackCommand? commandToModify; public int amountWhenAttackStarted; }
+
+BeforeAttack(command):
+    if (commandToModify != null) return;                  // ← ② 之后的攻击直接不跟踪
+    ... commandToModify = command; amountWhenAttackStarted = Amount;
+ModifyDamageAdditive(...):
+    if (commandToModify != null && cardSource != null
+        && cardSource != commandToModify.ModelSource) return 0;   // ← ③ 之后的攻击加 0
+AfterAttack(command):
+    if (command == commandToModify)
+        ModifyAmount(-amountWhenAttackStarted);           // ← ① 只扣层数，**不清 commandToModify**
+```
+
+⇒ 只要**一次攻击结束时活力还有剩余层数**，`commandToModify` 就会一直指着上一张牌，
+之后所有攻击都被 ②/③ 挡掉 ⇒ 「有活力层数，但伤害完全不加」。
+
+### 31.2 为什么会"还有剩余层数"：纵火狂 × 燃烧之魂
+
+- 「纵火狂」`PyromaniacPower` 在**每次燃烧落地**时给 4(6) 点活力；
+- 「燃烧之魂」`BurningSoulPower` 在**每次攻击的每一段之后**追加伤害并施加燃烧
+  ⇒ 活力是在**攻击命令执行过程中**被加上去的。
+
+于是：攻击开始（跟踪 A，记下 4）→ 该段触发燃烧之魂 → 纵火狂 +4（层数 4→8）
+→ `AfterAttack` 只扣 4（8→4）→ **层数没清零、`commandToModify` 仍是 A**
+⇒ 之后每一张攻击牌（包括所有法术伤害牌）加算都是 0。
+原版没有"攻击中给活力"的途径，所以这个坑在 vanilla 里不显形。
+
+### 31.3 修法：`AfterAttack` 后清空"已完成的跟踪"
+
+`src/Scripts/Patches/VigorTrackingPatch.cs`（Harmony Postfix）：
+
+```csharp
+if (tracked == command) { data.commandToModify = null; data.amountWhenAttackStarted = 0; }
+```
+
+- 通过反射读 `PowerModel._internalData` → `VigorPower.Data`；反射失败只记一条警告并放弃（不影响游戏）。
+- `AfterAttack` 是 async，Postfix 在状态机首次挂起时跑；`-amountWhenAttackStarted` 在进 await **之前**
+  已求值进实参，所以清空字段不会影响本次扣减。
+
+### 31.4 临时探针（定位用，确认后删除）
+
+三处各打一行 `[活力诊断]`：
+- `BeforeAttack`：牌 / powered / 层数 / 跟踪中 ⇒ 本次会不会吃加成；
+- `ModifyDamageAdditive`：牌 / 层数 / 实际加算值；
+- `AfterAttack`：是否清空跟踪、剩余层数。
+
+复现方式：身上有「纵火狂」+「燃烧之魂」，用任意攻击牌打一下（会追加燃烧），
+然后看**下一张攻击牌**是否还能吃到活力；日志里应看到
+`AfterAttack 已清空跟踪 ⇒ 下次攻击可以正常吃到活力`。
