@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://b8ktw6gosbusf"]
 
-[ext_resource type="Material" path="res://Wizard/materials/vfx/starry_impact_gold/vfx_starry_impact_small_stars.tres" id="1_mat"]
+[ext_resource type="Material" path="res://Wizard/materials/vfx/starry_impact_gold/vfx_starry_impact_small_stars.tres" id="1_p0e5r"]
 [ext_resource type="Texture2D" uid="uid://dmoj7mwbys4pa" path="res://images/vfx/starry_impact/starry_impact_small_star.png" id="2_vlenv"]
 
 [sub_resource type="Curve" id="Curve_o6cpj"]

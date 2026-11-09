@@ -1,9 +1,9 @@
 [gd_scene load_steps=51 format=3 uid="uid://dm2htqwnjx1e2"]
 
 [ext_resource type="Script" uid="uid://cjqh3xl5vb6p0" path="res://src/Core/Nodes/Vfx/NStarryImpactVfx.cs" id="1_ue4fn"]
-[ext_resource type="PackedScene" path="res://Wizard/scenes/vfx/starry_impact_gold/vfx_starry_impact_core.tscn" id="sub_vfx_starry_impact_core"]
-[ext_resource type="PackedScene" path="res://Wizard/scenes/vfx/starry_impact_gold/vfx_starry_impact_small_stars.tscn" id="sub_vfx_starry_impact_small_stars"]
-[ext_resource type="PackedScene" path="res://Wizard/scenes/vfx/starry_impact_gold/vfx_starry_impact_smoke_flipbook.tscn" id="sub_vfx_starry_impact_smoke_flipbook"]
+[ext_resource type="PackedScene" path="res://Wizard/scenes/vfx/starry_impact_gold/vfx_starry_impact_core.tscn" id="2_l3th8"]
+[ext_resource type="PackedScene" path="res://Wizard/scenes/vfx/starry_impact_gold/vfx_starry_impact_small_stars.tscn" id="3_tymb6"]
+[ext_resource type="PackedScene" path="res://Wizard/scenes/vfx/starry_impact_gold/vfx_starry_impact_smoke_flipbook.tscn" id="4_0ocf6"]
 [ext_resource type="PackedScene" uid="uid://b4bmc8s54bfe8" path="res://scenes/vfx/common/vfx_common_ring_polar_b.tscn" id="5_8u0r5"]
 [ext_resource type="PackedScene" uid="uid://chqoe33c4gm6a" path="res://scenes/vfx/common/vfx_common_specks.tscn" id="6_yas2b"]
 [ext_resource type="PackedScene" uid="uid://b4yd32ieheum6" path="res://scenes/vfx/distortions/vfx_outward_screen_distortion.tscn" id="7_qcjw1"]

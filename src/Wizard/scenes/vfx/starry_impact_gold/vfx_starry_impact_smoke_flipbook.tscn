@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://bvhhni2gsixy1"]
 
-[ext_resource type="Material" path="res://Wizard/materials/vfx/starry_impact_gold/vfx_starry_impact_smoke_flipbook.tres" id="1_mat"]
+[ext_resource type="Material" path="res://Wizard/materials/vfx/starry_impact_gold/vfx_starry_impact_smoke_flipbook.tres" id="1_qjwmo"]
 [ext_resource type="Texture2D" uid="uid://c7ghp1umsctuy" path="res://images/vfx/starry_impact/starry_impact_smoke_flipbook.png" id="2_ecw43"]
 
 [sub_resource type="Curve" id="Curve_ausm0"]

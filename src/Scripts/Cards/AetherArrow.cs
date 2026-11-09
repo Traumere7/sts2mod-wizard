@@ -79,6 +79,8 @@ public class AetherArrow : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
+            // 命中音：Regent 的「引导之星」星光音（初版那声）。
+            .WithHitFx(null, WizardVfx.GuidingStarSfx)
             .Execute(choiceContext);
     }
 

@@ -112,6 +112,8 @@ public class ManaBurst : WizardSpellCard
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
+            // 命中音：Regent 的「引导之星」星光音（初版那声）。
+            .WithHitFx(null, WizardVfx.GuidingStarSfx)
             .Execute(choiceContext);
 
         // ② 再翻倍：额外施加"当前层数"份 ⇒ 2×。

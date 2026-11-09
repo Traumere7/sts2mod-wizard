@@ -5025,3 +5025,34 @@ if (tracked == command) { data.commandToModify = null; data.amountWhenAttackStar
 
 ⚠️ `vfx/rare_glow_vfx` 本是**卡牌稀有度光效**（`NCardRareGlow`，粒子节点按卡牌尺寸做），
 作为战斗命中特效可能偏小/位置略偏 —— 这是"试装"，用户看效果后再定。
+
+### 31.8 白+金星星冲击：**因 ExtResource id 被改而整场景加载失败**（2026-11-09 修复）
+
+第一次生成的自制场景在游戏里**完全不显示**，日志只有一行：
+
+```
+[WARN] [Wizard] 演出：白+金星星冲击加载失败（res://Wizard/scenes/vfx/vfx_starry_impact_gold.tscn），回退到原版紫色
+```
+
+**根因**：生成脚本替换 `[ext_resource ...]` 时把 `id=` 也改掉了
+（`id="2_l3th8"` → `id="sub_vfx_starry_impact_core"`、`id="1_8o3lp"` → `id="1_mat"`），
+而节点里的 `instance=ExtResource("2_l3th8")` / `material = ExtResource("1_8o3lp")`
+仍在引用**旧 id** ⇒ 场景解析失败 ⇒ `ResourceLoader.Load<PackedScene>` 返回 null
+⇒ 走回退分支（紫色，而且回退是在伤害**之前**手动播的，时机也不好）。
+
+**修法**：只替换 `path`（并去掉 `uid`），**原样保留 id**；脚本里加自检
+"`ExtResource("x")` 引用集合 ⊆ `[ext_resource ... id=]` 定义集合"，四个组件 + 根场景全部通过。
+
+**离线校验**（`Godot --headless` 直接 `ResourceLoader.load` 新场景）：
+4 个 `.tscn` 全部 `CHECK OK`（在 mod 工程里 shader/贴图/C# 脚本当然找不到，
+那些 ERROR 是脱离游戏本体运行的必然结果，不代表游戏内失败）。
+
+### 31.9 「星光音」回归
+
+回退紫色后连音效也没了（初版本身没有 sfx）。本次给两张卡补回命中音：
+
+```csharp
+.WithHitFx(null, WizardVfx.GuidingStarSfx)   // event:/sfx/characters/regent/regent_guiding_star
+```
+
+`null` vfx + 有 sfx ⇒ 引擎只在命中时播音、不再叠一个紫光（光效由我们手动播的白+金版负责）。
