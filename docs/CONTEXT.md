@@ -5008,3 +5008,20 @@ if (tracked == command) { data.commandToModify = null; data.amountWhenAttackStar
 `vfx/vfx_sweeping_beam(+_impact)`（横向扫射光束，比 hyperbeam 更"铺开"）、
 `vfx/vfx_cross_heal(_fullscreen)`（十字圣光）、`vfx/vfx_hyperbeam_impact`（纯亮爆点）、
 `vfx/rare_glow_vfx`（金色光晕）、`vfx/whole_screen/horizontal_lines_vfx`（可任意染色的全屏光线）。
+
+### 31.7 以太牌特效试装（2026-11-09 第二轮，用户指定素材）
+
+用户要求"先移除全部特效，换成这几个看看"：
+
+| 卡 | 演出 | 调用 |
+|---|---|---|
+| 以太箭 | 目标身上**十字圣光** `vfx/vfx_cross_heal` | `.WithHitFx("vfx/vfx_cross_heal")` |
+| 以太箭 | **整屏圣光** `vfx/vfx_cross_heal_fullscreen` | `VfxCmd.PlayFullScreenInCombat(path, Owner.Creature)`（原版事件治疗全屏版 `PlayerFullscreenHealVfx` 用的就是它） |
+| 魔力爆发 | **稀有卡金光** `vfx/rare_glow_vfx` | `.WithHitFx("vfx/rare_glow_vfx")`（原版 `NCardRareGlow` 的粒子场景） |
+
+上一轮的光束 / 金色光爆 / 整屏加法闪光 / 星光音**全部移除**。
+`WizardVfx` 里新加的那几个helper（`GrandFinaleImpact` / `AdditiveFlash` / `GuidingStarSfx` /
+`HyperbeamWindup`）**保留备用**，目前没有卡在用。
+
+⚠️ `vfx/rare_glow_vfx` 本是**卡牌稀有度光效**（`NCardRareGlow`，粒子节点按卡牌尺寸做），
+作为战斗命中特效可能偏小/位置略偏 —— 这是"试装"，用户看效果后再定。

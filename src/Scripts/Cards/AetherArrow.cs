@@ -8,9 +8,7 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.CardPools;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Spells;
-using Wizard.Scripts.Utils;
 using BaseLib.Extensions;
-using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 namespace Wizard.Scripts.Cards;
 
@@ -73,19 +71,16 @@ public class AetherArrow : WizardSpellCard
         // 单体攻击牌没有目标属于引擎级异常 —— 直接抛，不要静默跳过。
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
 
-        // ① 先放「超能光束」：从自己射向目标的一道亮白光柱（蓄力 0.525s 后才出现）。
-        WizardVfx.Hyperbeam(Owner.Creature, cardPlay.Target);
+        // 命中演出（2026-11-09 用户指定，全部换成"光"）：
+        // ① 目标身上十字圣光（原版治疗 VFX `vfx/vfx_cross_heal`）；
+        // ② 整屏圣光（原版事件治疗的全屏版 `vfx/vfx_cross_heal_fullscreen`）。
+        VfxCmd.PlayFullScreenInCombat("vfx/vfx_cross_heal_fullscreen", Owner.Creature);
 
-        // ② 等光束真的射出来，再结算伤害（否则"还没看到光，伤害数字先跳了"）。
-        await Cmd.Wait(WizardVfx.HyperbeamWindup);
-
-        // ③ 命中：金色收束光爆 + 「引导之星」音效。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitVfxNode(t => NGrandFinaleImpactVfx.Create(t))
-            .WithHitFx(null, WizardVfx.GuidingStarSfx)
+            .WithHitFx("vfx/vfx_cross_heal")
             .Execute(choiceContext);
     }
 
