@@ -5,8 +5,8 @@
 | 文件 | 状态 | 备注 |
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
-| powers.json | ✅ 完成 | 93 条；31 个能力 |
-| cards.json | ✅ 完成 | 152 条；73 张卡 |
+| powers.json | ✅ 完成 | 102 条；34 个能力 |
+| cards.json | ✅ 完成 | 161 条；77 张卡 |
 | relics.json | ✅ 完成 | 27 条；9 个遗物 |
 | potions.json | ✅ 完成 | 7 条 |
 | monsters.json | ✅ 完成 | 4 条 |
@@ -20,8 +20,8 @@
 | 文件 | 状态 | 备注 |
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
-| powers.json | ✅ 完成 | 93 条；31 个能力 |
-| cards.json | ✅ 完成 | 152 条；73 张卡 |
+| powers.json | ✅ 完成 | 102 条；34 个能力 |
+| cards.json | ✅ 完成 | 161 条；77 张卡 |
 | relics.json | ✅ 完成 | 27 条；9 个遗物 |
 | potions.json | ✅ 完成 | 7 条 |
 | monsters.json | ✅ 完成 | 4 条 |
@@ -35,6 +35,7 @@
 - [x] zht key 数量、标签总数、术语与空格人工核对
 - [x] jpn key 数量、标签总数、术语与空格人工核对
 - [x] Aether 版本新增 8 卡 + 2 能力已补 zht/jpn
+- [x] Cauda Pavonis 版本新增 4 卡 + 3 能力已补 zht/jpn
 - [ ] zht / jpn 全量自动 JSON 解析 / 标签逐 key diff（建议在 CI 或本地脚本跑）
 - [ ] zht / jpn 术语一致性抽查
 - [ ] 确认 `Burn` 能力改名「焚燒」后的文本一致性（zht）
@@ -52,3 +53,4 @@
 - Aether 相关高亮统一为 `[gold]`（eng/zhs/zht/jpn）；不再用 `[blue]` 修饰 Aether / 以太 / 乙太 / エーテル。
 - 新内容 eng 标签对齐：`SPEED_READ` 补 `[gold]Hand[/gold]`；`THE_FOURTH_ELEMENT` 补 `[gold]Aether Arrow[/gold]`（见 `ENG_FIXES.md`）。
 - `MANA_BURST` 新文案已同步 zht/jpn（Aether 伤害改为按魔法威力结算，并加 `InCombat` 预览）；Aether 仍用 `[gold]`。
+- Cauda Pavonis 版本新增：`Cauda Pavonis`、`Great Library`、`Quickening`、`Random debuff` 四卡，以及 `Cauda Pavonis` / `Cauda Pavonis+` / `Great Library` 三能力；zht/jpn 已补。

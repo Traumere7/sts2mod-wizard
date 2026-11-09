@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：招式/专名用片假名，概念/状态用汉字；与原版撞名一律改名。
 
-## 卡牌（73）
+## 卡牌（77）
 
 | 英文 | jpn | 备注 |
 |---|---|---|
@@ -20,6 +20,7 @@
 | Burn To Ashes | 灰燼と化す | — |
 | Calm Mind | 精神統一 | — |
 | Catalyzation | 触媒 | 避让「促進剤」 |
+| Cauda Pavonis | カウダ・パボーニス | — |
 | Crystallization | 結晶化 | — |
 | Circulation | 環流 | — |
 | Clear World | 氷結世界 | 与 Purify Sin 差异化；不共用「浄化」 |
@@ -39,6 +40,7 @@
 | Flame Spark | 火の粉 | — |
 | Flashburst | 閃光爆発 | — |
 | Forget-me-not | 勿忘草 | — |
+| Great Library | 大図書館 | — |
 | Healing Spell | ヒーリング | — |
 | Ice Armor | アイスアーマー | — |
 | Ice Arrow | アイスアロー | — |
@@ -63,7 +65,9 @@
 | Purify Sin | 祓罪 | 不译「罪の浄化」，避免与 Clear World 重复 |
 | Pyromaniac | 放火魔 | — |
 | Pyro Judgment | 火刑 | — |
+| Quickening | 創生 | — |
 | Quick Chant | クイックチャント | — |
+| Random debuff | ランダムなデバフ | — |
 | Recollection | 追憶 | — |
 | Screen | 遮蔽 | 避让 BARRICADE「バリケード」 |
 | Skyfire Rampage | 天火暴走 | — |
@@ -80,7 +84,7 @@
 | Truth Party | 真実の宴 | — |
 | Watch Fire | 見張り火 | 避让 PYRE「かがり火」 |
 
-## 能力（31）
+## 能力（34）
 
 | 英文 | jpn |
 |---|---|
@@ -92,6 +96,7 @@
 | Burn | 燃焼 |
 | Burn Immunity | 燃焼無効 |
 | Catalyzation | 触媒 |
+| Cauda Pavonis | カウダ・パボーニス |
 | Chill | 冷気 |
 | Circulation | 環流 |
 | Cold Wave | 大寒波 |
@@ -101,6 +106,7 @@
 | Fire Spit | 火炎吐き |
 | Freeze | 凍結 |
 | Free This Turn | このターン無料 |
+| Great Library | 大図書館 |
 | Ice Wall | アイスウォール |
 | Mana Condense | マナ凝縮 |
 | Burn Immunity（怪物） | 燃焼無効 |

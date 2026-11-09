@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：2–4 字为主；法术牌可用「術」；与原版撞名一律改名。
 
-## 卡牌（73）
+## 卡牌（77）
 
 | 英文 | zht | 备注 |
 |---|---|---|
@@ -20,6 +20,7 @@
 | Burn To Ashes | 焚盡 | — |
 | Calm Mind | 靜心 | — |
 | Catalyzation | 觸媒 | 避让「催化劑」 |
+| Cauda Pavonis | 孔雀之尾 | — |
 | Crystallization | 結晶化 | — |
 | Circulation | 環流 | — |
 | Clear World | 清淨世界 | — |
@@ -39,6 +40,7 @@
 | Flame Spark | 火苗 | — |
 | Flashburst | 閃爆 | — |
 | Forget-me-not | 勿忘我 | — |
+| Great Library | 大圖書館 | — |
 | Healing Spell | 治療術 | — |
 | Ice Armor | 冰鎧 | — |
 | Ice Arrow | 冰矢 | — |
@@ -63,7 +65,9 @@
 | Purify Sin | 淨罪 | — |
 | Pyromaniac | 縱火狂 | — |
 | Pyro Judgment | 火刑 | — |
+| Quickening | 創生 | — |
 | Quick Chant | 快速詠唱 | — |
+| Random debuff | 隨機弱化效果 | — |
 | Recollection | 回憶 | — |
 | Screen | 屏蔽 | — |
 | Skyfire Rampage | 天火浩蕩 | — |
@@ -80,7 +84,7 @@
 | Truth Party | 真理派對 | — |
 | Watch Fire | 觀火 | — |
 
-## 能力（31）
+## 能力（34）
 
 | 英文 | zht |
 |---|---|
@@ -92,6 +96,7 @@
 | Burn | **焚燒** |
 | Burn Immunity | 焚燒免疫 |
 | Catalyzation | 觸媒 |
+| Cauda Pavonis | 孔雀之尾 |
 | Chill | 寒冷 |
 | Circulation | 環流 |
 | Cold Wave | 大寒波 |
@@ -101,6 +106,7 @@
 | Fire Spit | 噴火 |
 | Freeze | 凍結 |
 | Free This Turn | 本回合免費 |
+| Great Library | 大圖書館 |
 | Ice Wall | 冰牆 |
 | Mana Condense | 魔力凝聚 |
 | Burn Immunity（怪物） | 焚燒免疫 |

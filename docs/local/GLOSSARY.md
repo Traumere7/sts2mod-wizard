@@ -88,6 +88,10 @@
 | Mana Burst | 魔力爆发 | 魔力爆發 | マナバースト | — |
 | Speed Read | 速读 | 速讀 | 速読 | — |
 | The Fourth Element | 第四元素 | 第四元素 | 第四元素 | — |
+| Cauda Pavonis | 孔雀之尾 | 孔雀之尾 | カウダ・パボーニス | 拉丁名，保留异域感 |
+| Great Library | 图书馆 | **大圖書館** | **大図書館** | zht/jpn 补出「Great」 |
+| Quickening | 创生 | 創生 | 創生 | — |
+| Random debuff | 随机负面效果 | 隨機弱化效果 | ランダムなデバフ | — |
 
 ## 四、命名冲突与处理
 
