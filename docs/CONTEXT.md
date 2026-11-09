@@ -4865,3 +4865,22 @@ description / smartDescription）在繁中、日文也一并改成"增加 N 倍"
 | 快速咏唱 `TemporarySpellPowerPower` | 法术增益 | `FromPower<SpellPowerPower>()`（复审时补的最后一处） |
 
 复审结果：**21 个描述含专有名词的能力，0 个缺解释**。
+
+### 30.1 ⚠️「消耗」是**排除项**（2026-11-09 用户裁定）
+
+原版「无惧疼痛」把这条口径写得很清楚：
+
+| 层 | `ExtraHoverTips` |
+|---|---|
+| 卡 `FeelNoPain` | `FromKeyword(CardKeyword.Exhaust)` + `Static(Block)` |
+| **buff `FeelNoPainPower`** | **只有 `Static(Block)`** —— 不含「消耗」 |
+
+⇒ **buff 侧不重复解释「消耗」这个全局通用词条**（卡面才解释）。
+
+据此撤掉两处（是上一轮审计加错的）：
+
+- 凝神 `ConcentratePower`：只保留 `FromPower<SpellPowerPower>()`
+- 回忆 `RecollectionPower`：整块 `ExtraHoverTips` 删除（本来只有「消耗」一条）
+
+复审结果仍是 **0 个缺解释**（「消耗」不再计入）。`reference/tools/add_missing_power_tips.py`
+的文档头已注明这条排除规则，避免下次又把它加回来。

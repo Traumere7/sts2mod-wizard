@@ -89,11 +89,17 @@ public class ConcentratePower : CustomPowerModel
         }
     }
 
+    /// <summary>
+    /// ⚠️ 只解释「法术增益」，**不解释「消耗」** ——
+    /// 原版「无惧疼痛」就是这么分的：<c>FeelNoPain</c>（卡）挂了
+    /// <c>FromKeyword(CardKeyword.Exhaust)</c>，而 <c>FeelNoPainPower</c>（buff）只挂
+    /// <c>Static(StaticHoverTip.Block)</c>。「消耗」是全局通用词条，buff 侧不重复解释
+    /// （用户 2026-11-09 明确）。
+    /// </summary>
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
         HoverTipFactory.FromPower<SpellPowerPower>(),
-    
-        HoverTipFactory.FromKeyword(CardKeyword.Exhaust),];
+    ];
 
     public override async Task AfterCardExhausted(
         PlayerChoiceContext choiceContext,
