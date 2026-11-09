@@ -4768,13 +4768,25 @@ description / smartDescription）在繁中、日文也一并改成"增加 N 倍"
 | 施加收口 | 燃烧、寒冷走 `SpellCmd.ApplyBurn/ApplyChill`；其余 `PowerCmd.Apply` | 保持"每当施加燃烧/寒冷"的既有响应链 |
 | 钩子里的 context | `new ThrowingPlayerChoiceContext()` | 原版「炮火」`ArsenalPower` 先例 |
 
-**叠层（关键，用户 2026-11-09 明确）**：buff 描述写作
-"你每生成 1 张卡牌，就给予随机敌人 2 层随机负面效果 **n** 次"，
-**n = 能力层数（`Amount`）** ⇒ `StackType = Counter`，每次触发循环 `Amount` 次。
+**叠层（用户 2026-11-09 两轮定案）**：buff 描述写作
+"你每生成 1 张卡牌，就给予随机敌人 2 层随机负面效果 **n** 次"，**n = 能力层数（`Amount`）**
+⇒ `StackType = Counter`，每次触发循环 `Amount` 次。
 
-⚠️ "每次给几层"（2 / 升级后 3）**不能**放 `Amount`，否则和 n 打架：
-单独存 `DynamicVar("Layers")`，卡牌 `PowerCmd.Apply` 之后调 `SetLayers()` 写入
-（与「催化」`SetThreshold` 同一条"Apply 后再塞参数"模式）。混合叠加取**较大者**，升级永远不亏。
+⚠️ **未升级版与升级版是两个独立的能力模型**（不是同一个能力里改层数）：
+
+| 卡 | 挂的能力 | 每次层数 |
+|---|---|---|
+| 未升级「孔雀之尾」 | `CaudaPavonisPower` | 2 |
+| 升级「孔雀之尾」 | `CaudaPavonisUpgradedPower` | 3 |
+
+原因：若共用一个模型，"先打未升级再打升级的"就必须定一条混乱的合并规则。
+两个 `ModelId` ⇒ 两个 buff 图标各自叠层：
+`两张未升级 = 一个图标 n=2`、`两张升级 = 另一个图标 n=2`、`各一张 = 两个图标各 n=1`。
+两者本地化名称**都叫「孔雀之尾」**。
+
+实现：公共逻辑在抽象基类 `CaudaPavonisPowerBase`（BaseLib 注册时会跳过 `abstract` 类型），
+子类只声明 `LayersPerTrigger`（2 / 3）与图标；卡牌按 `IsUpgraded` 决定 `PowerCmd.Apply<哪一个>`。
+卡面上的 `{Layers:diff()}`（2→3）只是**展示**，真正生效的层数由能力类决定。
 
 **悬停解释**：`WizardTips.RandomDebuff` → `cards.json` 的 `WIZARD-RANDOM_DEBUFF.title/description`，
 写明候选七种 + "优先给予未拥有的"。

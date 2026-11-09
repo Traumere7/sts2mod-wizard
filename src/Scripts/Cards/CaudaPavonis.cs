@@ -21,11 +21,15 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
-/// ⚠️ 两个数值各有归属（见 <see cref="CaudaPavonisPower"/> 的注释）：
+/// ⚠️ <b>升级牌与未升级牌挂的是两个不同的能力模型</b>（用户 2026-11-09 定案）：
 /// <list type="bullet">
-///   <item><c>PowerVar&lt;CaudaPavonisPower&gt;(1)</c> —— 每次打出 +1 层，层数 = <b>每次触发结算几次</b>（n）；</item>
-///   <item><c>Layers</c> 变量（2 / 升级后 3）—— <b>每次给几层负面效果</b>，Apply 之后写进能力里。</item>
+///   <item>未升级 → <see cref="CaudaPavonisPower"/>（每次 2 层）；</item>
+///   <item>升级   → <see cref="CaudaPavonisUpgradedPower"/>（每次 3 层）。</item>
 /// </list>
+/// 两者是不同 <c>ModelId</c> 的独立 buff，各自叠层：打两张未升级 = 一个图标 n=2，
+/// 打两张升级 = 另一个图标 n=2，各打一张 = 两个图标各 n=1。
+/// 卡面上的 <c>{Layers:diff()}</c>（2→3）只是<b>展示</b>，真正生效的层数由能力类自己的
+/// <c>LayersPerTrigger</c> 决定。
 /// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
@@ -41,10 +45,8 @@ public class CaudaPavonis : WizardCardModel
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        // 每次打出 +1 层（= "结算几次"里的 n）。
+        // 每次给几层负面效果（仅用于卡面文案；实际层数由能力类决定）。
         new PowerVar<CaudaPavonisPower>(1m),
-
-        // 每次给几层负面效果。
         new DynamicVar(LayersKey, BaseLayers),
     ];
 
@@ -60,15 +62,26 @@ public class CaudaPavonis : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        CaudaPavonisPower? power = await PowerCmd.Apply<CaudaPavonisPower>(
-            choiceContext,
-            Owner.Creature,
-            1m,
-            Owner.Creature,
-            this);
-
-        // "每次给几层"不能走 Amount（那是 n），Apply 之后再塞进去。
-        power?.SetLayers((int)DynamicVars[LayersKey].BaseValue);
+        // 每次打出 +1 层 = 结算次数 n；层数（每次给几层）由能力类自己定，
+        // 升级过的牌挂的是另一个能力模型，因此两个 buff 各自叠层、互不干扰。
+        if (IsUpgraded)
+        {
+            await PowerCmd.Apply<CaudaPavonisUpgradedPower>(
+                choiceContext,
+                Owner.Creature,
+                1m,
+                Owner.Creature,
+                this);
+        }
+        else
+        {
+            await PowerCmd.Apply<CaudaPavonisPower>(
+                choiceContext,
+                Owner.Creature,
+                1m,
+                Owner.Creature,
+                this);
+        }
     }
 
     protected override void OnUpgrade()
