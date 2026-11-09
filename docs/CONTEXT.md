@@ -4747,3 +4747,65 @@ description / smartDescription）在繁中、日文也一并改成"增加 N 倍"
 | jpn | `…属性ダメージが100%増加する。` | `100%増加する` / `[blue]{Amount}[/blue]00%増加する` |
 
 （其他 zht/jpn 文案未动，换行仍保持它们原本的 **LF**。）
+
+
+---
+
+## 29. 2026-11-09 新增 3 张卡（孔雀之尾 / 创生 / 图书馆）
+
+> 设计稿 `docs/design.md` 卡池 164~169 行。卡牌类 **72 → 75**。
+
+### 29.1 孔雀之尾 `CaudaPavonis`（1 费 · 稀有 · 能力）
+
+效果：**你每生成 1 张卡牌，就给予随机敌人 2(3) 层随机负面效果。**
+
+| 部分 | 做法 | 依据 |
+|---|---|---|
+| 生成检测 | `AfterCardGeneratedForCombat(card, creator)` + `creator.Creature == Owner` | **照抄本 mod「催化」**`CatalyzationPower` |
+| 随机敌人 | `player.RunState.Rng.CombatTargets.NextItem(存活敌人)` | 原版随机打怪的标准流 |
+| 随机负面效果 | 七选一，**优先给目标还没有的**（<see cref="RandomDebuff"/>） | design.md 165 行 |
+| 候选池 | 燃烧 / 麻痹 / 电流外溢 / 寒冷 / 冻结 / 易伤 / 虚弱 | 同上 |
+| 施加收口 | 燃烧、寒冷走 `SpellCmd.ApplyBurn/ApplyChill`；其余 `PowerCmd.Apply` | 保持"每当施加燃烧/寒冷"的既有响应链 |
+| 钩子里的 context | `new ThrowingPlayerChoiceContext()` | 原版「炮火」`ArsenalPower` 先例 |
+
+**叠层（关键，用户 2026-11-09 明确）**：buff 描述写作
+"你每生成 1 张卡牌，就给予随机敌人 2 层随机负面效果 **n** 次"，
+**n = 能力层数（`Amount`）** ⇒ `StackType = Counter`，每次触发循环 `Amount` 次。
+
+⚠️ "每次给几层"（2 / 升级后 3）**不能**放 `Amount`，否则和 n 打架：
+单独存 `DynamicVar("Layers")`，卡牌 `PowerCmd.Apply` 之后调 `SetLayers()` 写入
+（与「催化」`SetThreshold` 同一条"Apply 后再塞参数"模式）。混合叠加取**较大者**，升级永远不亏。
+
+**悬停解释**：`WizardTips.RandomDebuff` → `cards.json` 的 `WIZARD-RANDOM_DEBUFF.title/description`，
+写明候选七种 + "优先给予未拥有的"。
+
+### 29.2 创生 `Quickening`（1(0) 费 · 罕见 · 技能）
+
+"从你的手牌中选最多 3 张牌变化。"
+
+- 选卡：`CardSelectCmd.FromHand(ctx, Owner, new CardSelectorPrefs(prompt, 1, max), c => c.IsTransformable, this)`
+  —— **与「勿忘我」同一套区间构造**（min=1 强制至少 1 张、max=3，自动 `RequireManualConfirmation`）。
+  可变化牌不足 3 张时 max 自动降；一张都没有则不弹界面。
+- 变化：`CardCmd.TransformToRandom(card, Owner.RunState.Rng.CombatCardSelection)`
+  —— 与「变化」`Transmogrify`、「灵魂」`Animism` 一致。
+- ⚠️ 必须按 `IsTransformable` 过滤：否则 `CardCmd.Transform` 会对不可变化的牌抛异常。
+- 升级：只降费 1 → 0。
+
+### 29.3 图书馆 `GreatLibrary`（3(2) 费 · 稀有 · 能力）
+
+"保留。在你的回合开始时，额外抽 2 张牌。"
+
+- 效果**照抄原版「机器学习」**：给玩家挂 `GreatLibraryPower`，它只重写
+  `ModifyHandDraw(player, count) => count + Amount`（`Counter` 叠层，打两张每回合 +4）。
+- 「保留」写在 `CanonicalKeywords` ⇒ **升级前后都有**（升级只降费 3 → 2）。
+- 原版 `MachineLearning` 的升级是"加固有"，本牌按设计改成"降费"，**不要**照抄那一段。
+
+### 29.4 本次清扫
+
+- 「结晶」的临时诊断日志 `[诊断/结晶]` 已删除，恢复为直接的 `Any(...)` 判定。
+- 繁中/日文的「第四元素」buff 卡名 `[gold]` 由用户手改完成，本次未动那两种语言。
+
+### 29.5 本地化状态
+
+`zhs` / `eng` 已写入 3 张卡 + 2 个能力 + 1 条悬停（cards 152→161、powers 93→99）。
+`zht` / `jpn` **未写**（按职责边界由本地化团队维护，缺键回退英文）。

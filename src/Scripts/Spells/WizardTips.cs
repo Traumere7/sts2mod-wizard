@@ -26,4 +26,13 @@ public static class WizardTips
     public static IHoverTip Aether => new HoverTip(
         new LocString("cards", "WIZARD-AETHER.title"),
         new LocString("cards", "WIZARD-AETHER.description"));
+
+    /// <summary>
+    /// 「随机负面效果」（「孔雀之尾」用）：
+    /// 候选为燃烧、麻痹、电流外溢、寒冷、冻结、易伤、虚弱，优先给予敌人未拥有的。
+    /// 文案见 <c>cards.json</c> 的 <c>WIZARD-RANDOM_DEBUFF.*</c>。
+    /// </summary>
+    public static IHoverTip RandomDebuff => new HoverTip(
+        new LocString("cards", "WIZARD-RANDOM_DEBUFF.title"),
+        new LocString("cards", "WIZARD-RANDOM_DEBUFF.description"));
 }
