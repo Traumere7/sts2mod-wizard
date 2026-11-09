@@ -1,67 +1,57 @@
 using System.Reflection;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Commands.Builders;
-using MegaCrit.Sts2.Core.Entities.Cards;
-using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Powers;
-using MegaCrit.Sts2.Core.ValueProps;
 
 namespace Wizard.Scripts.Patches;
 
 /// <summary>
-/// 「活力」<see cref="VigorPower"/> 的**跟踪状态复用**修正 + 临时探针。
+/// 修正原版「活力」<see cref="VigorPower"/> 的**跟踪状态复用**问题
+/// （2026-11-09 定位并实测确认修复）。
 ///
 /// ══════════════════════════════════════════════════════════════════
-/// 问题（2026-11-09 用户复现「法术伤害牌不享受活力」）
+/// 原版的坑
 /// ══════════════════════════════════════════════════════════════════
-/// 原版 <c>VigorPower</c> 用一份私有状态 `Data { AttackCommand? commandToModify; int
-/// amountWhenAttackStarted; }` 只"认一次攻击"：
+/// <c>VigorPower</c> 用一份私有状态只"认一次攻击"：
+/// <code>
+/// Data { AttackCommand? commandToModify; int amountWhenAttackStarted; }
 ///
-/// <list type="number">
-///   <item><c>BeforeAttack(command)</c>：<b>若 <c>commandToModify != null</c> 直接 return</b>
-///         ⇒ 这次攻击**不会被跟踪**；</item>
-///   <item><c>ModifyDamageAdditive(...)</c>：<b>若 <c>commandToModify != null</c> 且
-///         本次 <c>cardSource</c> 不是那条命令的来源牌 ⇒ 返回 0</b>；</item>
-///   <item><c>AfterAttack(command)</c>：只做 <c>ModifyAmount(-amountWhenAttackStarted)</c>，
-///         <b>从不把 <c>commandToModify</c> 清回 null</b>。</item>
-/// </list>
+/// BeforeAttack:      if (commandToModify != null) return;          // ② 后续攻击不跟踪
+/// ModifyDamageAdditive: commandToModify != null &amp;&amp; cardSource != tracked.ModelSource ⇒ 0
+/// AfterAttack:       ModifyAmount(-amountWhenAttackStarted);       // ① 只扣层数，不清跟踪
+/// </code>
+/// ⇒ 只要一次攻击结束时活力**还有剩余层数**，<c>commandToModify</c> 就一直指着上一张牌，
+/// 之后所有攻击都吃不到活力（表现为"有活力层数但伤害不加"）。
 ///
-/// ⇒ 只要"这一次攻击结束后活力还有剩余层数"，<c>commandToModify</c> 就会一直指着
-/// **上一张牌**，之后所有攻击都被第 1/2 条挡掉 —— 表现为"有活力层数，但伤害完全不加"。
-///
-/// 原版里活力通常由卡牌/药水在**攻击之外**给予，所以"打完还剩层数"很少见，这个坑不显形。
-/// 而本 mod 的「纵火狂」<c>PyromaniacPower</c> 会在**攻击结算过程中**
-/// （「燃烧之魂」每段追加燃烧时）继续给活力 ⇒ 必然踩中：
-/// 有活力、有层数、就是不加伤害。
+/// 原版不会在攻击过程中给活力，所以这个坑在 vanilla 里不显形；
+/// 本 mod 的「纵火狂」在「燃烧之魂」追加燃烧时给活力，必然踩中。
 ///
 /// ══════════════════════════════════════════════════════════════════
 /// 修法
 /// ══════════════════════════════════════════════════════════════════
-/// 在 <c>AfterAttack</c> 的 Postfix 里：**当本次命令就是被跟踪的那条时，把跟踪状态清空**
-/// （<c>commandToModify = null</c>、<c>amountWhenAttackStarted = 0</c>）。
-/// 这样"还剩层数"的活力会在下一次攻击时重新被正常跟踪。
+/// 在 <c>AfterAttack</c> 的 Postfix 里：本次命令就是被跟踪那条时，把
+/// <c>commandToModify = null</c>、<c>amountWhenAttackStarted = 0</c> 清空，
+/// 让"还剩层数"的活力在下一次攻击时重新被正常跟踪。
 ///
-/// ⚠️ 安全性：`AfterAttack` 是 <c>async Task</c>，Harmony 的 Postfix 在状态机**第一次挂起**
-/// （第一个 await 让出）时执行；而 <c>-amountWhenAttackStarted</c> 是在进入 await **之前**
-/// 就求值进实参的，所以清空该字段不会影响本次扣减。
+/// <list type="bullet">
+///   <item><c>AfterAttack</c> 是 <c>async Task</c>：Harmony 的 Postfix 在状态机**第一次挂起**时执行，
+///         而 <c>-amountWhenAttackStarted</c> 在进 await **之前**已求值进实参，
+///         所以清空该字段不会影响本次扣减。</item>
+///   <item>依赖反射访问原版私有字段（<c>PowerModel._internalData</c> →
+///         <c>VigorPower.Data.*</c>）。反射失败**只记一条警告并放弃补丁**，绝不影响游戏运行。</item>
+/// </list>
 ///
-/// ⚠️ 依赖反射访问原版私有字段（<c>PowerModel._internalData</c> → <c>VigorPower.Data.*</c>）。
-/// 一旦原版改字段名，反射会失败 —— 失败时**只记一条警告并放弃补丁**，绝不影响游戏运行。
-///
-/// ══════════════════════════════════════════════════════════════════
-/// 探针（定位完成后可删）
-/// ══════════════════════════════════════════════════════════════════
-/// 三处各打一行 <c>[活力诊断]</c>，能一眼区分：
-/// "钩子没被调用 / 被跟踪状态挡了 / 加算被闸门挡了 / 真的加了"。
-/// 只在"施法者 == 活力拥有者 且 该伤害是一次攻击"时打印，避免刷屏。
+/// <para>
+/// 2026-11-09 实测：一场战斗里出现 7 次"AfterAttack 时仍有剩余层数（12/36）"，
+/// 修复后下一张攻击牌（含「魔力爆发」这种以太法术）都能正常加算；之后再无"被挡"记录。
+/// 定位用的 <c>[活力诊断]</c> 探针已按用户确认删除。
+/// </para>
 /// </summary>
-[HarmonyPatch(typeof(VigorPower))]
+[HarmonyPatch(typeof(VigorPower), nameof(VigorPower.AfterAttack))]
 internal static class VigorTrackingPatch
 {
-    private const string LogTag = "[活力诊断]";
-
     private static readonly FieldInfo? InternalDataField =
         AccessTools.Field(typeof(PowerModel), "_internalData");
 
@@ -76,100 +66,32 @@ internal static class VigorTrackingPatch
 
     private static bool _reflectionBroken;
 
-    /// <summary>读取被跟踪的命令（反射失败返回 null，并只警告一次）。</summary>
-    private static AttackCommand? TrackedCommand(VigorPower vigor)
+    [HarmonyPostfix]
+    private static void Postfix(VigorPower __instance, AttackCommand command)
     {
-        if (_reflectionBroken)
+        if (_reflectionBroken || command.Attacker != __instance.Owner)
         {
-            return null;
+            return;
         }
 
         if (InternalDataField == null || DataType == null || CommandField == null || AmountField == null)
         {
             _reflectionBroken = true;
             Entry.Logger.Warn(
-                $"{LogTag} 反射定位 VigorPower 私有状态失败（原版可能改了字段名）；" +
-                "本次不修正活力跟踪状态 —— 若再次出现「有活力但不加伤害」，请报告。");
-            return null;
+                "[活力] 反射定位 VigorPower 私有状态失败（原版可能改了字段名）；"
+                + "本次不修正活力跟踪状态。若再出现「有活力层数但不加伤害」，请报告。");
+            return;
         }
 
-        object? data = InternalDataField.GetValue(vigor);
-        return data == null ? null : CommandField.GetValue(data) as AttackCommand;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // 探针 ①：BeforeAttack —— 看"这次攻击有没有被跟踪"
-    // ══════════════════════════════════════════════════════════════
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(VigorPower.BeforeAttack))]
-    private static void BeforeAttackPrefix(VigorPower __instance, AttackCommand command)
-    {
-        if (command.Attacker != __instance.Owner)
+        object? data = InternalDataField.GetValue(__instance);
+        if (data == null || CommandField.GetValue(data) is not AttackCommand tracked || tracked != command)
         {
             return;
         }
 
-        AttackCommand? tracked = TrackedCommand(__instance);
-        bool powered = command.DamageProps.IsPoweredAttack();
-        string source = command.ModelSource == null ? "null" : command.ModelSource.GetType().Name;
-
-        Entry.Logger.Info(
-            $"{LogTag} BeforeAttack 牌={source} powered={powered} 层数={__instance.Amount} "
-            + $"跟踪中={(tracked != null ? tracked.ModelSource?.GetType().Name : "无")} "
-            + $"⇒ {((tracked != null || !powered) ? "本次不会吃到加成" : "本次将被跟踪")}");
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // 探针 ②：ModifyDamageAdditive —— 看"实际加了多少"
-    // ══════════════════════════════════════════════════════════════
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(VigorPower.ModifyDamageAdditive))]
-    private static void ModifyDamageAdditivePostfix(
-        VigorPower __instance,
-        Creature? dealer,
-        ValueProp props,
-        CardModel? cardSource,
-        ref decimal __result)
-    {
-        if (dealer != __instance.Owner || !props.IsPoweredAttack())
-        {
-            return;
-        }
-
-        Entry.Logger.Info(
-            $"{LogTag} ModifyDamageAdditive 牌={(cardSource == null ? "null" : cardSource.GetType().Name)} "
-            + $"层数={__instance.Amount} 加算={__result}");
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // 修正 + 探针 ③：AfterAttack —— 清空"已完成的跟踪"
-    // ══════════════════════════════════════════════════════════════
-    [HarmonyPostfix]
-    [HarmonyPatch(nameof(VigorPower.AfterAttack))]
-    private static void AfterAttackPostfix(VigorPower __instance, AttackCommand command)
-    {
-        if (command.Attacker != __instance.Owner)
-        {
-            return;
-        }
-
-        AttackCommand? tracked = TrackedCommand(__instance);
-        if (tracked == null || tracked != command || _reflectionBroken)
-        {
-            return;
-        }
-
-        object? data = InternalDataField!.GetValue(__instance);
-        if (data == null)
-        {
-            return;
-        }
-
-        CommandField!.SetValue(data, null);
-        AmountField!.SetValue(data, 0);
-
-        Entry.Logger.Info(
-            $"{LogTag} AfterAttack 已清空跟踪（剩余层数={__instance.Amount}）"
-            + " ⇒ 下次攻击可以正常吃到活力");
+        // 本次攻击就是被跟踪的那条 ⇒ 跟踪结束，清空状态。
+        // 剩余层数（纵火狂在攻击中补的）留给下一次攻击正常使用。
+        CommandField.SetValue(data, null);
+        AmountField.SetValue(data, 0);
     }
 }

@@ -88,6 +88,20 @@ public static class WizardVfx
     /// </summary>
     public const string LightningOrbEvokeSfx = "event:/sfx/characters/defect/defect_lightning_evoke";
 
+    /// <summary>
+    /// 「引导之星」音效（原版 Regent 的星光音）。
+    /// 出处：<c>GuidingStar</c> → <c>"event:/sfx/characters/regent/regent_guiding_star"</c>。
+    /// 清亮、有"光"感，用于以太伤害的命中音。
+    /// </summary>
+    public const string GuidingStarSfx = "event:/sfx/characters/regent/regent_guiding_star";
+
+    /// <summary>
+    /// 原版「超能光束」<c>NHyperbeamVfx</c> 的蓄力时长
+    /// （<c>hyperbeamAnticipationDuration = 0.525f</c>，光束在那之后才出现）。
+    /// 需要"先播演出、再结算伤害"的卡用它当等待时间。
+    /// </summary>
+    public const float HyperbeamWindup = 0.5f;
+
     // ══════════════════════════════════════════════════════════════
     // 挂载基础设施
     // ══════════════════════════════════════════════════════════════
@@ -228,6 +242,21 @@ public static class WizardVfx
     /// </summary>
     public static void LineBurst(Creature target)
         => Attach(NLineBurstVfx.Create(target), nameof(NLineBurstVfx));
+
+    /// <summary>
+    /// 收束光爆（原版「终结技」<c>GrandFinale</c> 的命中光爆，2 秒自毁）。
+    /// 观感是目标身上炸开的一团**金色强光** —— 以太伤害的命中演出用它。
+    /// </summary>
+    public static void GrandFinaleImpact(Creature target)
+        => Attach(NGrandFinaleImpactVfx.Create(target), nameof(NGrandFinaleImpactVfx));
+
+    /// <summary>
+    /// 整屏**加法叠加**闪光（原版 <c>NHellraiserVfx</c> 的用法）：
+    /// 0.5s 淡入 → 停留 0.5s → 0.5s 淡出，整块屏幕被染亮。
+    /// <c>VfxColor.Gold</c> = 金光，<c>White</c> = 白光。
+    /// </summary>
+    public static void AdditiveFlash(VfxColor color = VfxColor.Gold)
+        => Attach(NAdditiveOverlayVfx.Create(color), nameof(NAdditiveOverlayVfx));
 
     // ══════════════════════════════════════════════════════════════
     // 冰霜系

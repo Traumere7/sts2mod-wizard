@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Spells;
 using Wizard.Scripts.Utils;
 using BaseLib.Extensions;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 namespace Wizard.Scripts.Cards;
 
@@ -72,11 +73,19 @@ public class AetherArrow : WizardSpellCard
         // 单体攻击牌没有目标属于引擎级异常 —— 直接抛，不要静默跳过。
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
 
+        // ① 先放「超能光束」：从自己射向目标的一道亮白光柱（蓄力 0.525s 后才出现）。
+        WizardVfx.Hyperbeam(Owner.Creature, cardPlay.Target);
+
+        // ② 等光束真的射出来，再结算伤害（否则"还没看到光，伤害数字先跳了"）。
+        await Cmd.Wait(WizardVfx.HyperbeamWindup);
+
+        // ③ 命中：金色收束光爆 + 「引导之星」音效。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
-            .WithHitFx(WizardVfx.StarryImpactFx)
+            .WithHitVfxNode(t => NGrandFinaleImpactVfx.Create(t))
+            .WithHitFx(null, WizardVfx.GuidingStarSfx)
             .Execute(choiceContext);
     }
 

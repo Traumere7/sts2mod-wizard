@@ -4977,3 +4977,34 @@ if (tracked == command) { data.commandToModify = null; data.amountWhenAttackStar
 复现方式：身上有「纵火狂」+「燃烧之魂」，用任意攻击牌打一下（会追加燃烧），
 然后看**下一张攻击牌**是否还能吃到活力；日志里应看到
 `AfterAttack 已清空跟踪 ⇒ 下次攻击可以正常吃到活力`。
+
+### 31.5 实测确认（2026-11-09 22:29 那场战斗的日志）
+
+- `AfterAttack 已清空跟踪（剩余层数=12/36）` 出现 **7 次** ⇒ 原来的坑确实在同一场战斗里反复触发；
+- `本次不会吃到加成` **0 次** ⇒ 修复后再没被旧跟踪状态挡住；
+- 清空后的下一次攻击正常被跟踪，且「魔力爆发」（以太法术）拿到 `加算=24`。
+
+⇒ 根因与修法均确认。定位用的 `[活力诊断]` 三处探针已删除，只保留修复逻辑
+（`VigorTrackingPatch` 里写明反射失败的降级行为）。
+
+### 31.6 以太（Aether）伤害牌改用"光辉"演出（2026-11-09）
+
+原先「以太箭」「魔力爆发」用 `vfx/vfx_starry_impact`（紫色星光/烟雾），
+用户要求改成"比较光辉、像光之力量"的效果。新增可复用素材：
+
+| 素材 | 出处 | 观感 |
+|---|---|---|
+| `WizardVfx.GrandFinaleImpact(creature)` | 原版 `NGrandFinaleImpactVfx`（「终结技」） | 目标身上炸开**金色强光**，2s 自毁 |
+| `WizardVfx.AdditiveFlash(VfxColor)` | 原版 `NAdditiveOverlayVfx`（`NHellraiserVfx` 的用法） | **整屏加法叠加闪光**（0.5 淡入 / 0.5 停留 / 0.5 淡出）；`Gold` 金光、`White` 白光 |
+| `WizardVfx.GuidingStarSfx` | `event:/sfx/characters/regent/regent_guiding_star` | 清亮的"星光"音 |
+| `WizardVfx.HyperbeamWindup` | `NHyperbeamVfx.hyperbeamAnticipationDuration` | 光束蓄力 0.5s（用于"先播演出再结算"） |
+
+具体改动：
+- **以太箭**：`Hyperbeam(self → target)` → `await Cmd.Wait(0.5)` → 命中 `GrandFinaleImpact` + 星光音；
+- **魔力爆发**：`HorizontalLines(GoldTint, 1.2)` + `AdditiveFlash(Gold)` → `await Cmd.Wait(0.35)`
+  → 每个敌人 `GrandFinaleImpact` + 星光音。
+
+备选（若观感不合适，一行就能换）：
+`vfx/vfx_sweeping_beam(+_impact)`（横向扫射光束，比 hyperbeam 更"铺开"）、
+`vfx/vfx_cross_heal(_fullscreen)`（十字圣光）、`vfx/vfx_hyperbeam_impact`（纯亮爆点）、
+`vfx/rare_glow_vfx`（金色光晕）、`vfx/whole_screen/horizontal_lines_vfx`（可任意染色的全屏光线）。

@@ -13,6 +13,7 @@ using Wizard.Scripts.Powers;
 using Wizard.Scripts.Spells;
 using BaseLib.Extensions;
 using Wizard.Scripts.Utils;
+using MegaCrit.Sts2.Core.Nodes.Vfx;
 
 namespace Wizard.Scripts.Cards;
 
@@ -102,11 +103,18 @@ public class ManaBurst : WizardSpellCard
         // ① 按"当前层数"结算以太伤害（此时还没翻倍）。
         decimal stacks = SpellPowerStacks(this);
 
+        // ⓪ 先铺一层"光辉"演出：整屏金色光线 + 加法叠加金光闪一下。
+        WizardVfx.HorizontalLines(WizardVfx.GoldTint, 1.2);
+        WizardVfx.AdditiveFlash(VfxColor.Gold);
+        await Cmd.Wait(0.35f);
+
+        // 命中：每个敌人身上炸开金色收束光爆 + 「引导之星」音效。
         await DamageCmd.Attack(stacks)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
             .TargetingAllOpponents(combatState)
-            .WithHitFx(WizardVfx.StarryImpactFx)
+            .WithHitVfxNode(t => NGrandFinaleImpactVfx.Create(t))
+            .WithHitFx(null, WizardVfx.GuidingStarSfx)
             .Execute(choiceContext);
 
         // ② 再翻倍：额外施加"当前层数"份 ⇒ 2×。
