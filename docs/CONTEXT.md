@@ -5227,3 +5227,28 @@ public static CardKeyword Obliterate;
    「暗黑神秘学」「启示」）；数值型则写作 `{IfUpgraded:show:X+1|X}`。
    改完后卡面不再出现 `{MercuryPower:diff()}`，但 `PowerVar<MercuryPower>` 仍保留
    （能力施加量与升级 +1 都靠它）。
+
+### 34.6 附魔文案规范：对齐原版「华美手镯」（2026-11-13 用户要求）
+
+原版 `BEAUTIFUL_BRACELET.eventDescription`（zhs）：
+`为你[gold]牌组[/gold]中的随机[blue]{Cards}[/blue]张牌[gold]附魔[/gold]：[purple]迅捷{Swift}[/purple]。`
+
+⇒ 规则（我们照抄）：
+
+| 元素 | 写法 |
+|---|---|
+| 「附魔」二字 | `[gold]附魔[/gold]`（英文 `[gold]Enchant[/gold]` / `[gold]Enchanted[/gold]`） |
+| 附魔名 | `[purple]迅速[/purple]` |
+| 数字 | **引用变量**：卡写 `{Swift}`、能力写 `{Swift}`（= `MercuryPower.SwiftAmount`） |
+| 中文名与数字之间 | **无空格**：`[purple]迅速{Swift}[/purple]` |
+
+英文按原版英文遗物的排版（`[purple]Swift[/purple] [blue]{Swift}[/blue]`）——英文遗物本身是"紫名 + 空格 + 蓝数字"，
+与中文的"紫名内嵌数字"不同；两种语言各按自己的官方排版对齐。
+
+落地：
+- `Mercury.CanonicalVars` 增加 `new DynamicVar("Swift", MercuryPower.SwiftAmount)`；
+- `MercuryPower.CanonicalVars` 同样登记 `Swift`（buff 文案 `{Swift}` 才不会漏成字面量）；
+- 副产物：`永恒回响` 的「附魔」也改成 `[gold]附魔[/gold]`；`复奏` 的描述沿用 `Spiral` 的
+  `[gold]重放[/gold][blue]{Times}[/blue]` 排版（本来就是对的）。
+- ⚠️ 教训：**卡面文案里出现的自定义变量必须在 `CanonicalVars` 里登记同名 `DynamicVar`**，
+  否则会原样显示 `{Swift}`。

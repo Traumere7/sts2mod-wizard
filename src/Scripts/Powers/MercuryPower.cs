@@ -8,6 +8,7 @@ using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Models.Enchantments;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
 
 namespace Wizard.Scripts.Powers;
 
@@ -60,6 +61,14 @@ public class MercuryPower : CustomPowerModel
 
     /// <summary>层数 = 每回合可附魔张数（多张水银叠加）。</summary>
     public override PowerStackType StackType => PowerStackType.Counter;
+
+    /// <summary>文案里「迅速{c}Swift{/c}」的数字（= <see cref="SwiftAmount"/>）。</summary>
+    private const string SwiftVarKey = "Swift";
+
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new DynamicVar(SwiftVarKey, SwiftAmount),
+    ];
 
     public override string? CustomPackedIconPath => "res://Wizard/images/powers/mercury_power.png";
 

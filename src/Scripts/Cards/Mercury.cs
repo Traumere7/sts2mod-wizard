@@ -31,9 +31,16 @@ public class Mercury : WizardCardModel
 
     private const string PowerKey = nameof(MercuryPower);
 
+    /// <summary>
+    /// 文案里的「迅速**2**」那个 2 用 <c>{Swift}</c> 引用（照原版「华美手镯」的
+    /// `[purple]迅捷{Swift}[/purple]` 写法），所以这里登记一个同名变量。
+    /// </summary>
+    private const string SwiftVarKey = "Swift";
+
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
         new PowerVar<MercuryPower>(1m),
+        new DynamicVar(SwiftVarKey, MercuryPower.SwiftAmount),
     ];
 
     /// <summary>
