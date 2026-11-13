@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：招式/专名用片假名，概念/状态用汉字；与原版撞名一律改名。
 
-## 卡牌（77）
+## 卡牌（79）
 
 | 英文 | jpn | 备注 |
 |---|---|---|
@@ -36,6 +36,7 @@
 | Embrittlement | 脆化 | — |
 | Endnote | エンドノート | — |
 | Epiphany | 悟り | — |
+| Eternal Echo | エターナルエコー | — |
 | Fireball | ファイアボール | — |
 | Flame Spark | 火の粉 | — |
 | Flashburst | 閃光爆発 | — |
@@ -56,6 +57,7 @@
 | Mana Burst | マナバースト | — |
 | Mana Condense | マナ凝縮 | — |
 | Mana Drain | マナ吸収 | 避让 DRAIN_POWER「力の吸収」 |
+| Mercury | 水銀 | — |
 | Mind Flow | マインドフロー | — |
 | Mirror | 鏡像 | — |
 | Myth | 迷妄 | 取“迷思/误解”义，不译「神話」 |
@@ -84,7 +86,7 @@
 | Truth Party | 真実の宴 | — |
 | Watch Fire | 見張り火 | 避让 PYRE「かがり火」 |
 
-## 能力（34）
+## 能力（35）
 
 | 英文 | jpn |
 |---|---|
@@ -109,6 +111,7 @@
 | Great Library | 大図書館 |
 | Ice Wall | アイスウォール |
 | Mana Condense | マナ凝縮 |
+| Mercury | 水銀 |
 | Burn Immunity（怪物） | 燃焼無効 |
 | Omniscient Form | 全知化 |
 | Paralysis | 麻痺 |

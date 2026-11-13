@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：2–4 字为主；法术牌可用「術」；与原版撞名一律改名。
 
-## 卡牌（77）
+## 卡牌（79）
 
 | 英文 | zht | 备注 |
 |---|---|---|
@@ -36,6 +36,7 @@
 | Embrittlement | 脆化 | — |
 | Endnote | 尾註 | — |
 | Epiphany | 頓悟 | — |
+| Eternal Echo | 永恆回響 | — |
 | Fireball | 火球術 | — |
 | Flame Spark | 火苗 | — |
 | Flashburst | 閃爆 | — |
@@ -56,6 +57,7 @@
 | Mana Burst | 魔力爆發 | — |
 | Mana Condense | 魔力凝聚 | — |
 | Mana Drain | 汲魔 | 避让「能量汲取」 |
+| Mercury | 水銀 | — |
 | Mind Flow | 心流 | — |
 | Mirror | 鏡像 | — |
 | Myth | 迷思 | — |
@@ -84,7 +86,7 @@
 | Truth Party | 真理派對 | — |
 | Watch Fire | 觀火 | — |
 
-## 能力（34）
+## 能力（35）
 
 | 英文 | zht |
 |---|---|
@@ -109,6 +111,7 @@
 | Great Library | 大圖書館 |
 | Ice Wall | 冰牆 |
 | Mana Condense | 魔力凝聚 |
+| Mercury | 水銀 |
 | Burn Immunity（怪物） | 焚燒免疫 |
 | Omniscient Form | 全知形態 |
 | Paralysis | 麻痺 |

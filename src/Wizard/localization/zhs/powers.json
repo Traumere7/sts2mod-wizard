@@ -65,7 +65,7 @@
   "WIZARD-MANA_CONDENSE_POWER.description": "在你的回合结束时，获得等同于你的[purple]法术增益[/purple]的[gold]格挡[/gold][blue]1[/blue]次。",
   "WIZARD-MANA_CONDENSE_POWER.smartDescription": "在你的回合结束时，获得等同于你的[purple]法术增益[/purple]的[gold]格挡[/gold][blue]{Amount}[/blue]次。",
   "WIZARD-MANA_CONDENSE_POWER.title": "魔力凝聚",
-  "WIZARD-MERCURY_POWER.description": "你每回合生成的前若干张牌获得[gold]附魔[/gold]：[purple]迅速{Swift}[/purple]。",
+  "WIZARD-MERCURY_POWER.description": "你每回合生成的前若干张牌获得[gold]附魔[/gold]：[purple]迅速[/purple][blue]{Swift}[/blue]。",
   "WIZARD-MERCURY_POWER.smartDescription": "你每回合生成的前[blue]{Amount}[/blue]张牌获得[gold]附魔[/gold]：[purple]迅速[/purple][blue]{Swift}[/blue]。",
   "WIZARD-MERCURY_POWER.title": "水银",
   "WIZARD-MONSTER_BURN_IMMUNITY_POWER.description": "火山巨兽不会受到[gold]燃烧[/gold]影响。",

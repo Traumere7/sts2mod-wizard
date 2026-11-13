@@ -5291,3 +5291,43 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
    （`CardFactory.cs:159-162`，被 `GetDistinctForCombat`/`GetForCombat` 调用），
    即把它从"战斗内随机生成 / 随机手牌 / 药水"的候选池里剔除；
    **卡牌奖励、商店、图鉴不受影响**。
+
+---
+
+## 35. 2026-11-13 发布 v0.5.4
+
+> 版本号按用户指定用 **0.5.4**（此前本地调试版曾短暂标成 0.5.5，已改回）。
+
+### 35.1 产物
+
+| 项 | 值 |
+|---|---|
+| `Wizard.json` | `version = 0.5.4`，`dependencies[BaseLib].min_version = **3.4.8**` |
+| `Wizard.dll` | MD5 前 8 位 **`35A9B372`** |
+| `Wizard.pck` | MD5 前 8 位 **`712B5C9D`** |
+| `Wizard.json` | MD5 前 8 位 **`BF429831`** |
+| GitHub Release | <https://github.com/Traumere7/sts2mod-wizard/releases/tag/v0.5.4>（资产 `Wizard-v0.5.4.zip`，sha256 `7a410943…`） |
+| 创意工坊 | item **3807136195**，更新时间 2026-11-13 13:31，file_size 147,229,767 B |
+| 发布说明 | `docs/releases/v0.5.4.md` |
+
+### 35.2 简介（workshop 描述）改动
+
+- 卡牌数 **75 → 77**（中英各一处）；
+- 「新增卡牌 / New cards」**追加**两张（该列表是**累积**的，沿用历史惯例，现共 11 条）：
+  - 水银 / Mercury、永恒回响 / Eternal Echo；
+- BaseLib 要求 **3.4.7 → 3.4.8**（中英各一处）——本版依赖 BaseLib 3.4.8 的 beta 分支补丁；
+- `changeNote` → `v0.5.4 — …`（中英双语）；
+- 字数 7,197 → **7,723 B**（上限 8000，**未超**，所以没有删「其他」里的旧条目）。
+- 备份：`WizardWorkspace/workshop.json.v054`。
+
+### 35.3 发布流程（复用的固定套路）
+
+1. 改 `src/Wizard.json` 版本 → `build.ps1 -SkipAltArt -NoCommit` 部署；
+2. 改 `WizardWorkspace/workshop.json`（描述 + changeNote）并备份；
+3. 复制 dll/pck/json 到 `WizardWorkspace/content`；
+4. **在 `D:\Downloads\ModUploader-win-x64` 目录下**执行 `ModUploader.exe upload -w .\WizardWorkspace`
+   （⚠️ `-w` 路径相对 ModUploader 的工作目录，不是相对 workspace）；
+5. 用 Steam Web API `ISteamRemoteStorage/GetPublishedFileDetails` 校验
+   `time_updated / file_size / description`（页面 HTML 里的简介是 JS 动态加载的，直接 grep 抓不到）；
+6. `gh release create v0.5.4 build/Wizard-v0.5.4.zip --notes-file docs/releases/v0.5.4.md`，
+   再用 `gh release view --json assets --jq '.assets[].digest'` 与本地 sha256 对比。
