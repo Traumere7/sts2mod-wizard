@@ -5331,3 +5331,22 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
    `time_updated / file_size / description`（页面 HTML 里的简介是 JS 动态加载的，直接 grep 抓不到）；
 6. `gh release create v0.5.4 build/Wizard-v0.5.4.zip --notes-file docs/releases/v0.5.4.md`，
    再用 `gh release view --json assets --jq '.assets[].digest'` 与本地 sha256 对比。
+
+### 35.4 本次发布实际带上的本地化更新（重要）
+
+发布构建时工作区里**已有**本地化团队/用户的改动，因此 **v0.5.4 的 pck 已经包含它们**
+（已逐项在 pck 字节里核对）：
+
+| 文件 | 改动 | 是否在已发布 pck 里 |
+|---|---|---|
+| `zhs/powers.json` | 水银能力文案改为**紫色名 + 蓝色数字分开**：`[purple]迅速[/purple][blue]{Swift}[/blue]`（原版 `BEAUTIFUL_BRACELET.description` 的排版） | ✅ |
+| `zht/cards.json`、`zht/powers.json` | 水银 / 永恒回响 / 水银能力 的繁中文本（`水銀`、`永恆回響`、`迅捷`…） | ✅ |
+| `jpn/cards.json`、`jpn/powers.json` | 日文文本（`水銀`、`エターナルエコー`、`リプリーズ`…） | ✅ |
+| `docs/local/*` | 本地化团队的术语表 / 进度 / 命名表 | （文档，不入 pck） |
+
+⚠️ **注意**：`enchantments.json` / `card_keywords.json` 目前仍只有 `zhs` / `eng`，
+所以繁中/日文下「复奏」「即毁」会**回退英文** —— 发布说明里已写明。
+
+⚠️ **流程教训**：`git add -A` 会把工作区里**别人/用户正在改的本地化文件**一并提交。
+以后发布提交前先 `git status` 确认，只 add 自己改的文件
+（本次这些本地化改动确实属于 v0.5.4 的一部分，故保留在发布提交里，无需回滚）。
