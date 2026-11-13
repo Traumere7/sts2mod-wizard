@@ -106,7 +106,7 @@
   "WIZARD-MANA_CONDENSE.title": "魔力凝聚",
   "WIZARD-MANA_DRAIN.description": "目标敌人每具有1种[gold]负面效果[/gold]，获得1{energyPrefix:energyIcons(1)}。{InCombat:\n（获得{CalculatedEnergy:energyIcons()}）|}",
   "WIZARD-MANA_DRAIN.title": "魔力汲取",
-  "WIZARD-MERCURY.description": "你每回合生成的{IfUpgraded:show:前两张牌|第一张牌}获得[gold]附魔[/gold]：[purple]迅速[/purple]{Swift}。",
+  "WIZARD-MERCURY.description": "你每回合生成的{IfUpgraded:show:前两张牌|第一张牌}获得[gold]附魔[/gold]：[purple]迅速[/purple][blue]{Swift}[/blue]。",
   "WIZARD-MERCURY.title": "水银",
   "WIZARD-MIND_FLOW.description": "获得{Block:diff()}X点[gold]格挡[/gold]。\n这张牌被[gold]消耗[/gold]时，获得{IfUpgraded:show:X+1|X}{energyPrefix:energyIcons(1)}。",
   "WIZARD-MIND_FLOW.title": "心流",
