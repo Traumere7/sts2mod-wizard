@@ -5277,3 +5277,17 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
 - 用 `ReferenceEquals` 判断，避免多张同名牌互相误判（与「结晶」同一套口径）；
 - 加了诊断日志：`[永恒回响] 目标=… ｜本场生成=… ｜DeckVersion=… ｜写回卡组=…`；
 - 若出现"临时牌带 DeckVersion"的引擎异常，额外打一条 `Warn` 便于追查。
+
+### 34.8 两处补充（2026-11-13 用户要求）
+
+1. **以太箭补上升级效果**：`OnUpgrade` → `DynamicVars.Damage.UpgradeValueBy(3m)`（**9 → 12**，
+   与设计稿 `造成9（12）点以太伤害` 一致）。
+   ⚠️ 之前的注释写"衍生牌不可升级"是**错的**：`CardRarity.Token` 只决定它不出现在奖励/商店/图鉴，
+   局内仍可被升级类效果（如升级手牌的牌、随机升级遗物）升级，所以 `OnUpgrade` 不能留空。
+   卡面用 `{Damage:diff()}`，升级后自动显示 12。
+
+2. **永恒回响禁止局内生成**：加 `public override bool CanBeGeneratedInCombat => false;`
+   （与「治疗术」「修行」同一口径）。该标记只影响 `CardFactory.FilterForCombat`
+   （`CardFactory.cs:159-162`，被 `GetDistinctForCombat`/`GetForCombat` 调用），
+   即把它从"战斗内随机生成 / 随机手牌 / 药水"的候选池里剔除；
+   **卡牌奖励、商店、图鉴不受影响**。

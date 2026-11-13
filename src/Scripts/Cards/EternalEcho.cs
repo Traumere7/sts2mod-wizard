@@ -71,6 +71,19 @@ public class EternalEcho : WizardCardModel
         .. HoverTipFactory.FromEnchantment<Reprise>(Reprise.ReplayCount),
     ];
 
+    /// <summary>
+    /// **不可在战斗局内生成**（用户 2026-11-13 要求：局外收益牌，不能由卡牌效果或药水临时获得）。
+    ///
+    /// <para>
+    /// 与「治疗术」<see cref="HealingSpell"/>、「修行」<see cref="Asceticism"/> 同一口径：
+    /// 该标记只影响 <c>CardFactory.FilterForCombat</c>（被 <c>GetDistinctForCombat</c> /
+    /// <c>GetForCombat</c> 调用，见 <c>CardFactory.cs:159-162</c>），
+    /// 因此只会把它从"战斗内随机生成 / 随机手牌 / 药水"的候选里剔除；
+    /// **卡牌奖励、商店、图鉴等局外渠道不受影响**，仍然正常出现。
+    /// </para>
+    /// </summary>
+    public override bool CanBeGeneratedInCombat => false;
+
     public EternalEcho()
         : base(Cost, CardType.Power, CardRarity.Rare, TargetType.Self)
     {

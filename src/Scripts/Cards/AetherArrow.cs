@@ -15,7 +15,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 以太箭 - 1 费 - 攻击 - 衍生（Token）
-/// 保留。造成 9 点以太伤害。消耗。
+/// 保留。造成 9(12) 点以太伤害。消耗。
 ///
 /// <para>
 /// 由「第四元素」<see cref="TheFourthElement"/> 每回合生成，是**以太伤害**的样板牌。
@@ -38,8 +38,11 @@ public class AetherArrow : WizardSpellCard
 {
     private const int Cost = 1;
 
-    /// <summary>固定 9 点（设计文档未给升级空间，衍生牌也不可升级）。</summary>
+    /// <summary>基础 9 点；升级后 12 点（设计稿：<c>造成9（12）点以太伤害</c>）。</summary>
     private const decimal Damage = 9m;
+
+    /// <summary>升级加成：9 → 12。</summary>
+    private const decimal UpgradeDamageBonus = 3m;
 
     public override SpellSchool School => SpellSchool.Aether;
 
@@ -84,8 +87,17 @@ public class AetherArrow : WizardSpellCard
             .Execute(choiceContext);
     }
 
-    /// <summary>衍生牌不可升级（<see cref="CardRarity.Token"/>），空实现。</summary>
+    /// <summary>
+    /// 升级：伤害 9 → **12**（设计稿 <c>造成9（12）点以太伤害</c>）。
+    ///
+    /// <para>
+    /// ⚠️ 虽然本牌是衍生牌（<see cref="CardRarity.Token"/>，不会出现在奖励/商店/图鉴），
+    /// 但**仍可被局内效果升级**（例如「武装」类升级手牌的效果、遗物给的随机升级），
+    /// 所以<b>必须实现</b>升级数值，不能留空。
+    /// </para>
+    /// </summary>
     protected override void OnUpgrade()
     {
+        DynamicVars.Damage.UpgradeValueBy(UpgradeDamageBonus);
     }
 }
