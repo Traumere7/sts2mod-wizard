@@ -5252,3 +5252,28 @@ public static CardKeyword Obliterate;
   `[gold]重放[/gold][blue]{Times}[/blue]` 排版（本来就是对的）。
 - ⚠️ 教训：**卡面文案里出现的自定义变量必须在 `CanonicalVars` 里登记同名 `DynamicVar`**，
   否则会原样显示 `{Swift}`。
+
+### 34.7 bug：永恒回响把附魔泄漏到卡组（2026-11-13 用户报告 → 已修）
+
+**现象**：给"临时生成的「观火」"附魔复奏后，卡组里的「观火」也带上了复奏（违背"临时牌只在本场"）。
+
+**存档证据**（`current_run.save` 的 `map_point_history[0]`）：
+- 地图点 1：附魔记录 = FIREBALL（`floor_added_to_deck: 1`）→ 第一次「永恒回响」给了卡组里的火球 ✓ 正常；
+- 地图点 4：附魔记录 = WATCH_FIRE（`floor_added_to_deck: 2`）→ 说明这一次 `CardCmd.Enchant`
+  **作用在了一个已在 `PileType.Deck` 里的观火**上（只有 Deck 堆才会写 `cards_enchanted` 历史）；
+- 同点卡牌奖励里的观火：`was_picked: false`、**没有 enchantment 字段** ⇒ 奖励牌本身没被附魔。
+
+⇒ 结论：问题出在 `picked.DeckVersion` 这条"写回卡组"的分支 —— 某些生成路径会让**临时牌带着
+`DeckVersion`**（或手牌来源难以分辨），于是写回了卡组原型。
+
+**修法**（`EternalEcho.cs`）：判"临时牌"不再只看 `DeckVersion == null`，改为查**战斗历史**：
+```csharp
+bool generatedThisCombat = CombatManager.Instance.History.Entries
+    .OfType<CardGeneratedEntry>()
+    .Any(e => ReferenceEquals(e.Card, picked));
+bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
+```
+- 只要这张牌出现在本场战斗的 `CardGeneratedEntry` 里 ⇒ **一律按临时牌处理，绝不写回卡组**；
+- 用 `ReferenceEquals` 判断，避免多张同名牌互相误判（与「结晶」同一套口径）；
+- 加了诊断日志：`[永恒回响] 目标=… ｜本场生成=… ｜DeckVersion=… ｜写回卡组=…`；
+- 若出现"临时牌带 DeckVersion"的引擎异常，额外打一条 `Warn` 便于追查。
