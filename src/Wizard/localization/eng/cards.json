@@ -106,7 +106,7 @@
   "WIZARD-MANA_CONDENSE.title": "Mana Condense",
   "WIZARD-MANA_DRAIN.description": "Gain 1{energyPrefix:energyIcons(1)} for each distinct [gold]debuff[/gold] on the target.{InCombat:\n(Gain {CalculatedEnergy:energyIcons()})|}",
   "WIZARD-MANA_DRAIN.title": "Mana Drain",
-  "WIZARD-MERCURY.description": "The first {MercuryPower:diff()} {MercuryPower:plural:card|cards} you create each turn are Enchanted with [purple]Swift 2[/purple].",
+  "WIZARD-MERCURY.description": "The {IfUpgraded:show:first 2 cards|first card} you create each turn {IfUpgraded:show:are|is} Enchanted with [purple]Swift 2[/purple].",
   "WIZARD-MERCURY.title": "Mercury",
   "WIZARD-MIND_FLOW.description": "Gain {Block:diff()}X [gold]Block[/gold].\nWhen this card is [gold]Exhausted[/gold], gain {IfUpgraded:show:X+1|X}{energyPrefix:energyIcons(1)}.",
   "WIZARD-MIND_FLOW.title": "Mind Flow",

@@ -5210,3 +5210,20 @@ public static CardKeyword Obliterate;
 3. 即毁：成功后卡组里这张牌**永久消失**；手中无目标时打出**不会**消失。
 4. 关键词与附魔图标是否正常显示/悬停（`即毁` 应出现在描述之后，与「消耗」同位置）。
 5. 存档往返：附魔过的卡组牌读档后是否保留复奏（避免 `SerializableEnchantment` 丢失）。
+
+### 34.5 水银的两处小修（2026-11-13 用户反馈）
+
+1. **卡面不挂自己能力的解释**：`Mercury.ExtraHoverTips` 去掉
+   `HoverTipFactory.FromPower<MercuryPower>()`，只保留「迅速」附魔的解释
+   （与「凝神 / 回忆」同一条"buff 不自我解释"的口径）。
+2. **卡面文案按升级状态切换**（照「武装」`Armaments` 的写法）：
+
+   | 语言 | 文案 |
+   |---|---|
+   | zhs | `你每回合生成的{IfUpgraded:show:前两张牌|第一张牌}获得附魔：[purple]迅速2[/purple]。` |
+   | eng | `The {IfUpgraded:show:first 2 cards|first card} you create each turn {IfUpgraded:show:are|is} Enchanted with [purple]Swift 2[/purple].` |
+
+   ⚠️ `{IfUpgraded:show:升级后|未升级}` 是 SmartFormat 的**平台条件**（本 mod 早已在用，见
+   「暗黑神秘学」「启示」）；数值型则写作 `{IfUpgraded:show:X+1|X}`。
+   改完后卡面不再出现 `{MercuryPower:diff()}`，但 `PowerVar<MercuryPower>` 仍保留
+   （能力施加量与升级 +1 都靠它）。

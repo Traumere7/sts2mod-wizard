@@ -21,7 +21,7 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
-/// 悬停：能力本身 + 「迅速」附魔（<c>FromEnchantment&lt;Swift&gt;(2)</c>，原版工厂方法）。
+/// 悬停：只挂「迅速」附魔（<c>FromEnchantment&lt;Swift&gt;(2)</c>，原版工厂方法）；不挂本牌能力。
 /// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
@@ -36,9 +36,12 @@ public class Mercury : WizardCardModel
         new PowerVar<MercuryPower>(1m),
     ];
 
+    /// <summary>
+    /// ⚠️ 只解释「迅速」附魔，**不挂本牌自己的能力**（用户 2026-11-13 明确：
+    /// 卡面不需要「水银」buff 的解释，与「凝神/回忆」同一条口径）。
+    /// </summary>
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
-        HoverTipFactory.FromPower<MercuryPower>(),
         // FromEnchantment 返回的是 IEnumerable，用集合展开铺进来。
         .. HoverTipFactory.FromEnchantment<Swift>(MercuryPower.SwiftAmount),
     ];
