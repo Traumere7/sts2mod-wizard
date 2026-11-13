@@ -433,7 +433,9 @@ public sealed class RulesHorror : CustomEventModel
 
         for (int i = 0; i < RelicCount; i++)
         {
-            await RelicCmd.Obtain(RelicFactory.PullNextRelicFromFront(player).ToMutable(), player);
+            // ⚠️ 2026-11-13 beta：PullNextRelicFromFront(Player) 这个重载被删了，
+            //    现在必须显式传 Rng（原版事件都传 EventModel.Rng）。
+            await RelicCmd.Obtain(RelicFactory.PullNextRelicFromFront(player, Rng!).ToMutable(), player);
         }
 
         SetEventFinished(L10NLookup($"{Key}.pages.ABUNDANT.description"));

@@ -147,6 +147,7 @@ public class WizardCharacter : PlaceholderCharacterModel
         "vfx/vfx_heavy_blunt",
         "vfx/vfx_attack_slash",
         "vfx/vfx_bloody_impact",
-        "vfx/vfx_rock_shards",
+        // 2026-11-13 beta：vfx/vfx_rock_shards 被移除，改用新的 vfx/vfx_rock_shatter。
+        "vfx/vfx_rock_shatter",
     ];
 }

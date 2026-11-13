@@ -5057,3 +5057,55 @@ if (tracked == command) { data.commandToModify = null; data.amountWhenAttackStar
 ```
 
 `null` vfx + 有 sfx ⇒ 引擎只在命中时播音、不再叠一个紫光（光效由我们手动播的白+金版负责）。
+
+
+---
+
+## 32. 2026-11-13 public-beta 大更新：兼容性评估
+
+> 详细报告见 **`docs/BETA_2026-11-13_COMPAT.md`**（环境快照、变更规模、逐项证据、待验清单）。
+> 本节只记"结论 + 踩到的坑"，方便以后同类升级复用流程。
+
+### 32.1 一句话结论
+
+破坏面很小：**1 个 `DynamicVar` 虚方法删除（影响 2 个自定义 Var）+ 1 个 `RelicFactory` 重载删除
++ 1 个特效资源移除**，均已修复；所有我们依赖的运行时钩子语义未变。
+
+### 32.2 已修的三处 + 一处资源
+
+| 类型 | 旧 | 新 | 修法 |
+|---|---|---|---|
+| 编译 | `DynamicVar.GetBaseValueForIConvertible()` 可重写 | **方法被删**，`IConvertible` 改取 `ShownValue => (int)PreviewValue` | 删掉 `IceArmorVar` / `HealingSpellHealVar` 里的重写（最终值本来就写在 `PreviewValue`） |
+| 编译 | `RelicFactory.PullNextRelicFromFront(Player)` | **重载被删**，必须传 `Rng` | `PullNextRelicFromFront(player, Rng!)` |
+| 资源 | `vfx/vfx_rock_shards` | **资源被删** | 改 `vfx/vfx_rock_shatter`（只用于建筑师攻击的观赏特效） |
+
+### 32.3 反编译刷新流程（下次照做）
+
+```powershell
+dotnet tool install -g ilspycmd          # 若没有
+ilspycmd -p -o reference/decompiled/game-new <game>/data_sts2_windows_x86_64/sts2.dll
+# ⚠️ 先比对、后替换；旧树改名 game-2026-09-19 留档
+```
+
+**坑 1：ILSpy 版本不同会制造大量假变化**（`global::` 前缀、换行风格）。
+比对前先归一化（去 `global::`、折叠空白），本次 2614 个"变化"里有 104 个是纯格式差异。
+
+**坑 2：导出包里 `.png` 不存在**，只有 `.godot/imported/*.ctex` + `.png.import`。
+用 pck 文件表校验资源引用时要对 `.png` 单独放行，否则全是假阴性。
+
+**坑 3：`ValueProp` 新增了 `FromArrow = 0x20`** —— 我们的 `[CustomEnum]` 位由 BaseLib 在运行时
+按"现有最大位"分配，会自动上移成 0x40/0x80/0x100；启动日志里
+`KeyGenerator for enum ... ValueProp with starting value 64` 就是实证。
+**永远不要硬编码 ValueProp 位值**（这条从 §20 起就写着，这次又救了一次）。
+
+### 32.4 静态分析看不到、必须实机验的
+
+1. FMOD 音效事件（`event:/sfx/...` 不在 pck 文件表里，删了只能靠听）；
+2. 我们自制的**白+金星星冲击**场景在新版是否仍正常（依赖的 shader/贴图/scene 已静态校验存在）；
+3. 旧存档能否继续（新版有 24 条存档迁移）；
+4. 新版原版卡 `Amnesia`（状态牌）与我们「失忆」**英文名重复**（id 前缀不同、不会冲突），是否改名待定。
+
+### 32.5 版本状态
+
+本地构建已升到 **0.5.4**（beta 兼容构建，`dll 311B96E1`），**未上传工坊、未发 GitHub Release**。
+工坊线上仍是 v0.5.3。

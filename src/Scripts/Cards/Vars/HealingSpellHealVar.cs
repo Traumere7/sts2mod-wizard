@@ -62,12 +62,6 @@ public class HealingSpellHealVar : CalculatedVar
     {
     }
 
-    /// <summary>
-    /// 卡面取值：直接给出 <c>Calculate(null)</c>，与基类语义一致。
-    /// 显式写出来是为了把这条约定固定住 —— 卡面显示的就是算式结果。
-    /// </summary>
-    protected override decimal GetBaseValueForIConvertible() => Calculate(null);
-
     public override void UpdateCardPreview(
         CardModel card,
         CardPreviewMode previewMode,

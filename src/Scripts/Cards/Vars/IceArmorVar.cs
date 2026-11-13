@@ -59,13 +59,6 @@ public class IceArmorVar : CalculatedVar
     {
     }
 
-    /// <summary>
-    /// 卡面取值：给出算式结果
-    /// <c>CalculationBase + CalculationExtra × (寒冷 + 冻结) 总数</c>。
-    /// 显式写出来是为了把"卡面显示的就是算式结果"这条约定固定住。
-    /// </summary>
-    protected override decimal GetBaseValueForIConvertible() => Calculate(null);
-
     public override void UpdateCardPreview(
         CardModel card,
         CardPreviewMode previewMode,

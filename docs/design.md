@@ -149,7 +149,7 @@
 启示 - 0 - 罕见 - 技能 从3张随机（升级过的）其他颜色的技能牌中选择1张加入你的手牌。消耗。
 
 第四元素 - 1 - 稀有 - 能力 （固有。）在你的回合开始时，将1张以太箭加入你的手牌。
-    => 无色衍生牌：以太箭 - 1 - 攻击 保留。造成9点以太伤害。消耗。
+    => 无色衍生牌：以太箭 - 1 - 攻击 保留。造成9（12）点以太伤害。消耗。
 
 魔力爆发 - 2 - 稀有 - 攻击 对所有敌人造成等同于你的法术增益点数的以太伤害。将你的法术增益翻倍。消耗。（升级移除消耗）
 
@@ -167,6 +167,12 @@
 创生 - 1（0）- 罕见 - 技能 从你的手牌中选最多3张牌变化。
 
 图书馆 - 3（2）- 稀有 - 能力 保留。在你的回合开始时，额外抽2张牌。
+
+水银 - 1 - 罕见 - 能力 你每回合生成的第一张牌（前两张牌）获得附魔：迅捷2。
+
+永恒回响 - 1 - 稀有 - 能力 （保留。）选择你的1张手牌附魔：复奏。即毁。
+（复奏：这张牌获得重放2。）
+（即毁：打出后，将这张牌从你的卡组中移除。）
 
 ## 遗物
 
@@ -200,7 +206,7 @@
 
 失忆 - 1 - 状态 打出后，你在下个回合少抽1张牌。消耗。
 
-以太箭 - 1 - 攻击 保留。造成9点以太伤害。消耗。
+以太箭 - 1 - 攻击 保留。造成9（12）点以太伤害。消耗。
 
 ## 先古卡牌
 
@@ -241,6 +247,7 @@
 
 ---
 
+
 ## 卡牌英文名对照表
 
 > **本表为卡牌英文名的唯一权威来源**，与 `art/art_design.md` 保持一致。
@@ -252,138 +259,135 @@
 >
 > 例：`PyroJudgment` → 卡图 `PyroJudgment.png` → 键 `WIZARD-PYRO_JUDGMENT.title`。
 
-### 基础卡（4 张）
+> ### ★ 2026-11-12 重建
+>
+> 本表按 **稀有度** 重排，**覆盖全部 77 张**（75 张已实装 + 2 张未实装）。
+> 旧版按学派分组、且只覆盖 **52 张**，**已废弃**——它正是"重复发明已有卡"的根源。
+>
+> **数据来源**：类名 / 类型 / 稀有度取自 `src/Scripts/Cards/*.cs` 的 `base(...)` 实参（**代码实测**）；
+> 中文名取自 `src/Wizard/localization/zhs/cards.json`。**两边若有冲突，以代码为准。**
+>
+> ⚠️ **已知漂移**：`design.md` 的「卡池」段仍按学派排列，与本表的稀有度排列**是同一批卡的两套索引**，
+> 内容应当一致。若发现不一致，**先怀疑文档**。
 
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
+### 全表（77 张，按稀有度）
+
+| 中文名 | 英文名（= 类名） | 类型 | 稀有度 | 实装 |
 |---|---|---|---|---|
-| 打击 | `StrikeWizard` | `StrikeWizard.png` | 攻击 | 基础 |
-| 防御 | `DefendWizard` | `DefendWizard.png` | 技能 | 基础 |
-| 火球术 | `Fireball` | `Fireball.png` | 攻击 | 基础 |
-| 镇静 | `CalmMind` | `CalmMind.png` | 技能 | 基础 |
+| **— 基础 —** | | | | |
+| 打击 | `StrikeWizard` | 攻击 | 基础 | ✅ |
+| 火球术 | `Fireball` | 攻击 | 基础 | ✅ |
+| 镇静 | `CalmMind` | 技能 | 基础 | ✅ |
+| 防御 | `DefendWizard` | 技能 | 基础 | ✅ |
+| **— 普通 —** | | | | |
+| 冰矢 | `IceArrow` | 攻击 | 普通 | ✅ |
+| 冰霰 | `IceShard` | 攻击 | 普通 | ✅ |
+| 屏蔽 | `Screen` | 技能 | 普通 | ✅ |
+| 幻化 | `Transmogrify` | 攻击 | 普通 | ✅ |
+| 弹射 | `DoubleRicochet` | 攻击 | 普通 | ✅ |
+| 快速咏唱 | `QuickChant` | 技能 | 普通 | ✅ |
+| 整理 | `TidyUp` | 技能 | 普通 | ✅ |
+| 火苗 | `FlameSpark` | 攻击 | 普通 | ✅ |
+| 电磁波 | `ElectromagneticWave` | 攻击 | 普通 | ✅ |
+| 观火 | `WatchFire` | 技能 | 普通 | ✅ |
+| 迷思 | `Myth` | 技能 | 普通 | ✅ |
+| 闪爆 | `Flashburst` | 攻击 | 普通 | ✅ |
+| 震慑 | `Intimidate` | 技能 | 普通 | ✅ |
+| 静电 | `StaticCharge` | 攻击 | 普通 | ✅ |
+| **— 罕见 —** | | | | |
+| 书签 | `Bookmark` | 技能 | 罕见 | ✅ |
+| 催化 | `Catalyzation` | 能力 | 罕见 | ✅ |
+| 冰之城墙 | `IceWall` | 技能 | 罕见 | ✅ |
+| 决心 | `Determination` | 技能 | 罕见 | ✅ |
+| 凝神 | `Concentrate` | 能力 | 罕见 | ✅ |
+| 击穿 | `Puncture` | 攻击 | 罕见 | ✅ |
+| 创生 | `Quickening` | 技能 | 罕见 | ✅ |
+| 占卜 | `Divination` | 技能 | 罕见 | ✅ |
+| 启示 | `Inspiration` | 技能 | 罕见 | ✅ |
+| 大寒波 | `ColdWave` | 技能 | 罕见 | ✅ |
+| 尾注 | `Endnote` | 技能 | 罕见 | ✅ |
+| 引燃 | `Ignite` | 攻击 | 罕见 | ✅ |
+| 心流 | `MindFlow` | 技能 | 罕见 | ✅ |
+| 水银 | `Mercury` | 能力 | 罕见 | ⬜ 未实装 |
+| 治疗术 | `HealingSpell` | 技能 | 罕见 | ✅ |
+| 火刑 | `PyroJudgment` | 能力 | 罕见 | ✅ |
+| 炽焰术 | `BlazingFlame` | 攻击 | 罕见 | ✅ |
+| 焚尽 | `BurnToAshes` | 技能 | 罕见 | ✅ |
+| 燃烧之魂 | `BurningSoul` | 技能 | 罕见 | ✅ |
+| 环流 | `Circulation` | 能力 | 罕见 | ✅ |
+| 真理派对 | `TruthParty` | 技能 | 罕见 | ✅ |
+| 纵火狂 | `Pyromaniac` | 能力 | 罕见 | ✅ |
+| 结晶 | `Crystallization` | 技能 | 罕见 | ✅ |
+| 置换 | `Displacement` | 技能 | 罕见 | ✅ |
+| 脆化 | `Embrittlement` | 技能 | 罕见 | ✅ |
+| 超导 | `Superconduct` | 能力 | 罕见 | ✅ |
+| 通灵 | `Telepathy` | 技能 | 罕见 | ✅ |
+| 速读 | `SpeedRead` | 技能 | 罕见 | ✅ |
+| 雷光 | `LightningBolt` | 攻击 | 罕见 | ✅ |
+| 高温消毒 | `SterilizeByFire` | 技能 | 罕见 | ✅ |
+| 魔力凝聚 | `ManaCondense` | 能力 | 罕见 | ✅ |
+| 魔力汲取 | `ManaDrain` | 技能 | 罕见 | ✅ |
+| **— 稀有 —** | | | | |
+| 交流电 | `AlternatingCurrent` | 能力 | 稀有 | ✅ |
+| 修行 | `Asceticism` | 能力 | 稀有 | ✅ |
+| 全知形态 | `OmniscientForm` | 能力 | 稀有 | ✅ |
+| 冰铠 | `IceArmor` | 能力 | 稀有 | ✅ |
+| 净罪 | `PurifySin` | 技能 | 稀有 | ✅ |
+| 勿忘我 | `ForgetMeNot` | 技能 | 稀有 | ✅ |
+| 回忆 | `Recollection` | 能力 | 稀有 | ✅ |
+| 图书馆 | `GreatLibrary` | 能力 | 稀有 | ✅ |
+| 天火浩荡 | `SkyfireRampage` | 技能 | 稀有 | ✅ |
+| 孔雀之尾 | `CaudaPavonis` | 能力 | 稀有 | ✅ |
+| 巨焱拳 | `BlazingPunch` | 攻击 | 稀有 | ✅ |
+| 暗黑神秘学 | `DarkMysticism` | 技能 | 稀有 | ✅ |
+| 杰作 | `MagnumOpus` | 技能 | 稀有 | ✅ |
+| 泛灵论 | `Animism` | 技能 | 稀有 | ✅ |
+| 清净世界 | `ClearWorld` | 攻击 | 稀有 | ✅ |
+| 禁书目录 | `MagicalIndex` | 技能 | 稀有 | ✅ |
+| 第四元素 | `TheFourthElement` | 能力 | 稀有 | ✅ |
+| 镜像 | `Mirror` | 技能 | 稀有 | ✅ |
+| 降雷 | `LightningFall` | 攻击 | 稀有 | ✅ |
+| 魔力爆发 | `ManaBurst` | 攻击 | 稀有 | ✅ |
+| 永恒回响 | `EternalEcho` | 能力 | 稀有 | ⬜ 未实装 |
+| **— 先古 —** | | | | |
+| 落日 | `Sunset` | 攻击 | 先古 | ✅ |
+| 远古残章 | `AncientFragment` | 能力 | 先古 | ✅ |
+| **— 衍生无色 —** | | | | |
+| 以太箭 | `AetherArrow` | 攻击 | 衍生无色 | ✅ |
+| 思索 | `Ponder` | 技能 | 衍生无色 | ✅ |
+| 顿悟 | `Epiphany` | 技能 | 衍生无色 | ✅ |
+| **— 状态 —** | | | | |
+| 失忆 | `Amnesia` | 状态 | 状态 | ✅ |
 
-### 火焰系（12 张）
-
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
-|---|---|---|---|---|
-| 火苗 | `FlameSpark` | `FlameSpark.png` | 攻击 | 普通 |
-| 火刑 | **`PyroJudgment`** ※ | `PyroJudgment.png` | 能力 | 罕见 |
-| 炽焰术 | `BlazingFlame` | `BlazingFlame.png` | 攻击 | 罕见 |
-| 高温消毒 | `SterilizeByFire` | `SterilizeByFire.png` | 技能 | 罕见 |
-| 纵火狂 | `Pyromaniac` | `Pyromaniac.png` | 能力 | 罕见 |
-| 观火 | `WatchFire` | `WatchFire.png` | 技能 | 普通 |
-| 燃烧之魂 | `BurningSoul` | `BurningSoul.png` | 技能 | 罕见 |
-| 决心 | `Determination` | `Determination.png` | 技能 | 罕见 |
-| 闪爆 | `Flashburst` | `Flashburst.png` | 攻击 | 普通 |
-| 焚尽 | `BurnToAshes` | `BurnToAshes.png` | 技能 | 罕见 |
-| 巨焱拳 | `BlazingPunch` | `BlazingPunch.png` | 攻击 | 稀有 |
-| 弹射 | `DoubleRicochet` | `DoubleRicochet.png` | 攻击 | 普通 |
+### 火刑的定名说明
 
 > ※ **火刑的定名说明**：此名曾有两个备选（`Immolate` / `PyroJudgment`），
 > **现最终定为 `PyroJudgment`**。
-> 该拼写若与 `art/art_design.md` 中的备选拼写不同，**以本表为准**
+> 该拼写若与 `art/art_design.md` 中的备选拼写不同，**以本表为准**。
 
-### 雷电系（8 张）
 
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
+### 未实装的两张（附效果备注）
+
+| 中文名 | 英文名 | 类型 | 稀有度 | 备注 |
 |---|---|---|---|---|
-| 雷光 | `LightningBolt` | `LightningBolt.png` | 攻击 | 罕见 |
-| 交流电 | `AlternatingCurrent` | `AlternatingCurrent.png` | 能力 | 稀有 |
-| 降雷 | `LightningFall` | `LightningFall.png` | 攻击 | 稀有 |
-| 环流 | `Circulation` | `Circulation.png` | 能力 | 罕见 |
-| 静电 | `StaticCharge` | `StaticCharge.png` | 攻击 | 普通 |
-| 屏蔽 | `Screen` | `Screen.png` | 技能 | 普通 |
-| 电磁波 | `ElectromagneticWave` | `ElectromagneticWave.png` | 攻击 | 普通 |
-| 击穿 | `Puncture` | `Puncture.png` | 攻击 | 罕见 |
+| **水银** | `Mercury` | 能力 | 罕见 | 每回合生成的前 1(2) 张牌获得附魔：迅捷 2 |
+| **永恒回响** | `EternalEcho` | 能力 | 稀有 | （保留。）选择 1 张手牌附魔：复奏。即毁 |
 
-### 寒冰系（6 张）
+### 附魔与新增关键词（英文名）
 
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
-|---|---|---|---|---|
-| 冰之城墙 | `IceWall` | `IceWall.png` | 技能 | 罕见 |
-| 超导 | `Superconduct` | `Superconduct.png` | 能力 | 罕见 |
-| 冰霰 | `IceShard` | `IceShard.png` | 攻击 | 普通 |
-| 冰铠 | `IceArmor` | `IceArmor.png` | 能力 | 稀有 |
-| 清净世界 | `ClearWorld` | `ClearWorld.png` | 攻击 | 稀有 |
-| 大寒波 | `ColdWave` | `ColdWave.png` | 技能 | 罕见 |
+| 中文 | 英文 | 归属 | 说明 |
+|---|---|---|---|
+| 迅速 | `Swift` | **原版附魔** | 第一次打出这张牌时，抽 N 张牌 |
+| **复奏** | `Reprise` | **本 Mod 新增附魔** | 这张牌获得**重放 2** |
+| **即毁** | `Obliterate` | **本 Mod 新增关键词** | 打出后，将这张牌从你的卡组中移除。⚠️ **不同于「消耗 Exhaust」**——消耗只进消耗堆，即毁是从卡组里彻底消失 |
 
-### 奥术／知识系（19 张）
-
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
-|---|---|---|---|---|
-| 魔力汲取 | `ManaDrain` | `ManaDrain.png` | 技能 | 罕见 |
-| 回忆 | `Recollection` | `Recollection.png` | 能力 | 稀有 |
-| 修行 | `Asceticism` | `Asceticism.png` | 能力 | 稀有 |
-| 禁书目录 | `MagicalIndex` | `MagicalIndex.png` | 技能 | 稀有 |
-| 占卜 | `Divination` | `Divination.png` | 技能 | 罕见 |
-| 真理派对 | `TruthParty` | `TruthParty.png` | 技能 | 罕见 |
-| 凝神 | `Concentrate` | `Concentrate.png` | 能力 | 罕见 |
-| 治疗术 | `HealingSpell` | `HealingSpell.png` | 技能 | 罕见 |
-| 暗黑神秘学 | `DarkMysticism` | `DarkMysticism.png` | 技能 | 稀有 |
-| 全知形态 | `OmniscientForm` | `OmniscientForm.png` | 能力 | 稀有 |
-| 震慑 | `Intimidate` | `Intimidate.png` | 技能 | 普通 |
-| 书签 | `Bookmark` | `Bookmark.png` | 技能 | 罕见 |
-| 尾注 | `Endnote` | `Endnote.png` | 技能 | 罕见 |
-| 勿忘我 | `ForgetMeNot` | `ForgetMeNot.png` | 技能 | 稀有 |
-| 整理 | `TidyUp` | `TidyUp.png` | 技能 | 普通 |
-| 快速咏唱 | `QuickChant` | `QuickChant.png` | 技能 | 普通 |
-| 魔力凝聚 | `ManaCondense` | `ManaCondense.png` | 能力 | 罕见 |
-| 心流 | `MindFlow` | `MindFlow.png` | 技能 | 罕见 |
-| 净罪 | `PurifySin` | `PurifySin.png` | 技能 | 稀有 |
-
-### 状态牌（1 张）
-
-> ⚠️ **状态牌不在巫师卡池里**（`[Pool(typeof(StatusCardPool))]`），
-> 因此**不会**出现在奖励／商店／图鉴中。
-> 唯一产出来源是「勿忘我」`ForgetMeNot`（塞进弃牌堆）。
-> 另外 `CanBeGeneratedInCombat => false` 会阻止"战斗中随机生成卡牌"的效果产出它。
-
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
-|---|---|---|---|---|
-| 失忆 | `Amnesia` | `Amnesia.png` | 状态 | 状态 |
-
-### 先古卡（2 张）
-
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
-|---|---|---|---|---|
-| 落日 | `Sunset` | `Sunset.png` | 攻击 | 先古 |
-| 远古残章 | `AncientFragment` | `AncientFragment.png` | 能力 | 先古 |
-
-### 衍生无色牌（2 张）
+> 附魔名与关键词名**出现在卡面文本里，不生成 C# 类名**，只需在 `localization/{lang}/` 里补标题键。
 
 
-> ⚠️ 本遗物**原名 `ArcaneScroll`，2026-10-12 改名为 `SpellScroll`** ——
-> 因为原版游戏有一个同名遗物 `ARCANE_SCROLL`（中文也叫「魔法卷轴」）。
-> 虽然 `ModelId` 是 `(Zone, Entry)` 二元组、两者技术上是 `WIZARD-ARCANE_SCROLL`
-> 与 `ARCANE_SCROLL` 两个不同 ID 可以共存，但**英文玩家会看到两个都叫
-> "Arcane Scroll" 的遗物**，容易混淆。
+### 实现前请核对类名是否与原版冲突
 
-> 与「魔法卷轴」/「死海古卷」两张初始遗物配套产生，
-> 在实现上与原版「燃料」「仆从打击」、观者的「奇迹」归入同一牌库。
-
-| 中文名 | 英文名（= 类名） | 文件名 | 类型 | 稀有度 |
-|---|---|---|---|---|
-| 思索 | `Ponder` | `Ponder.png` | 技能 | 衍生（无色） |
-| 顿悟 | `Epiphany` | `Epiphany.png` | 技能 | 衍生（无色） |
-
-### 统计
-
-| 分类 | 张数 |
-|---|---|
-| 基础卡 | 4 |
-| 火焰系 | 12 |
-| 雷电系 | 8 |
-| 寒冰系 | 6 |
-| 奥术／知识系 | 19 |
-| 状态牌 | 1 |
-| 先古卡 | 2 |
-| 衍生无色牌 | 2 |
-| **合计** | **54 张卡牌**|
-
-> 「状态牌」单列（不进巫师卡池），与「先古卡」同理不重复计入其它系。
-> 因此 4+12+8+6+19+1+2+2 = **54**。
-
-> **实现前请核对类名是否与原版冲突**：
-> 用 `reference/decompiled/game/MegaCrit.Sts2.Core.Models.Cards/` 检索上表所有英文名。
+> 用 `reference/decompiled/game/MegaCrit.Sts2.Core.Models.Cards/` 检索本表所有英文名。
+> **本表全部 77 个类名 + 上述建议名，已于 2026-11-12 对照原版 445 张 + 观者 Mod 90 张核验一遍，无重名。**
 
 ## 事件稿
 
@@ -471,3 +475,10 @@
 红色：“不存在”“不应存在”“代价”
 金色：“好玩意”（再加抖动效果），“满载而归”
 紫色：“房间”“尘封许久”“一切”
+
+——————————————————————————————————————————————————
+统计：还需要：
+3-4能力：2稀有能力，1-2稀有能力
+6普通
+7罕见
+7稀有
