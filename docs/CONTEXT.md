@@ -5109,3 +5109,51 @@ ilspycmd -p -o reference/decompiled/game-new <game>/data_sts2_windows_x86_64/sts
 
 本地构建已升到 **0.5.4**（beta 兼容构建，`dll 311B96E1`），**未上传工坊、未发 GitHub Release**。
 工坊线上仍是 v0.5.3。
+
+
+---
+
+## 33. 2026-11-13 新卡「水银 / 永恒回响」开工前调研
+
+> 详细报告：**`docs/RESEARCH_MERCURY_ETERNALECHO.md`**（含代码证据、原版参考、实现设计、待确认默认值）。
+
+### 33.1 结论
+
+三件事都可行：**局内附魔**、**两种生命周期**、**「即毁」作为引擎渲染词条**。
+
+### 33.2 生命周期为什么能精确控制（核心机制）
+
+- 战斗牌是卡组牌的**克隆**（`Player.PopulateCombatState` → `CombatState.CloneCard` → `card.DeckVersion = item`）；
+- `CardModel.DeepCloneFields` 里 `Enchantment.ClonePreservingMutability()` ⇒ **每张战斗牌一份独立附魔实例**；
+- `CardModel.ToSerializable` 会写 `Enchantment` ⇒ 对 **`DeckVersion`** 附魔 = 永久；对战斗克隆附魔 = 本场。
+
+⇒ 水银只碰生成牌（`DeckVersion == null`）；永恒回响对"手牌 + `DeckVersion`"各附魔一份（永久），
+临时牌只有手牌那份（本场）。
+
+### 33.3 原版样板
+
+| 需求 | 样板 |
+|---|---|
+| 迅速 Swift | `Models/Enchantments/Swift.cs`（`OnPlay` 抽 Amount 张；`AfterCardPlayed` 置 Disabled） |
+| 复奏（重放 2） | `Models/Enchantments/Spiral.cs`：`EnchantPlayCount(original) => original + Times`；引擎 `playCount = GetEnchantedReplayCount() + 1` |
+| 局外批量附魔 | `BlitzMerchant*`（新商人）/ `BeautifulBracelet` / `SpiralingWhirlpool` |
+| 战斗中移除卡组牌 | `CardPileCmd.RemoveFromDeck(card, showPreview:false)`（`SwipePower` / `DeprecatedCard` 先例） |
+
+### 33.4 「即毁」= BaseLib 自定义关键词（引擎渲染）
+
+```csharp
+[CustomEnum(null)]
+[KeywordProperties(AutoKeywordPosition.After)]
+public static CardKeyword Obliterate;
+```
+
+- BaseLib 在 `ModelDb.Init` 前分配位并注册；词条会自动进入卡面词条行；
+- 本地化键 = **`WIZARD-OBLITERATE.title` / `.description`**（`card_keywords` 表，靠 BaseLib patch 的
+  `GetLocKeyPrefix` 映射，**不是** `OBLITERATE.*`）；
+- 行为需自己实现（引擎只内置 Exhaust/Ethereal）：`RemoveFromDeck(DeckVersion)`。
+
+### 33.5 官方文案口径（避免再写错）
+
+- 迅速（Swift）：`你第一次打出这张牌时，抽{Amount}张牌。` —— **设计稿卡面写的"迅捷"是笔误，用「迅速」**。
+- 附魔描述风格：`这张牌获得[gold]重放[/gold][blue]N[/blue]。`
+- 关键词风格：`消耗 / 在战斗结束前移除。`（title + description）
