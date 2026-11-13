@@ -5157,3 +5157,56 @@ public static CardKeyword Obliterate;
 - 迅速（Swift）：`你第一次打出这张牌时，抽{Amount}张牌。` —— **设计稿卡面写的"迅捷"是笔误，用「迅速」**。
 - 附魔描述风格：`这张牌获得[gold]重放[/gold][blue]N[/blue]。`
 - 关键词风格：`消耗 / 在战斗结束前移除。`（title + description）
+
+
+---
+
+## 34. 2026-11-13 实装「水银 / 永恒回响」（+ 新附魔「复奏」+ 新关键词「即毁」）
+
+> 调研报告：`docs/RESEARCH_MERCURY_ETERNALECHO.md`
+> 卡牌数 75 → **77**；新增 1 个附魔、1 个引擎级关键词、2 张图标。
+
+### 34.1 新增文件
+
+| 文件 | 作用 |
+|---|---|
+| `Scripts/WizardKeywords.cs` | `[CustomEnum(null)] [KeywordProperties(AutoKeywordPosition.After)] CardKeyword Obliterate`（即毁） |
+| `Scripts/Utils/CardObliteration.cs` | 即毁的**行为**：`CardPileCmd.RemoveFromDeck(playedCard.DeckVersion, showPreview:false)` |
+| `Scripts/Enchantments/Reprise.cs` | `CustomEnchantmentModel`：`Times=2`，`EnchantPlayCount(original) => original + Times` |
+| `Scripts/Cards/Mercury.cs` + `Scripts/Powers/MercuryPower.cs` | 每回合生成的前 N 张可附魔牌 → `Swift 2` |
+| `Scripts/Cards/EternalEcho.cs` | 选 1 张手牌 → 复奏 2（手牌 + DeckVersion）；成功才即毁 |
+| `images/enchantments/reprise.png` | 附魔图标（64×64，**透明底**，与官方附魔图标同规格） |
+| `images/powers/mercury_power(_big).png` | 水银能力图标（深色圆底，程序绘制） |
+| `localization/{zhs,eng}/enchantments.json`、`card_keywords.json` | **新表**：`WIZARD-REPRISE.*`、`WIZARD-OBLITERATE.*` |
+
+### 34.2 关键实现口径（与调研一致）
+
+- **水银**：`MercuryPower.AfterCardGeneratedForCombat` 只认自己生成的牌；`CanEnchant` 过滤
+  （状态/诅咒/任务牌天然排除）；**不可附魔的生成牌不占名额**；每回合在
+  `BeforeSideTurnStart(Player)` 清零；`Amount` = 每回合张数（多张相加，升级 +1）。
+- **永恒回响**：手牌那份 + `picked.DeckVersion` 那份**各附魔一次** ——
+  前者本场生效、后者永久（`CardModel.ToSerializable` 会把卡组牌的附魔写进存档）。
+  临时牌（`DeckVersion == null`）只有手牌那份 ⇒ 仅本场。
+- **边界**：手中无可附魔目标 ⇒ 正常打出、进 `PileType.None`（能力牌天然如此）、**不触发即毁**；
+  只有真的附魔成功后才 `RemoveFromDeck`。
+- **升级**：永恒回响 = `AddKeyword(CardKeyword.Retain)`（**不写进文案**，与「镜像」「燃烧之魂」一致）。
+- **关键词本地化键**：`WIZARD-OBLITERATE.title/.description`（`card_keywords` 表）——
+  BaseLib 用 `GetPrefix()+字段名大写` 拼键，**不是** `OBLITERATE.*`。
+- 文案用「**迅速**」（原版 `SWIFT.title`），设计稿卡面写的"迅捷"是笔误（设计表格亦为"迅速"）。
+
+### 34.3 本地化状态
+
+`zhs` / `eng` 已写（cards +4、powers +3、enchantments +2、card_keywords +2）。
+`zht` / `jpn` **未写**（职责边界）；这两张表在 zht/jpn 缺键 → 回退英文。
+⚠️ **注意**：`enchantments.json` / `card_keywords.json` 是**本 mod 新增的两个表**，
+以后加词条/附魔都要往这两个文件里写（别再只写 cards/powers）。
+
+### 34.4 待实机验证
+
+1. 水银：打一张后，每回合第一张生成牌是否带「迅速 2」图标与"第一次打出抽 2 张"；
+   打两张是否前 2 张；生成**状态牌**时是否顺延不占名额。
+2. 永恒回响：选牌界面（提示语用的是原版 `TO_ENCHANT`）、复奏是否真的**重放 2**（共打出 3 次）；
+   卡组里的那张在**下一场战斗**是否仍有复奏。
+3. 即毁：成功后卡组里这张牌**永久消失**；手中无目标时打出**不会**消失。
+4. 关键词与附魔图标是否正常显示/悬停（`即毁` 应出现在描述之后，与「消耗」同位置）。
+5. 存档往返：附魔过的卡组牌读档后是否保留复奏（避免 `SerializableEnchantment` 丢失）。
