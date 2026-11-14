@@ -2,7 +2,6 @@ using BaseLib.Utils;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
@@ -43,11 +42,8 @@ public class Temperance : WizardCardModel
         new CardsVar(2),
     ];
 
-    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
-    [
-        // 这张牌会给自己挂一个负面能力，悬停解释一下（与「镜像」等"自施加减益"的牌同口径）。
-        HoverTipFactory.FromPower<TemperancePower>(),
-    ];
+    // ⚠️ 卡面**不**挂「节制」能力本身的解释（用户 2026-11-14：与卡名同名的 buff 不在卡面解释）。
+    //    能力的效果由卡面文案 + 能力图标自身的悬停承担。
 
     public Temperance()
         : base(Cost, CardType.Skill, CardRarity.Common, TargetType.Self)

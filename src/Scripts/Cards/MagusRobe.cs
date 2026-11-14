@@ -2,7 +2,6 @@ using BaseLib.Utils;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
-using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
@@ -38,10 +37,7 @@ public class MagusRobe : WizardCardModel
         new PowerVar<MagusRobePower>(1m),
     ];
 
-    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
-    [
-        HoverTipFactory.FromPower<MagusRobePower>(),
-    ];
+    // ⚠️ 卡面**不**挂「伟大法袍」能力本身的解释（与卡名同名的 buff 不在卡面解释）。
 
     public MagusRobe()
         : base(Cost, CardType.Power, CardRarity.Uncommon, TargetType.Self)

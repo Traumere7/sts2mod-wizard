@@ -5405,3 +5405,17 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
 2. 伟大法袍：给高层燃烧的敌人再上低层燃烧**照样**给格挡且数值=给予层数；
    一次给多种负面（如「禁书目录」）是否多次触发；人工制品抵消时**不**给格挡；
    两张法袍是否每层 2 格挡；升级后是否固有。
+
+### 36.6 卡面不挂「与自己同名」的能力悬停（2026-11-14 用户要求）
+
+老问题、统一口径：**卡面悬停里不需要解释与卡名同名的能力**（那属于"buff 不自我解释"）。
+本次去掉两处：
+
+| 卡 | 去掉的悬停 |
+|---|---|
+| 节制 `Temperance` | `HoverTipFactory.FromPower<TemperancePower>()` |
+| 伟大法袍 `MagusRobe` | `HoverTipFactory.FromPower<MagusRobePower>()` |
+
+两张牌的 `ExtraHoverTips` 现在为空（直接删掉了 override），
+效果说明由**卡面文案**与**能力图标自身的悬停**承担。
+注：同名牌但**不同名**的能力仍要挂（例：某卡给自己挂的是别名的能力）。
