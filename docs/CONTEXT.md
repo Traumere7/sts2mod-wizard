@@ -5350,3 +5350,58 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
 ⚠️ **流程教训**：`git add -A` 会把工作区里**别人/用户正在改的本地化文件**一并提交。
 以后发布提交前先 `git status` 确认，只 add 自己改的文件
 （本次这些本地化改动确实属于 v0.5.4 的一部分，故保留在发布提交里，无需回滚）。
+
+---
+
+## 36. 2026-11-14 实装「节制 / 伟大法袍」
+
+> 设计稿：`docs/design.md` 第 177 / 179 行。卡牌数 77 → **79**。
+
+### 36.1 新增文件
+
+| 文件 | 作用 |
+|---|---|
+| `Scripts/Powers/TemperancePower.cs` | 「节制」负面能力：本回合只能再打出 2 张牌（照抄原版 `EncorePower` 结构） |
+| `Scripts/Cards/Temperance.cs` | 节制：抽 2(3) 张牌 + 施加「节制」；**已有则不施加**（不叠层、不刷新计数） |
+| `Scripts/Powers/MagusRobePower.cs` | 伟大法袍：任何负面效果 → 按**给予的层数**给格挡（引擎钩子 + 燃烧事件双来源） |
+| `Scripts/Cards/MagusRobe.cs` | 伟大法袍：1 费能力，升级给「固有」 |
+| `images/powers/temperance_power(_big).png` | 天平图标（银+金，深色圆底，程序绘制） |
+| `images/powers/magus_robe_power(_big).png` | 法袍剪影图标（紫色，深色圆底，程序绘制） |
+| `reference/tools/make_temperance_magusrobe_icons.py` | 上述图标的生成脚本 |
+
+### 36.2 「节制」的两处刻意差异（与「安可」不同，用户明确）
+
+1. **不叠加、不刷新**：`Temperance.OnPlay` 先抽牌，再 `HasPower<TemperancePower>()` 判断；
+   已有 ⇒ **完全不施加** ⇒ `Amount` 不变、`NumberOfCardsPlayedSinceApplied` 不重置。
+   ⇒ 打完节制后**真的只能再打 2 张牌**。
+2. **它是负面效果**（`PowerType.Debuff`）⇒ 可被「高温消毒」清掉，这是设计留的出口。
+
+实现要点（照抄 `EncorePower`）：
+- `PowerStackType.Counter`，`DisplayAmount = 剩余张数`；
+- `ShouldPlay` 返回 false ⇒ `Hook.ShouldPlay` 会拦下**任何**牌（`CardCmd.Play:63` / `CardModel:1908`）；
+- `cardsBeingPlayed` 记录"打出途中"的牌，重放不会错位；
+- `AfterSideTurnEnd` 移除自己；
+- ⚠️ `CanonicalVars` 里 `PlaysRemaining` 默认值必须是 **2**（不是 0），否则卡面悬停会显示"只能再打出 0 张牌"。
+
+### 36.3 「伟大法袍」的计数口径
+
+| 来源 | 覆盖 | 说明 |
+|---|---|---|
+| `AfterPowerAmountChanged` | 除燃烧以外的**所有**负面（易伤/虚弱/寒冷/麻痹/电流外溢，含其它 mod） | 判定照抄「铅咒板」：施加者=自己、目标=敌人、`IsVisible`、`GetTypeForAmount(amount)==Debuff`、排除 `ITemporaryPower`；燃烧在此**跳过** |
+| `WizardEvents.BurnApplied` | **燃烧**（按**请求层数**） | 燃烧"取高值"，低层施加层数不变 ⇒ 引擎钩子不发；事件带 `landed`（被人工制品抵消=false） |
+
+- **无触发上限**：每次施加都触发；两张法袍 ⇒ 每层 2 点格挡（`PerStackBlock = max(1, Amount)`）。
+- 格挡走 `CreatureCmd.GainBlock(..., ValueProp.Unpowered, null)`，不受力量/敏捷影响。
+- 订阅生命周期照抄「纵火狂」：`AfterApplied` 订阅、`AfterRemoved` + `AfterCombatEnd` 都退订。
+
+### 36.4 本地化
+
+`zhs` / `eng` 已写（cards +4、powers +6）。`zht` / `jpn` **未写**（职责边界，回退英文）。
+
+### 36.5 待实机验证
+
+1. 节制：打出后是否只能再打 2 张；第 2 张节制**不叠层、不刷新**；回合结束自动消失；
+   被「高温消毒」清掉后恢复出牌；升级只变抽牌数（2→3）。
+2. 伟大法袍：给高层燃烧的敌人再上低层燃烧**照样**给格挡且数值=给予层数；
+   一次给多种负面（如「禁书目录」）是否多次触发；人工制品抵消时**不**给格挡；
+   两张法袍是否每层 2 格挡；升级后是否固有。
