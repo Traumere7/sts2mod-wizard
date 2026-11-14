@@ -5419,3 +5419,39 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
 两张牌的 `ExtraHoverTips` 现在为空（直接删掉了 override），
 效果说明由**卡面文案**与**能力图标自身的悬停**承担。
 注：同名牌但**不同名**的能力仍要挂（例：某卡给自己挂的是别名的能力）。
+
+---
+
+## 37. 2026-11-14 发布 v0.5.5
+
+### 37.1 产物
+
+| 项 | 值 |
+|---|---|
+| `Wizard.json` | `version = 0.5.5`（BaseLib `min_version` 仍为 3.4.8） |
+| `Wizard.dll` | MD5 前 8 位 **`85773EF2`**（317,952 B） |
+| `Wizard.pck` | MD5 前 8 位 **`55FD3108`**（149,632,644 B） |
+| `Wizard.json` | MD5 前 8 位 **`EA35DAF5`** |
+| GitHub Release | <https://github.com/Traumere7/sts2mod-wizard/releases/tag/v0.5.5>，资产 `Wizard-v0.5.5.zip`（sha256 `9a0e33c1…`） |
+| 创意工坊 | item 3807136195，更新于 2026-11-14 23:38，file_size 149,951,047 B |
+| 发布说明 | `docs/releases/v0.5.5.md` |
+
+### 37.2 简介改动（7,723 → **7,937 B** / 8000）
+
+- 卡牌数 **77 → 79**（中英各一处）；
+- 「新增卡牌 / New cards」追加两张（累积列表现共 **15** 条）：
+  - 节制 / Temperance、伟大法袍 / Magus Robe；
+- `changeNote` → `v0.5.5 — New cards: Temperance, Magus Robe.`（中英）；
+- **超限后删掉的旧条目**（「其他」段，中英成对删除，共 3 组）：
+  1. `Added an event: Level Secret` / `新增事件「秘仪之间」。`
+  2. `Replaced the card art for Mirror.` / `更换了卡牌「镜像」的卡图。`
+  3. `Adjusted the visual effects of some cards.` / `修改了部分卡牌演出效果。`
+  —— 保留了"火山贤者/火山巨兽"与"繁中/日文本地化"这两条信息量更高的。
+- 备份：`WizardWorkspace/workshop.json.v055`。
+
+### 37.3 流程备注
+
+- Steam Web API 校验偶尔会 `unexpected EOF`，需要**重试**（本次第 2 次才拿到数据）；
+  判定标准依旧是 `file_size` 与三件套字节数之和一致、`description` 里出现新文案。
+- 发布提交只 add 自己的文件（`docs/CONTEXT.md`、`docs/releases/v0.5.5.md`、`src/Wizard.json`），
+  用户的 `docs/design.md` 保持未提交。
