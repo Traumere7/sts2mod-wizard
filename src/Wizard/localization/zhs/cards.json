@@ -155,7 +155,7 @@
   "WIZARD-SUPERCONDUCT.title": "超导",
   "WIZARD-TELEPATHY.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n下个回合你的第1张牌可免费打出。",
   "WIZARD-TELEPATHY.title": "通灵",
-  "WIZARD-TEMPERANCE.description": "抽{Cards:diff()}张牌。本回合你只能再打出2张牌。",
+  "WIZARD-TEMPERANCE.description": "抽{Cards:diff()}张牌。\n本回合你只能再打出2张牌。",
   "WIZARD-TEMPERANCE.title": "节制",
   "WIZARD-THE_FOURTH_ELEMENT.description": "在你的回合开始时，将1张[gold]以太箭[/gold]加入你的[gold]手牌[/gold]。",
   "WIZARD-THE_FOURTH_ELEMENT.title": "第四元素",

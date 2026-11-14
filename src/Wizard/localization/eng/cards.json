@@ -155,7 +155,7 @@
   "WIZARD-SUPERCONDUCT.title": "Superconduct",
   "WIZARD-TELEPATHY.description": "Gain {Block:diff()} [gold]Block[/gold].\nThe first card you play next turn costs 0.",
   "WIZARD-TELEPATHY.title": "Telepathy",
-  "WIZARD-TEMPERANCE.description": "Draw {Cards:diff()} cards. You can only play 2 more cards this turn.",
+  "WIZARD-TEMPERANCE.description": "Draw {Cards:diff()} cards. \nYou can only play 2 more cards this turn.",
   "WIZARD-TEMPERANCE.title": "Temperance",
   "WIZARD-THE_FOURTH_ELEMENT.description": "At the start of your turn, add an [gold]Aether Arrow[/gold] into your [gold]Hand[/gold].",
   "WIZARD-THE_FOURTH_ELEMENT.title": "The Fourth Element",
