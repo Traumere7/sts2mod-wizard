@@ -5510,3 +5510,31 @@ protected override IEnumerable<IHoverTip> ExtraHoverTips =>
 
 **结论**：不需要再改代码；本次只更新了规矩文档与注释。
 以后要复查可以用同样办法：临时挂 `ModelDb.Init` Postfix 打印 `card.HoverTips.Select(t => t.Id)`。
+
+---
+
+## 38. 2026-11-15「启示」加「那张牌本回合耗能 -1」
+
+### 38.1 实现（照抄原版「教皇」TheHierophant）
+
+```csharp
+chosen.EnergyCost.AddThisTurnOrUntilPlayed(-1);   // 先改费
+await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);  // 再加入手牌
+```
+
+- `CardEnergyCost.AddThisTurnOrUntilPlayed(int amount, bool reduceOnly = false)`（`CardEnergyCost.cs:280`）
+  会挂一个 `LocalCostModifier`，过期条件是 **`EndOfTurn | WhenPlayed`** ——
+  正是"本回合内、打出前"的语义，**不需要自己写回合结束清理**。
+- 只影响**被选中的那张**（不是三张备选）。
+- 原版同款参考：`TheHierophant.cs:29`（教皇，从无色牌里 3 选 1，全部变 0 费那类写法的同族）。
+
+### 38.2 文案
+
+`zhs` / `eng` 已加最后一句（`zht` / `jpn` 属本地化团队，未动）：
+
+| 语言 | 文案 |
+|---|---|
+| zhs | 从3张随机{IfUpgraded:show:[gold]升级过的[/gold]\|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。**那张牌的耗能在本回合减少1。** |
+| eng | Choose 1 of 3 random{IfUpgraded:show: [gold]upgraded[/gold]\|} Skill cards of other colors to add into your [gold]Hand[/gold]. **That card costs 1 less this turn.** |
+
+> 「耗能」不是关键词（没有 `CardKeyword`），原版「教皇」也没挂额外悬停，所以这里同样不加。

@@ -13,7 +13,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 启示 / Inspiration - 0 费 - 技能 - 罕见
-/// 从 3 张随机（升级过的）其他颜色的技能牌中选择 1 张加入你的手牌。消耗。
+/// 从 3 张随机（升级过的）其他颜色的技能牌中选择 1 张加入你的手牌，那张牌本回合耗能 -1。消耗。
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
@@ -95,6 +95,21 @@ namespace Wizard.Scripts.Cards;
 /// <b><c>canSkip: true</c></b> 照抄「类星体」：-design 没提能不能跳过，
 /// 原版同类"从 N 张里选 1 张"的牌都可跳过。
 /// </para>
+///
+/// <para>
+/// ══════════════════════════════════════════════════════════════════
+/// 「那张牌本回合耗能 -1」→ 照抄原版「教皇」<c>TheHierophant</c>
+/// ══════════════════════════════════════════════════════════════════
+/// <c>TheHierophant.cs:29</c>：
+/// <code>
+/// item.EnergyCost.AddThisTurnOrUntilPlayed(-1);
+/// await CardPileCmd.AddGeneratedCardToCombat(item, PileType.Hand, Owner);
+/// </code>
+/// <c>CardEnergyCost.AddThisTurnOrUntilPlayed</c>（<c>CardEnergyCost.cs:280</c>）会挂一个
+/// <c>LocalCostModifier</c>，过期条件是
+/// <c>EndOfTurn | WhenPlayed</c> —— 正是"本回合内、打出前"的语义，
+/// 所以不需要我们自己写回合结束清理。
+/// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
 public class Inspiration : WizardCardModel
@@ -153,7 +168,13 @@ public class Inspiration : WizardCardModel
             return;
         }
 
-        // ④ 加入手牌（走"生成"路径 ⇒ 会触发「催化」「创世之柱」等生成类效果）。
+        // ④ 那张牌**本回合耗能 -1**（照抄原版「教皇」TheHierophant：先改费，再加入手牌）。
+        //
+        //    CardEnergyCost.AddThisTurnOrUntilPlayed 的过期条件是
+        //    EndOfTurn | WhenPlayed，即"本回合内、打出前"有效，回合结束会自动清掉。
+        chosen.EnergyCost.AddThisTurnOrUntilPlayed(-1);
+
+        // ⑤ 加入手牌（走"生成"路径 ⇒ 会触发「催化」「创世之柱」等生成类效果）。
         await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);
     }
 

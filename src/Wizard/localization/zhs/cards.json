@@ -86,7 +86,7 @@
   "WIZARD-ICE_WALL.title": "冰之城墙",
   "WIZARD-IGNITE.description": "造成{Damage:diff()}点[orange]火焰伤害[/orange]。\n给予{BurnPower:diff()}层[gold]燃烧[/gold]。\n如果敌人的意图是攻击，则获得{SpellPowerPower:diff()}点[purple]法术增益[/purple]和{Energy:energyIcons()}。",
   "WIZARD-IGNITE.title": "引燃",
-  "WIZARD-INSPIRATION.description": "从3张随机{IfUpgraded:show:[gold]升级过的[/gold]|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。",
+  "WIZARD-INSPIRATION.description": "从3张随机{IfUpgraded:show:[gold]升级过的[/gold]|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。那张牌的耗能在本回合减少1。",
   "WIZARD-INSPIRATION.title": "启示",
   "WIZARD-INTIMIDATE.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n给予{ParalysisPower:diff()}层[gold]麻痹[/gold]。",
   "WIZARD-INTIMIDATE.title": "震慑",
