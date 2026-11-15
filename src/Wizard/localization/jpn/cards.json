@@ -86,7 +86,7 @@
   "WIZARD-ICE_WALL.title": "アイスウォール",
   "WIZARD-IGNITE.description": "[orange]炎[/orange]属性の{Damage:diff()}ダメージを与える。\n[gold]燃焼[/gold]{BurnPower:diff()}を付与する。\n敵が攻撃を予定している場合、[purple]魔法威力[/purple]{SpellPowerPower:diff()}と{Energy:energyIcons()}を得る。",
   "WIZARD-IGNITE.title": "着火",
-  "WIZARD-INSPIRATION.description": "他の色のランダムな{IfUpgraded:show:[gold]アップグレード済み[/gold]の|}スキル3枚から1枚を選び、[gold]手札[/gold]に加える。",
+  "WIZARD-INSPIRATION.description": "他の色のランダムな{IfUpgraded:show:[gold]アップグレード済み[/gold]の|}スキル3枚から1枚を選び、[gold]手札[/gold]に加える。\n{energyPrefix:energyIcons(1)}を得る。",
   "WIZARD-INSPIRATION.title": "ひらめき",
   "WIZARD-INTIMIDATE.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\n[gold]麻痺[/gold]{ParalysisPower:diff()}を付与する。",
   "WIZARD-INTIMIDATE.title": "威嚇",
