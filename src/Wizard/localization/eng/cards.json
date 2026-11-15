@@ -86,7 +86,7 @@
   "WIZARD-ICE_WALL.title": "Ice Wall",
   "WIZARD-IGNITE.description": "Deal {Damage:diff()} [orange]Fire damage[/orange].\nApply {BurnPower:diff()} [gold]Burn[/gold].\nIf the enemy intends to attack, gain {SpellPowerPower:diff()} [purple]Spell Power[/purple] and {Energy:energyIcons()}.",
   "WIZARD-IGNITE.title": "Ignite",
-  "WIZARD-INSPIRATION.description": "Choose 1 of 3 random{IfUpgraded:show: [gold]upgraded[/gold]|} Skill cards of other colors to add into your [gold]Hand[/gold]. That card costs 1 less this turn.",
+  "WIZARD-INSPIRATION.description": "Choose 1 of 3 random{IfUpgraded:show: [gold]upgraded[/gold]|} Skill cards of other colors to add into your [gold]Hand[/gold]. \nThat card costs 1 less this turn.",
   "WIZARD-INSPIRATION.title": "Inspiration",
   "WIZARD-INTIMIDATE.description": "Gain {Block:diff()} [gold]Block[/gold]. Apply {ParalysisPower:diff()} [gold]Paralysis[/gold].",
   "WIZARD-INTIMIDATE.title": "Intimidate",
