@@ -17,7 +17,7 @@
   "WIZARD-BLAZING_FLAME.title": "灼熱の炎",
   "WIZARD-BLAZING_PUNCH.description": "[orange]炎[/orange]属性の{CalculatedDamage:diff()}ダメージを3回与える。\nこの戦闘中に付与した[gold]燃焼[/gold]に等しい追加ダメージを与える。",
   "WIZARD-BLAZING_PUNCH.title": "爆炎拳",
-  "WIZARD-BOOKMARK.description": "{Block:diff()}[gold]ブロック[/gold]を得る。[gold]手札[/gold]のカード{Cards:diff()}枚に[gold]保留[/gold]を付与する。",
+  "WIZARD-BOOKMARK.description": "{Block:diff()}[gold]ブロック[/gold]を得る。\n[gold]手札[/gold]のカード{Cards:diff()}枚に[gold]保留[/gold]を付与する。",
   "WIZARD-BOOKMARK.selectionScreenPrompt": "[gold]保留[/gold]を付与するカードを{Amount}枚選ぶ。",
   "WIZARD-BOOKMARK.title": "しおり",
   "WIZARD-BURNING_SOUL.description": "このターン、自分のアタックが命中するたび、そのダメージに等しい[orange]炎[/orange]属性ダメージを即座に与え、[gold]燃焼[/gold]1を付与する。",

@@ -86,7 +86,7 @@
   "WIZARD-ICE_WALL.title": "冰牆",
   "WIZARD-IGNITE.description": "造成 {Damage:diff()} 點[orange]火焰傷害[/orange]。\n施加 {BurnPower:diff()} 層[gold]焚燒[/gold]。\n若敵人意圖攻擊，獲得 {SpellPowerPower:diff()} 層[purple]魔法威力[/purple]與 {Energy:energyIcons()}。",
   "WIZARD-IGNITE.title": "引燃",
-  "WIZARD-INSPIRATION.description": "從 3 張隨機的{IfUpgraded:show:[gold]已升級[/gold]的|}其他顏色技能牌中選擇 1 張，加入你的[gold]手牌[/gold]。獲得{energyPrefix:energyIcons(1)}。",
+  "WIZARD-INSPIRATION.description": "從 3 張隨機的{IfUpgraded:show:[gold]已升級[/gold]的|}其他顏色技能牌中選擇 1 張，加入你的[gold]手牌[/gold]。\n獲得{energyPrefix:energyIcons(1)}。",
   "WIZARD-INSPIRATION.title": "啟示",
   "WIZARD-INTIMIDATE.description": "獲得 {Block:diff()} 點[gold]格擋[/gold]。\n施加 {ParalysisPower:diff()} 層[gold]麻痺[/gold]。",
   "WIZARD-INTIMIDATE.title": "震懾",
