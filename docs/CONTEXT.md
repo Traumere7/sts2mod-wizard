@@ -5455,3 +5455,27 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
   判定标准依旧是 `file_size` 与三件套字节数之和一致、`description` 里出现新文案。
 - 发布提交只 add 自己的文件（`docs/CONTEXT.md`、`docs/releases/v0.5.5.md`、`src/Wizard.json`），
   用户的 `docs/design.md` 保持未提交。
+
+### 36.7 伟大法袍补挂「格挡」悬停（2026-11-15 用户指出）
+
+**规矩（再次确认，项目统一口径）**：
+1. 卡面文案里**出现**的词条/关键词，**都要**挂悬停解释；
+2. **唯一例外是「消耗」** —— 原版规范不解释（本 mod「回忆」「凝神」也不挂）；
+3. **不挂与卡名同名的能力**（buff 不自我解释）。
+
+**这次漏的**：`MagusRobe` 文案提到[gold]格挡[/gold]，但它自己**不获得格挡**（是能力触发给格挡），
+所以引擎的 `GainsBlock` 自动补悬停不会生效 ⇒ 必须像「铅咒板」那样手动挂。
+
+修法：
+```csharp
+protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+[
+    HoverTipFactory.Static(StaticHoverTip.Block),
+];
+```
+
+> 悬停文本走原版 `static_hover_tips` 表，**四种语言自动跟随**（不必按语言分别处理）；
+> 已核对四语言卡面文案都含「格挡/Block/ブロック」。
+>
+> 排查提醒：`GainsBlock` 只会给"真的获得格挡"的卡自动补 Block 悬停；
+> **只在文案里提到格挡、但自身不获得**的卡（遗物、能力卡）必须手动挂。

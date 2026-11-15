@@ -2,6 +2,7 @@ using BaseLib.Utils;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
@@ -37,7 +38,25 @@ public class MagusRobe : WizardCardModel
         new PowerVar<MagusRobePower>(1m),
     ];
 
-    // ⚠️ 卡面**不**挂「伟大法袍」能力本身的解释（与卡名同名的 buff 不在卡面解释）。
+    /// <summary>
+    /// 悬停：**只挂「格挡」**（卡面文案提到了[gold]格挡[/gold]，必须解释）。
+    ///
+    /// <para>
+    /// ⚠️ 两条规矩（本项目统一口径）：
+    /// <list type="bullet">
+    ///   <item><b>不挂与卡名同名的能力</b> ⇒ 不挂 <see cref="MagusRobePower"/>；</item>
+    ///   <item><b>文案里出现的词条都要解释</b>（唯一例外是「消耗」——原版规范不解释），
+    ///         所以「格挡」必须挂。这张牌自己<b>不</b>获得格挡（是能力触发给格挡），
+    ///         引擎不会通过 <c>GainsBlock</c> 自动补，必须像「铅咒板」一样手动挂
+    ///         <c>StaticHoverTip.Block</c>。</item>
+    /// </list>
+    /// 悬停文本走原版 <c>static_hover_tips</c> 表，**四种语言自动跟随**，无需按语言分别处理。
+    /// </para>
+    /// </summary>
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.Static(StaticHoverTip.Block),
+    ];
 
     public MagusRobe()
         : base(Cost, CardType.Power, CardRarity.Uncommon, TargetType.Self)
