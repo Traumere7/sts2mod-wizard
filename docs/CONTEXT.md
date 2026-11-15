@@ -5513,28 +5513,31 @@ protected override IEnumerable<IHoverTip> ExtraHoverTips =>
 
 ---
 
-## 38. 2026-11-15「启示」加「那张牌本回合耗能 -1」
+## 38. 2026-11-15「启示」改为「生成后获得 1 费」
 
-### 38.1 实现（照抄原版「教皇」TheHierophant）
+> 设计稿：`design.md:149`。
+> ⚠️ **本版是改稿**：最初的方案是"那张牌本回合耗能 -1"（照抄原版「教皇」`TheHierophant`
+> 的 `EnergyCost.AddThisTurnOrUntilPlayed(-1)`），因为卡面文案太长，用户改为直接给费。
+
+### 38.1 实现
 
 ```csharp
-chosen.EnergyCost.AddThisTurnOrUntilPlayed(-1);   // 先改费
-await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);  // 再加入手牌
+await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);   // 先生成
+await PlayerCmd.GainEnergy(EnergyGain, Owner);                             // 再给 1 费
 ```
 
-- `CardEnergyCost.AddThisTurnOrUntilPlayed(int amount, bool reduceOnly = false)`（`CardEnergyCost.cs:280`）
-  会挂一个 `LocalCostModifier`，过期条件是 **`EndOfTurn | WhenPlayed`** ——
-  正是"本回合内、打出前"的语义，**不需要自己写回合结束清理**。
-- 只影响**被选中的那张**（不是三张备选）。
-- 原版同款参考：`TheHierophant.cs:29`（教皇，从无色牌里 3 选 1，全部变 0 费那类写法的同族）。
+- 用 `PlayerCmd.GainEnergy`（与本 mod「速读」「迷思」一致），**不再动机卡牌的耗能**；
+- 口径：**只有真的生成出了牌才给费** —— 玩家点跳过 / 选牌失败时不会走到这一步；
+- 设计固定 1 费，升级不改变（升级仍然只影响"备选牌是升级过的"）。
 
 ### 38.2 文案
 
-`zhs` / `eng` 已加最后一句（`zht` / `jpn` 属本地化团队，未动）：
+`zhs` / `eng` 已改（`zht` / `jpn` 属本地化团队，未动）：
 
 | 语言 | 文案 |
 |---|---|
-| zhs | 从3张随机{IfUpgraded:show:[gold]升级过的[/gold]\|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。**那张牌的耗能在本回合减少1。** |
-| eng | Choose 1 of 3 random{IfUpgraded:show: [gold]upgraded[/gold]\|} Skill cards of other colors to add into your [gold]Hand[/gold]. **That card costs 1 less this turn.** |
+| zhs | 从3张随机{IfUpgraded:show:[gold]升级过的[/gold]\|}其他颜色的技能牌中选择1张加入你的[gold]手牌[/gold]。\n获得{energyPrefix:energyIcons(1)}。 |
+| eng | Choose 1 of 3 random{IfUpgraded:show: [gold]upgraded[/gold]\|} Skill cards of other colors to add into your [gold]Hand[/gold].\nGain {energyPrefix:energyIcons(1)}. |
 
-> 「耗能」不是关键词（没有 `CardKeyword`），原版「教皇」也没挂额外悬停，所以这里同样不加。
+> 能量表记用本 mod 惯例 `{energyPrefix:energyIcons(1)}`（与「速读」同款图标化写法），
+> 句间用 `\n` 断行（与「速读」「迷思」一致）。

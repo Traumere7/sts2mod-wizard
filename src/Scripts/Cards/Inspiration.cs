@@ -13,7 +13,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 启示 / Inspiration - 0 费 - 技能 - 罕见
-/// 从 3 张随机（升级过的）其他颜色的技能牌中选择 1 张加入你的手牌，那张牌本回合耗能 -1。消耗。
+/// 从 3 张随机（升级过的）其他颜色的技能牌中选择 1 张加入你的手牌，然后获得 1 费。消耗。
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
@@ -98,17 +98,11 @@ namespace Wizard.Scripts.Cards;
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
-/// 「那张牌本回合耗能 -1」→ 照抄原版「教皇」<c>TheHierophant</c>
+/// 「获得 1 费」—— 2026-11-15 用户改稿（原方案"那张牌本回合耗能 -1"已废弃）
 /// ══════════════════════════════════════════════════════════════════
-/// <c>TheHierophant.cs:29</c>：
-/// <code>
-/// item.EnergyCost.AddThisTurnOrUntilPlayed(-1);
-/// await CardPileCmd.AddGeneratedCardToCombat(item, PileType.Hand, Owner);
-/// </code>
-/// <c>CardEnergyCost.AddThisTurnOrUntilPlayed</c>（<c>CardEnergyCost.cs:280</c>）会挂一个
-/// <c>LocalCostModifier</c>，过期条件是
-/// <c>EndOfTurn | WhenPlayed</c> —— 正是"本回合内、打出前"的语义，
-/// 所以不需要我们自己写回合结束清理。
+/// 口径：**只有真的生成出了牌才给费**（玩家点跳过 / 选牌失败 ⇒ 不给）。
+/// 用 <c>PlayerCmd.GainEnergy</c>（与本 mod「速读」「迷思」一致），
+/// 而不是给那张牌改费（那会多一行长文案）。
 /// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
@@ -118,6 +112,9 @@ public class Inspiration : WizardCardModel
 
     /// <summary>备选张数。</summary>
     private const int OfferCount = 3;
+
+    /// <summary>生成成功后获得的能量（设计固定 1，升级不改变）。</summary>
+    private const int EnergyGain = 1;
 
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
     [
@@ -168,14 +165,11 @@ public class Inspiration : WizardCardModel
             return;
         }
 
-        // ④ 那张牌**本回合耗能 -1**（照抄原版「教皇」TheHierophant：先改费，再加入手牌）。
-        //
-        //    CardEnergyCost.AddThisTurnOrUntilPlayed 的过期条件是
-        //    EndOfTurn | WhenPlayed，即"本回合内、打出前"有效，回合结束会自动清掉。
-        chosen.EnergyCost.AddThisTurnOrUntilPlayed(-1);
-
-        // ⑤ 加入手牌（走"生成"路径 ⇒ 会触发「催化」「创世之柱」等生成类效果）。
+        // ④ 加入手牌（走"生成"路径 ⇒ 会触发「催化」「创世之柱」等生成类效果）。
         await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);
+
+        // ⑤ 生成成功 ⇒ 获得 1 费（跳过选择时不会走到这里，也就不会白给费）。
+        await PlayerCmd.GainEnergy(EnergyGain, Owner);
     }
 
     /// <summary>
