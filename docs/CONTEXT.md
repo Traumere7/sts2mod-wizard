@@ -5522,12 +5522,20 @@ protected override IEnumerable<IHoverTip> ExtraHoverTips =>
 ### 38.1 实现
 
 ```csharp
-await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);   // 先生成
-await PlayerCmd.GainEnergy(EnergyGain, Owner);                             // 再给 1 费
+if (offered != null)
+{
+    ...三选一...
+    if (chosen != null)
+        await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);  // 先生成
+}
+
+await PlayerCmd.GainEnergy(EnergyGain, Owner);   // 最后加费（总是执行）
 ```
 
 - 用 `PlayerCmd.GainEnergy`（与本 mod「速读」「迷思」一致），**不再动机卡牌的耗能**；
-- 口径：**只有真的生成出了牌才给费** —— 玩家点跳过 / 选牌失败时不会走到这一步；
+- 口径：**只要这张牌被打出就获得 1 费** —— 三选一点「跳过」也照给
+  （用户 2026-11-15 修正：上一版写成"只有生成成功才给"，与期望不符）；
+- 先结算生成、最后加费，保证"先得牌再得费"的顺序；
 - 设计固定 1 费，升级不改变（升级仍然只影响"备选牌是升级过的"）。
 
 ### 38.2 文案

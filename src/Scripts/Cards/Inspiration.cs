@@ -100,7 +100,8 @@ namespace Wizard.Scripts.Cards;
 /// ══════════════════════════════════════════════════════════════════
 /// 「获得 1 费」—— 2026-11-15 用户改稿（原方案"那张牌本回合耗能 -1"已废弃）
 /// ══════════════════════════════════════════════════════════════════
-/// 口径：**只有真的生成出了牌才给费**（玩家点跳过 / 选牌失败 ⇒ 不给）。
+/// 口径：**只要这张牌被打出，就获得 1 费** —— 三选一点"跳过"也照给（用户 2026-11-15 明确）；
+/// 先结算生成、最后加费。
 /// 用 <c>PlayerCmd.GainEnergy</c>（与本 mod「速读」「迷思」一致），
 /// 而不是给那张牌改费（那会多一行长文案）。
 /// </para>
@@ -113,7 +114,7 @@ public class Inspiration : WizardCardModel
     /// <summary>备选张数。</summary>
     private const int OfferCount = 3;
 
-    /// <summary>生成成功后获得的能量（设计固定 1，升级不改变）。</summary>
+    /// <summary>打出后获得的能量（设计固定 1，升级不改变；跳过选择也照给）。</summary>
     private const int EnergyGain = 1;
 
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
@@ -134,41 +135,43 @@ public class Inspiration : WizardCardModel
         }
 
         List<CardModel> pool = GetOtherColorSkillPool().ToList();
-        if (pool.Count == 0)
+        List<CardModel>? offered = null;
+
+        if (pool.Count > 0)
         {
-            return;
+            // ① 取 3 张互不相同的备选（内部已完成"按人数过滤 + FilterForCombat + CreateCard"）。
+            offered = CardFactory
+                .GetDistinctForCombat(Owner, pool, OfferCount, Owner.RunState.Rng.CombatCardGeneration)
+                .ToList();
+
+            if (offered.Count == 0)
+            {
+                offered = null;
+            }
         }
 
-        // ① 取 3 张互不相同的备选（内部已完成"按人数过滤 + FilterForCombat + CreateCard"）。
-        List<CardModel> offered = CardFactory
-            .GetDistinctForCombat(Owner, pool, OfferCount, Owner.RunState.Rng.CombatCardGeneration)
-            .ToList();
-
-        if (offered.Count == 0)
+        if (offered != null)
         {
-            return;
+            // ② 升级过的「启示」⇒ 备选牌也是升级过的（照抄 Quasar）。
+            //    静默升级，避免连弹三张预览（同「暗黑神秘学」）。
+            if (IsUpgraded)
+            {
+                CardCmd.Upgrade(offered, CardPreviewStyle.None);
+            }
+
+            // ③ 三选一（可跳过，照抄 Quasar）。
+            CardModel? chosen = await CardSelectCmd.FromChooseACardScreen(
+                choiceContext, offered, Owner, canSkip: true);
+
+            if (chosen != null)
+            {
+                // ④ 加入手牌（走"生成"路径 ⇒ 会触发「催化」「创世之柱」等生成类效果）。
+                await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);
+            }
         }
 
-        // ② 升级过的「启示」⇒ 备选牌也是升级过的（照抄 Quasar）。
-        //    静默升级，避免连弹三张预览（同「暗黑神秘学」）。
-        if (IsUpgraded)
-        {
-            CardCmd.Upgrade(offered, CardPreviewStyle.None);
-        }
-
-        // ③ 三选一（可跳过，照抄 Quasar）。
-        CardModel? chosen = await CardSelectCmd.FromChooseACardScreen(
-            choiceContext, offered, Owner, canSkip: true);
-
-        if (chosen == null)
-        {
-            return;
-        }
-
-        // ④ 加入手牌（走"生成"路径 ⇒ 会触发「催化」「创世之柱」等生成类效果）。
-        await CardPileCmd.AddGeneratedCardToCombat(chosen, PileType.Hand, Owner);
-
-        // ⑤ 生成成功 ⇒ 获得 1 费（跳过选择时不会走到这里，也就不会白给费）。
+        // ⑤ **无论选没选、跳没跳过，都获得 1 费**（用户 2026-11-15 明确：
+        //    三选一点跳过也要正常给费）。放在最后，保证先结算完生成再加费。
         await PlayerCmd.GainEnergy(EnergyGain, Owner);
     }
 
