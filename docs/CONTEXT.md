@@ -5460,7 +5460,9 @@ bool deckOrigin = !generatedThisCombat && picked.DeckVersion != null;
 
 **规矩（再次确认，项目统一口径）**：
 1. 卡面文案里**出现**的词条/关键词，**都要**挂悬停解释；
-2. **唯一例外是「消耗」** —— 原版规范不解释（本 mod「回忆」「凝神」也不挂）；
+2. ~~唯一例外是「消耗」~~ —— **该例外自 2026-11-13 更新起作废**：
+   原版「无惧疼痛」`FeelNoPain` 现在也挂 `HoverTipFactory.FromKeyword(CardKeyword.Exhaust)` 了，
+   所以「消耗」也照常解释（本 mod「回忆」「凝神」**早已挂**，见 2026-11-09 提交 `0d3ec6e`）；
 3. **不挂与卡名同名的能力**（buff 不自我解释）。
 
 **这次漏的**：`MagusRobe` 文案提到[gold]格挡[/gold]，但它自己**不获得格挡**（是能力触发给格挡），
@@ -5479,3 +5481,32 @@ protected override IEnumerable<IHoverTip> ExtraHoverTips =>
 >
 > 排查提醒：`GainsBlock` 只会给"真的获得格挡"的卡自动补 Block 悬停；
 > **只在文案里提到格挡、但自身不获得**的卡（遗物、能力卡）必须手动挂。
+
+### 36.8 悬停覆盖全量审计（2026-11-15，运行期实测）
+
+起因：用户指出「消耗不解释」的旧规范已随 2026-11-13 更新作废（原版「无惧疼痛」现在会解释消耗）。
+
+**做法**：临时在 `ModelDb.Init` 后加一个诊断（已删除），把**全部 79 张卡**的
+`CardModel.HoverTips` 真实列表打到日志，再与四语言文案里提到的关键词逐一比对。
+证据留档：`reference/archive/hover-dump-2026-11-15.txt`（gitignore，仅本地）。
+
+**结果：27 张"文案里提到关键词"的卡，全部已挂对应悬停，零缺口。**
+
+| 关键词 | 涉及卡数 | 状态 |
+|---|---|---|
+| 消耗 Exhaust | 10（回忆、凝神、暗黑神秘学、占卜、尾注、顿悟、勿忘我、心流、思索、净罪、真理派对） | ✅ 全挂 |
+| 格挡 Block | 14（含伟大法袍） | ✅ 全挂 |
+| 保留 Retain | 2（书签、速读） | ✅ 全挂 |
+| 虚无 Ethereal | 1（泛灵论） | ✅ 全挂 |
+| 固有 Innate | 0 提到 | — |
+
+实测样例（日志原文）：
+```
+[HOVER诊断] Recollection(回忆) 共 1 条：card_keywords.EXHAUST.title|消耗
+[HOVER诊断] Concentrate(凝神) 共 2 条：POWER.WIZARD-SPELL_POWER_POWER|法术增益 ;; card_keywords.EXHAUST.title|消耗
+[HOVER诊断] MagusRobe(伟大法袍) 共 1 条：static_hover_tips.BLOCK.title|格挡
+[HOVER诊断] Temperance(节制) 共 0 条：      ← 文案里没有关键词，符合预期
+```
+
+**结论**：不需要再改代码；本次只更新了规矩文档与注释。
+以后要复查可以用同样办法：临时挂 `ModelDb.Init` Postfix 打印 `card.HoverTips.Select(t => t.Id)`。

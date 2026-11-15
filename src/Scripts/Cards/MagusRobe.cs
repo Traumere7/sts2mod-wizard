@@ -45,7 +45,8 @@ public class MagusRobe : WizardCardModel
     /// ⚠️ 两条规矩（本项目统一口径）：
     /// <list type="bullet">
     ///   <item><b>不挂与卡名同名的能力</b> ⇒ 不挂 <see cref="MagusRobePower"/>；</item>
-    ///   <item><b>文案里出现的词条都要解释</b>（唯一例外是「消耗」——原版规范不解释），
+    ///   <item><b>文案里出现的词条都要解释</b>（「消耗」自 2026-11-13 更新起也不再例外 ——
+    ///         原版「无惧疼痛」<c>FeelNoPain</c> 现在就挂了 <c>FromKeyword(Exhaust)</c>），
     ///         所以「格挡」必须挂。这张牌自己<b>不</b>获得格挡（是能力触发给格挡），
     ///         引擎不会通过 <c>GainsBlock</c> 自动补，必须像「铅咒板」一样手动挂
     ///         <c>StaticHoverTip.Block</c>。</item>
