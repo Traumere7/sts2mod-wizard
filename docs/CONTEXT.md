@@ -5549,3 +5549,39 @@ await PlayerCmd.GainEnergy(EnergyGain, Owner);   // 最后加费（总是执行�
 
 > 能量表记用本 mod 惯例 `{energyPrefix:energyIcons(1)}`（与「速读」同款图标化写法），
 > 句间用 `\n` 断行（与「速读」「迷思」一致）。
+
+---
+
+## 39. 2026-11-15 发布 v0.5.6
+
+> 只含一项平衡性改动：**「启示」现在额外获得 1 费**（三选一点跳过也照给）。
+
+### 39.1 产物
+
+| 项 | 值 |
+|---|---|
+| `Wizard.json` | `version = 0.5.6`（BaseLib `min_version` 仍为 3.4.8） |
+| `Wizard.dll` | MD5 前 8 位 **`BAC8CAF6`**（317,952 B） |
+| `Wizard.pck` | MD5 前 8 位 **`D40B0CB6`**（149,635,588 B） |
+| `Wizard.json` | MD5 前 8 位 **`8B57E3AB`** |
+| GitHub Release | <https://github.com/Traumere7/sts2mod-wizard/releases/tag/v0.5.6>，`Wizard-v0.5.6.zip`（sha256 `f9d9fe99…`） |
+| 创意工坊 | item 3807136195，更新于 2026-11-15 23:39，file_size 149,953,991 B |
+| 发布说明 | `docs/releases/v0.5.6.md` |
+
+### 39.2 简介改动（7,937 → **7,994 B** / 8000，只剩 6 B 余量）
+
+用户要求：**只把「启示」的改动放进「平衡性调整」一节，其他不改**。
+
+⇒ 两条极简写法（预算只有 63 B，长句式放不下）：
+
+| 语言 | 新增行 | 字节 |
+|---|---|---|
+| eng | `[*]Inspiration gains 1 Energy.` | 30 |
+| zhs | `[*]启示：获得1费。` | 25 |
+
+⚠️ **下次再想往简介里加东西，必须先腾地方**（余量 6 B）：
+删「其他」段旧条目（如「火山贤者/火山巨兽」那对 ≈149 B），
+或者把早期冗长的「平衡性调整」条目改短。
+
+- `changeNote` → `v0.5.6 — Inspiration now grants 1 Energy.`（中英）
+- 备份：`WizardWorkspace/workshop.json.v056`
