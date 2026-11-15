@@ -37,6 +37,13 @@
 - 改：`[blue]Aether damage[/blue]` → `[gold]Aether damage[/gold]`
 - 理由：沿用 2026-11-08 的 Aether 高亮规则；新文案重新引入了 `[blue]`，eng/zhs 一并改回 `[gold]`，zht/jpn 直接使用 `[gold]`。
 
+### 6. `WIZARD-MAGUS_ROBE.description` / `WIZARD-MAGUS_ROBE_POWER`
+
+- 原：`Whenever you apply a debuff to an enemy...`
+- 改：`Whenever you apply a [gold]debuff[/gold] to an enemy...`
+- 范围：卡面 description、能力 description、能力 smartDescription。
+- 理由：`zhs` 用两处 `[gold]`（负面效果 + 格挡）；eng 只高亮了 Block，补上 debuff 标签以对齐。
+
 ## 待观察（暂不改）
 
 - `WIZARD-AMNESIA.description`：`eng` 保留 `{AmnesiaPower:diff()}`，`zhs` 省略。两者语义都通；暂不改 `eng`，zht 保留变量。

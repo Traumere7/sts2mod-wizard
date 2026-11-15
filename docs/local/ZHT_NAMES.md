@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：2–4 字为主；法术牌可用「術」；与原版撞名一律改名。
 
-## 卡牌（79）
+## 卡牌（81）
 
 | 英文 | zht | 备注 |
 |---|---|---|
@@ -54,6 +54,7 @@
 | Lightning Fall | 降雷 | — |
 | Magical Index | 禁書目錄 | — |
 | Magnum Opus | 畢生之作 | — |
+| Magus Robe | 偉大法袍 | — |
 | Mana Burst | 魔力爆發 | — |
 | Mana Condense | 魔力凝聚 | — |
 | Mana Drain | 汲魔 | 避让「能量汲取」 |
@@ -80,13 +81,14 @@
 | Sunset | 落日 | — |
 | Superconduct | 超導 | — |
 | Telepathy | 通靈 | — |
+| Temperance | 節制 | — |
 | The Fourth Element | 第四元素 | — |
 | Tidy Up | 整理 | — |
 | Transmogrify | 幻化 | — |
 | Truth Party | 真理派對 | — |
 | Watch Fire | 觀火 | — |
 
-## 能力（35）
+## 能力（37）
 
 | 英文 | zht |
 |---|---|
@@ -111,6 +113,7 @@
 | Great Library | 大圖書館 |
 | Ice Wall | 冰牆 |
 | Mana Condense | 魔力凝聚 |
+| Magus Robe | 偉大法袍 |
 | Mercury | 水銀 |
 | Burn Immunity（怪物） | 焚燒免疫 |
 | Omniscient Form | 全知形態 |
@@ -122,6 +125,7 @@
 | Spell Power | 魔法威力 |
 | Superconduct | 超導 |
 | Telepathy | 通靈 |
+| Temperance | 節制 |
 | Quick Chant | 快速詠唱 |
 | The Fourth Element | 第四元素 |
 

@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：招式/专名用片假名，概念/状态用汉字；与原版撞名一律改名。
 
-## 卡牌（79）
+## 卡牌（81）
 
 | 英文 | jpn | 备注 |
 |---|---|---|
@@ -54,6 +54,7 @@
 | Lightning Fall | 落雷 | — |
 | Magical Index | 禁書目録 | — |
 | Magnum Opus | マグヌム・オプス | — |
+| Magus Robe | マグス・ローブ | — |
 | Mana Burst | マナバースト | — |
 | Mana Condense | マナ凝縮 | — |
 | Mana Drain | マナ吸収 | 避让 DRAIN_POWER「力の吸収」 |
@@ -80,13 +81,14 @@
 | Sunset | 落日 | — |
 | Superconduct | 超伝導 | — |
 | Telepathy | テレパシー | — |
+| Temperance | 節制 | — |
 | The Fourth Element | 第四元素 | — |
 | Tidy Up | 片付け | — |
 | Transmogrify | 変質 | 避让 METAMORPHOSIS「羽化」 |
 | Truth Party | 真実の宴 | — |
 | Watch Fire | 見張り火 | 避让 PYRE「かがり火」 |
 
-## 能力（35）
+## 能力（37）
 
 | 英文 | jpn |
 |---|---|
@@ -111,6 +113,7 @@
 | Great Library | 大図書館 |
 | Ice Wall | アイスウォール |
 | Mana Condense | マナ凝縮 |
+| Magus Robe | マグス・ローブ |
 | Mercury | 水銀 |
 | Burn Immunity（怪物） | 燃焼無効 |
 | Omniscient Form | 全知化 |
@@ -122,6 +125,7 @@
 | Spell Power | 魔法威力 |
 | Superconduct | 超伝導 |
 | Telepathy | テレパシー |
+| Temperance | 節制 |
 | Quick Chant | クイックチャント |
 | The Fourth Element | 第四元素 |
 

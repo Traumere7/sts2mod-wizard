@@ -100,7 +100,7 @@
   "WIZARD-MAGNUM_OPUS.skipKeyword.description": "At the start of your turn, end your turn.",
   "WIZARD-MAGNUM_OPUS.skipKeyword.title": "Skip your turn",
   "WIZARD-MAGNUM_OPUS.title": "Magnum Opus",
-  "WIZARD-MAGUS_ROBE.description": "Whenever you apply a debuff to an enemy, gain 1 [gold]Block[/gold] per stack applied.",
+  "WIZARD-MAGUS_ROBE.description": "Whenever you apply a [gold]debuff[/gold] to an enemy, gain 1 [gold]Block[/gold] per stack applied.",
   "WIZARD-MAGUS_ROBE.title": "Magus Robe",
   "WIZARD-MANA_BURST.description": "Deal [gold]Aether damage[/gold] to ALL enemies equal to your [purple]Spell Power[/purple].\nDouble your [purple]Spell Power[/purple].{InCombat:\n(Deal {CalculatedDamage:diff()} damage.)|}",
   "WIZARD-MANA_BURST.title": "Mana Burst",
