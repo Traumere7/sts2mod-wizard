@@ -6,12 +6,14 @@
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
 | powers.json | ✅ 完成 | 111 条；37 个能力 |
-| cards.json | ✅ 完成 | 169 条；81 张卡 |
-| relics.json | ✅ 完成 | 27 条；9 个遗物 |
+| cards.json | ✅ 完成 | 171 条；82 张卡 |
+| card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
+| enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
+| relics.json | ✅ 完成 | 30 条；10 个遗物 |
 | potions.json | ✅ 完成 | 7 条 |
 | monsters.json | ✅ 完成 | 4 条 |
 | encounters.json | ✅ 完成 | 2 条 |
-| events.json | ✅ 完成 | 46 条；3 个事件 |
+| events.json | ✅ 完成 | 54 条；4 个事件 |
 | ancients.json | ✅ 完成 | 89 条；9 位先古 |
 | settings_ui.json | ✅ 完成 | 2 条 |
 
@@ -21,12 +23,14 @@
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
 | powers.json | ✅ 完成 | 111 条；37 个能力 |
-| cards.json | ✅ 完成 | 169 条；81 张卡 |
-| relics.json | ✅ 完成 | 27 条；9 个遗物 |
+| cards.json | ✅ 完成 | 171 条；82 张卡 |
+| card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
+| enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
+| relics.json | ✅ 完成 | 30 条；10 个遗物 |
 | potions.json | ✅ 完成 | 7 条 |
 | monsters.json | ✅ 完成 | 4 条 |
 | encounters.json | ✅ 完成 | 2 条 |
-| events.json | ✅ 完成 | 46 条；3 个事件 |
+| events.json | ✅ 完成 | 54 条；4 个事件 |
 | ancients.json | ✅ 完成 | 89 条；9 位先古 |
 | settings_ui.json | ✅ 完成 | 2 条 |
 
@@ -38,6 +42,7 @@
 - [x] Cauda Pavonis 版本新增 4 卡 + 3 能力已补 zht/jpn
 - [x] Eternal Echo / Mercury 版本新增 2 卡 + 1 能力已补 zht/jpn
 - [x] Temperance / Magus Robe 版本新增 2 卡 + 2 能力已补 zht/jpn
+- [x] Unknown Sea / Nightmare / Aqua Heart / Immortal 已补 zht/jpn（含 card_keywords、enchantments 新文件）
 - [ ] zht / jpn 全量自动 JSON 解析 / 标签逐 key diff（建议在 CI 或本地脚本跑）
 - [ ] zht / jpn 术语一致性抽查
 - [ ] 确认 `Burn` 能力改名「焚燒」后的文本一致性（zht）
@@ -60,3 +65,7 @@
 - `zhs` 的 `MERCURY_POWER.description` 补上 `[blue]{Swift}[/blue]` 标签，与 eng 的标签数对齐。
 - Temperance / Magus Robe 版本新增：`Temperance`、`Magus Robe` 两卡，以及对应两个能力；zht/jpn 已补。`Magus Robe` zht = 偉大法袍，jpn = マグス・ローブ。
 - `eng` 的 `MAGUS_ROBE` 卡面与 `MAGUS_ROBE_POWER` 描述/smart 补上 `[gold]debuff[/gold]`，与 zhs 的两处 gold 标签对齐。
+- Unknown Sea：zht **未知海洋** / jpn **未知の海**；新增 8 条事件文本。
+- Nightmare：zht **夢魘** / jpn **悪夢**；按用户指定保留，与原版 Silent 的 NIGHTMARE 同名（见 `GLOSSARY.md` 冲突表）。
+- Aqua Heart：zht **水藍之心** / jpn **アクアハート**。
+- 新文件：`card_keywords.json`（Obliterate zht 即毀 / jpn 抹消）、`enchantments.json`（Immortal 不朽；Reprise zht 復奏 / jpn リプリーズ）。

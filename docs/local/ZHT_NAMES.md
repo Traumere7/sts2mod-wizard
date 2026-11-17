@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：2–4 字为主；法术牌可用「術」；与原版撞名一律改名。
 
-## 卡牌（81）
+## 卡牌（82）
 
 | 英文 | zht | 备注 |
 |---|---|---|
@@ -62,6 +62,7 @@
 | Mind Flow | 心流 | — |
 | Mirror | 鏡像 | — |
 | Myth | 迷思 | — |
+| Nightmare | 夢魘 | 与原版 Silent 的 NIGHTMARE 同名 |
 | Omniscient Form | 全知形態 | — |
 | Ponder | 思索 | — |
 | Puncture | 擊穿 | — |
@@ -129,10 +130,11 @@
 | Quick Chant | 快速詠唱 |
 | The Fourth Element | 第四元素 |
 
-## 遗物（9）
+## 遗物（10）
 
 | 英文 | zht |
 |---|---|
+| Aqua Heart | 水藍之心 |
 | Athanor | 恆溫爐 |
 | Curse Tablet | 詛咒石板 |
 | Dead Sea Scrolls | 死海古卷 |
@@ -155,7 +157,21 @@
 | Flame Claw | 火焰爪擊 |
 | Magma Smash | 熔岩重擊 |
 | Level Secret | 祕儀之間 |
+| Unknown Sea | 未知海洋 |
 | Rules Horror | 規則怪談 |
 | Volcano Sage | 火山賢者 |
 | The Wizard | 巫師 |
 | Art | 美術 |
+
+## 关键词（1）
+
+| 英文 | zht |
+|---|---|
+| Obliterate | 即毀 |
+
+## 附魔（2）
+
+| 英文 | zht |
+|---|---|
+| Immortal | 不朽 |
+| Reprise | 復奏 |

@@ -1,4 +1,7 @@
 {
+  "WIZARD-AQUA_HEART.description": "[gold]エンチャント[/gold]されたカードをプレイするたび、すべての敵に[blue]3[/blue]ダメージを与える。",
+  "WIZARD-AQUA_HEART.flavor": "未知の世界の海から来た宝物。その魔力は異質なものだ。",
+  "WIZARD-AQUA_HEART.title": "アクアハート",
   "WIZARD-ATHANOR.description": "ターン開始時、[purple]魔法威力[/purple][blue]{SpellPowerPower}[/blue]を得る。",
   "WIZARD-ATHANOR.flavor": "この火は決して消えない。燃えているのは、木ではないからだ。",
   "WIZARD-ATHANOR.title": "アタノール",

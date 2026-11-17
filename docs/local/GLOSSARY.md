@@ -99,6 +99,11 @@
 | Mercury | 水银 | 水銀 | 水銀 | — |
 | Temperance | 节制 | 節制 | 節制 | — |
 | Magus Robe | 伟大法袍 | 偉大法袍 | マグス・ローブ | — |
+| Obliterate | 即毁 | 即毀 | **抹消** | 新关键词；jpn 避让泛用「消滅」 |
+| Immortal | 不朽 | 不朽 | 不朽 | 新附魔 |
+| Aqua Heart | 水蓝之心 | 水藍之心 | アクアハート | — |
+| Unknown Sea | 未知海洋 | 未知海洋 | 未知の海 | — |
+| Nightmare | 梦魇 | 夢魘 | 悪夢 | 与原版 Silent 卡同名 |
 
 ## 四、命名冲突与处理
 
@@ -112,6 +117,7 @@
 | Rampage | 暴走 | ランページ | Skyfire Rampage：zht 天火浩蕩 / jpn 天火暴走 |
 | Blaze | 熾焰 | ブレイズ | Blazing Flame：zht **烈焰術** / jpn 灼熱の炎 |
 | Ice Lance | 冰槍 | アイスランス | Ice Shard：zht 冰礫 / jpn アイスシャード |
+| Nightmare | 夢魘 | 悪夢 | 本 Mod 诅咒同名；暂按用户指定保留（如需避让：zht 夢魘纏身 / jpn 悪夢憑き） |
 
 ## 五、事件 / 怪物 / 角色
 

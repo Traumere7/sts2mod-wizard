@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：招式/专名用片假名，概念/状态用汉字；与原版撞名一律改名。
 
-## 卡牌（81）
+## 卡牌（82）
 
 | 英文 | jpn | 备注 |
 |---|---|---|
@@ -62,6 +62,7 @@
 | Mind Flow | マインドフロー | — |
 | Mirror | 鏡像 | — |
 | Myth | 迷妄 | 取“迷思/误解”义，不译「神話」 |
+| Nightmare | 悪夢 | 与原版 Silent 的 NIGHTMARE 同名 |
 | Omniscient Form | 全知化 | 原版 FORM 系均译「〜化」 |
 | Ponder | 思案 | — |
 | Puncture | 貫通 | 避让 IMPALE「インペイル」 |
@@ -129,10 +130,11 @@
 | Quick Chant | クイックチャント |
 | The Fourth Element | 第四元素 |
 
-## 遗物（9）
+## 遗物（10）
 
 | 英文 | jpn |
 |---|---|
+| Aqua Heart | アクアハート |
 | Athanor | アタノール |
 | Curse Tablet | 呪いの石板 |
 | Dead Sea Scrolls | 死海文書 |
@@ -155,7 +157,21 @@
 | Flame Claw | 炎の爪 |
 | Magma Smash | マグマスマッシュ |
 | Level Secret | 秘密の間 |
+| Unknown Sea | 未知の海 |
 | Rules Horror | ルール・ホラー |
 | Volcano Sage | 火山の賢者 |
 | The Wizard | ウィザード |
 | Art | アート |
+
+## 关键词（1）
+
+| 英文 | jpn |
+|---|---|
+| Obliterate | 抹消 |
+
+## 附魔（2）
+
+| 英文 | jpn |
+|---|---|
+| Immortal | 不朽 |
+| Reprise | リプリーズ |

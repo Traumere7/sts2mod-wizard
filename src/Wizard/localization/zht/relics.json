@@ -1,4 +1,7 @@
 {
+  "WIZARD-AQUA_HEART.description": "每當你打出一張帶有[gold]附魔[/gold]的牌時，對所有敵人造成 [blue]3[/blue] 點傷害。",
+  "WIZARD-AQUA_HEART.flavor": "來自某個未知世界之海的寶物。其魔力屬於異質的種類。",
+  "WIZARD-AQUA_HEART.title": "水藍之心",
   "WIZARD-ATHANOR.description": "在你的回合開始時，獲得 [blue]{SpellPowerPower}[/blue] 層[purple]魔法威力[/purple]。",
   "WIZARD-ATHANOR.flavor": "爐火永不熄滅，因為它燃燒的並非木柴。",
   "WIZARD-ATHANOR.title": "恆溫爐",

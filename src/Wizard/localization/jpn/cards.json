@@ -116,6 +116,8 @@
   "WIZARD-MIRROR.title": "鏡像",
   "WIZARD-MYTH.description": "{Block:diff()}[gold]ブロック[/gold]を得る。{Energy:energyIcons()}を得る。\n[gold]手札[/gold]にあるすべてのカードのエナジーコストをランダム化する。",
   "WIZARD-MYTH.title": "迷妄",
+  "WIZARD-NIGHTMARE.description": "このカードを引くたび、そのコピー1枚を[gold]捨て札[/gold]に加える。",
+  "WIZARD-NIGHTMARE.title": "悪夢",
   "WIZARD-OMNISCIENT_FORM.description": "このターンにまだ付与していない種類の[gold]デバフ[/gold]を敵に付与するたび、1{energyPrefix:energyIcons(1)}を得て、カードを{OmniscientFormPower:diff()}枚引く。",
   "WIZARD-OMNISCIENT_FORM.title": "全知化",
   "WIZARD-PONDER.description": "[gold]手札[/gold]のカードを1枚[gold]廃棄[/gold]する。\nカードを{Cards:diff()}枚引く。",
