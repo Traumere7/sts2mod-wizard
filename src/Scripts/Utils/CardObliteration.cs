@@ -40,6 +40,13 @@ public static class CardObliteration
     /// </summary>
     public static async Task Obliterate(CardModel playedCard)
     {
+        // ⚠️ 附魔「不朽」<c>Immortal</c> 会把「即毁」词条去掉 —— 去掉之后就不该再触发。
+        //    这里再判一次词条（而不是只看附魔），保证任何"去词条"的来源都自动生效。
+        if (!HasObliterate(playedCard))
+        {
+            return;
+        }
+
         CardModel? deckCard = playedCard.DeckVersion;
         if (deckCard == null)
         {

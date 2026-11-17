@@ -1,4 +1,6 @@
 {
+  "WIZARD-IMMORTAL.description": "这张牌失去[gold]消耗[/gold]与[gold]即毁[/gold]词条。如果这张牌是[gold]能力牌[/gold]，则打出后不会消失，而是进入[gold]弃牌堆[/gold]。",
+  "WIZARD-IMMORTAL.title": "不朽",
   "WIZARD-REPRISE.description": "这张牌获得[gold]重放[/gold][blue]{Times}[/blue]。",
   "WIZARD-REPRISE.title": "复奏"
 }

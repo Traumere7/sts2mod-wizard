@@ -1,4 +1,7 @@
 {
+  "WIZARD-AQUA_HEART.description": "Whenever you play an [gold]Enchanted[/gold] card, deal [blue]3[/blue] damage to ALL enemies.",
+  "WIZARD-AQUA_HEART.flavor": "A treasure from the sea of an unknown world. Its magic is of an alien kind.",
+  "WIZARD-AQUA_HEART.title": "Aqua Heart",
   "WIZARD-ATHANOR.description": "At the start of your turn, gain [blue]{SpellPowerPower}[/blue] [purple]Spell Power[/purple].",
   "WIZARD-ATHANOR.flavor": "The fire never goes out, for what it burns is not wood.",
   "WIZARD-ATHANOR.title": "Athanor",

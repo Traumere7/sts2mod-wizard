@@ -1,4 +1,6 @@
 {
+  "WIZARD-IMMORTAL.description": "This card loses [gold]Exhaust[/gold] and [gold]Obliterate[/gold]. If it is a [gold]Power[/gold], it goes to your [gold]Discard Pile[/gold] after being played instead of disappearing.",
+  "WIZARD-IMMORTAL.title": "Immortal",
   "WIZARD-REPRISE.description": "This card gains [gold]Replay[/gold] [blue]{Times}[/blue].",
   "WIZARD-REPRISE.title": "Reprise"
 }

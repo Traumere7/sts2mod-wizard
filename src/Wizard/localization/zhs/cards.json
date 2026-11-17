@@ -116,6 +116,8 @@
   "WIZARD-MIRROR.title": "镜像",
   "WIZARD-MYTH.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n获得{Energy:energyIcons()}。\n随机化你所有[gold]手牌[/gold]的耗能。",
   "WIZARD-MYTH.title": "迷思",
+  "WIZARD-NIGHTMARE.description": "每当你抽到这张牌时，将此牌的一张复制品加入你的[gold]抽牌堆[/gold]。",
+  "WIZARD-NIGHTMARE.title": "梦魇",
   "WIZARD-OMNISCIENT_FORM.description": "每当你给予敌人本回合未给予过的一种[gold]负面效果[/gold]时，获得1{energyPrefix:energyIcons(1)}并抽{OmniscientFormPower:diff()}张牌。",
   "WIZARD-OMNISCIENT_FORM.title": "全知形态",
   "WIZARD-PONDER.description": "选1张牌[gold]消耗[/gold]。\n抽{Cards:diff()}张牌。",

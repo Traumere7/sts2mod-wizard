@@ -5585,3 +5585,89 @@ await PlayerCmd.GainEnergy(EnergyGain, Owner);   // 最后加费（总是执行�
 
 - `changeNote` → `v0.5.6 — Inspiration now grants 1 Energy.`（中英）
 - 备份：`WizardWorkspace/workshop.json.v056`
+
+---
+
+## 40. 2026-11-17 实装「未知海洋」事件四件套
+
+> design.md：事件「未知海洋 / OceanUnknown」+ 遗物「水蓝之心 / AquaHeart」
+> + 诅咒「梦魇 / Nightmare」+ 附魔「不朽 / Immortal」。
+> 内容量：卡牌 79 → **80**；遗物 9 → **10**；附魔 2 → **3**；事件 3 → **4**。
+
+### 40.1 四个新文件
+
+| 文件 | 内容 |
+|---|---|
+| `Scripts/Events/OceanUnknown.cs` | 事件：第三阶段 + 卡组里至少有 1 张可附魔「不朽」的牌 |
+| `Scripts/Relics/AquaHeart.cs` | 遗物：每打出一张**带附魔**的牌 → 对所有敌人造成 3 点伤害 |
+| `Scripts/Cards/Nightmare.cs` | 诅咒：不可打出；**抽到它时**把一张复制品塞回抽牌堆 |
+| `Scripts/Enchantments/Immortal.cs` | 附魔：去「消耗」「即毁」词条；**能力牌打出后进弃牌堆** |
+| `Scripts/Utils/CardObliteration.cs` | 改：即毁执行前再判一次词条（词条被「不朽」去掉后不再移除卡组牌） |
+
+### 40.2 各件的实现要点（原版参考）
+
+| 需求 | 原版参考 | 关键 API |
+|---|---|---|
+| 事件给遗物 / 加诅咒 / 选牌附魔 | `GraveOfTheForgotten`（坟冢） | `RelicCmd.Obtain<T>(Owner)`、`CardPileCmd.AddCurseToDeck<T>(Owner)`、`CardSelectCmd.FromDeckForEnchantment(...)`、`CardCmd.Enchant<T>(card, 1m)` |
+| 抽到某张牌时触发 | `Void`（诅咒） | `AfterCardDrawn(ctx, card, fromHandDraw)` + `card == this` 过滤 |
+| 把复制品加入牌堆 | `Anger`（愤怒） | `CreateClone()` + `CardPileCmd.AddGeneratedCardToCombat(clone, PileType.Draw, Owner)` |
+| 去掉「消耗」词条 | `SoulsPower`（灵魂之力） | `CanEnchant` 用 `GetKeywordsWithSources(KeywordSources.Local)`；`OnEnchant` → `CardCmd.RemoveKeyword` |
+| **能力牌打出后不消失** | 无现成参考（独立调查） | `AbstractModel.ModifyCardPlayResultLocation`：把 `PileType.None` 改成 `PileType.Discard` |
+
+关于最后一条：引擎给能力牌的落点写死在
+`CardModel.GetResultLocationForCardPlay()`（`Type == Power ⇒ PileType.None`），
+但官方留了钩子 `Hook.ModifyCardPlayResultLocation`（`CardModel.cs:2044` 调用，汇总
+`AbstractModel.ModifyCardPlayResultLocation`）；`EnchantmentModel.ShouldReceiveCombatHooks`
+会跟着自己那张牌走 ⇒ **附魔自己就能改落点**，不需要 Harmony。
+`CardLocation` 是 `record struct`，直接改 `location.pileType` 再返回（原版 `CorruptionPower` 同款）。
+
+**「不朽」去词条能跨存档**：读档时 `CardModel.FromSerializable` 会调
+`Enchantment.ModifyCard()` → `OnEnchant()`，所以 `RemoveKeyword` 会在读档后重跑。
+
+### 40.3 ⚠️ 踩坑：BaseLib 强制要求 `[Pool]`（曾导致启动失败）
+
+第一版给 `AquaHeart` **没有**加 `[Pool]`（想照抄原版事件遗物 `ForgottenSoul` 的"无池"写法），
+结果游戏直接**启动失败**：
+
+```
+System.Exception: Model Wizard.Scripts.Relics.AquaHeart
+    must be marked with a PoolAttribute to determine which pool to add it to.
+```
+
+原因：BaseLib 的 `CustomContentDictionary.AddModel` 对**每个自定义模型**都强制读取
+`PoolAttribute`，缺失即抛异常、中断模型注册。
+⇒ **原版可以无池，BaseLib 自定义模型不行**。
+修法：挂 `[Pool(typeof(WizardRelicPool))]`；因为稀有度是 `RelicRarity.Event`，
+而随机遗物只掷 `Common/Uncommon/Rare`（`RelicFactory.RollRarity`）与 `Shop`（`RelicGrabBag`），
+**Event 永远不会被掷到**，所以不会污染随机遗物。
+
+### 40.4 素材
+
+- `images/enchantments/immortal.png`（64×64 透明底，金无限环 + 蓝宝石，程序绘制）
+- 遗物图集：`relic_atlas.png` / `relic_outline_atlas.png` **765×85 → 850×85**（第 10 格），
+  新增 `relic_atlas.sprites/aqua_heart.tres` / `aqua_heart_outline.tres`（`Rect2(765, 0, 85, 85)`）
+- 卡图 `Nightmare.png`、遗物图 `aqua_heart.png`/`_outline.png`、事件立绘 `OceanUnknown.png` 均为用户提供
+- 生成脚本：`reference/tools/make_ocean_unknown_assets.py`（gitignore）
+
+### 40.5 本地化
+
+`zhs` / `eng` 已写（cards +2、relics +3、enchantments +2、events +8）。
+事件文案按 design 的颜色规范上色（蓝海洋/紫暗夜/红天空/金助眠…，抖动用 `[sine]`）。
+`zht` / `jpn` 未写（本地化团队）。
+
+### 40.6 启动自检
+
+✅ 12/12 补丁、0 异常、模型注册通过（修掉 Pool 之后）。
+日志里只剩通用的 `Asset not cached: ...` 警告 —— 与**原版资源**（`scenes/cards/card.tscn`、
+`images/enchantments/glam.png` 等共 29 条）同类，属正常预热提示。
+
+### 40.7 待实机验证
+
+1. **事件**：第三阶段能否刷到；卡组没有合法目标时**不出现**；两个选项与后续文案、
+   颜色/抖动效果是否正确。
+2. **不朽**：合法目标（带消耗 / 带即毁 / 能力牌）；附魔后词条消失；
+   **能力牌打出后进弃牌堆**（可再次打出）；带「消耗」的牌不再消耗；
+   「永恒回响」被附魔后**不再从卡组移除**；**存档→读档**后词条仍然是去掉的。
+3. **梦魇**：抽到时塞一张复制品进抽牌堆（复制品再抽到会继续增殖）；不可打出。
+4. **水蓝之心**：打出带附魔的牌时对全体造成 3 点（不受力量影响）；无附魔的牌不触发；
+   图集图标显示正常。
