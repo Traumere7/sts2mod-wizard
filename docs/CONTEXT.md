@@ -5697,3 +5697,16 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
    `flush` 前先把 `_pendingCopies` 清零（`CreateClone()` 是 `MemberwiseClone`，会把该字段复制给复制品）。
 
    日志：`[梦魇] 抽牌堆为空，复制品挂起…` / `[梦魇] 系统洗牌完成，补上挂起的复制品…`。
+
+### 40.9「梦魇」改稿：复制品改为进**弃牌堆**（2026-11-18 用户要求）
+
+原因：进抽牌堆即使加了"抽牌堆为空时等系统洗牌再补"的特判，实战里仍会大量复制
+（抽牌堆非空时塞进去的牌很快被同回合后续抽牌抽到）。
+
+改动：
+- `Nightmare.AfterCardDrawn`：复制品改为 `PileType.Discard`（原版「愤怒」`Anger` 同款），
+  仍用 `CardCmd.PreviewCardPileAdd(result)` 做飞牌演出 + 弃牌堆计数即时刷新。
+- **删掉**了 `_pendingCopies` 挂起机制与 `AfterShuffle` 补牌逻辑 —— 进弃牌堆天然不会连锁：
+  复制品只能等下一次 `CardPileCmd.Shuffle`（洗牌把弃牌堆并进抽牌堆并打乱）或洗牌效果才回抽牌堆。
+- 词条不变：`Unplayable` + `Eternal`。
+- 文案（zhs/eng）：抽牌堆 → 弃牌堆。

@@ -116,7 +116,7 @@
   "WIZARD-MIRROR.title": "Mirror",
   "WIZARD-MYTH.description": "Gain {Block:diff()} [gold]Block[/gold]. Gain {Energy:energyIcons()}.\nRandomize the Energy cost of all cards in your [gold]Hand[/gold].",
   "WIZARD-MYTH.title": "Myth",
-  "WIZARD-NIGHTMARE.description": "Whenever you draw this card, add a copy of it into your [gold]Draw Pile[/gold].",
+  "WIZARD-NIGHTMARE.description": "Whenever you draw this card, add a copy of it into your [gold]Discard Pile[/gold].",
   "WIZARD-NIGHTMARE.title": "Nightmare",
   "WIZARD-OMNISCIENT_FORM.description": "Whenever you apply a kind of [gold]debuff[/gold] to an enemy that you have not applied this turn, gain 1{energyPrefix:energyIcons(1)} and draw {OmniscientFormPower:diff()} card{OmniscientFormPower:plural:|s}.",
   "WIZARD-OMNISCIENT_FORM.title": "Omniscient Form",
