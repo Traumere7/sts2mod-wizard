@@ -5710,3 +5710,45 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
   复制品只能等下一次 `CardPileCmd.Shuffle`（洗牌把弃牌堆并进抽牌堆并打乱）或洗牌效果才回抽牌堆。
 - 词条不变：`Unplayable` + `Eternal`。
 - 文案（zhs/eng）：抽牌堆 → 弃牌堆。
+
+---
+
+## 41. 2026-11-18 发布 v0.5.7
+
+> 本版内容：新事件「未知海洋」+ 遗物「水蓝之心」+ 诅咒「梦魇」+ 附魔「不朽」。
+
+### 41.1 产物
+
+| 项 | 值 |
+|---|---|
+| `Wizard.json` | `version = 0.5.7`（BaseLib `min_version` 仍为 3.4.8） |
+| `Wizard.dll` | MD5 前 8 位 **`A6C56D02`**（325,120 B） |
+| `Wizard.pck` | MD5 前 8 位 **`2DB74423`**（158,503,876 B） |
+| `Wizard.json` | MD5 前 8 位 **`7BF4EB09`** |
+| GitHub Release | <https://github.com/Traumere7/sts2mod-wizard/releases/tag/v0.5.7>，`Wizard-v0.5.7.zip`（sha256 `a6f28cad…`） |
+| 创意工坊 | item 3807136195，更新于 2026-11-18 00:28，file_size 158,829,447 B |
+| 发布说明 | `docs/releases/v0.5.7.md` |
+
+### 41.2 简介改动（7,994 → **7,909 B** / 8000，余量 91 B）
+
+按用户要求三件事：
+
+1. **事件计数 3 → 4**（中英各一处：`4 special events` / `4 个特殊事件`）；
+2. **「其他」整节重写**：删掉全部旧条目（火山贤者/火山巨兽、繁中/日本文案），只留一条：
+   - eng `[*]Added a new event: Unknown Sea, along with its relic Aqua Heart and curse Nightmare.`
+   - zhs `[*]新增事件「未知海洋」。另有相关遗物「水蓝之心」和诅咒牌「梦魇」。`
+3. **「平衡性调整」里「启示」补完整**（不再是一句话）：
+   - eng `[*]Inspiration - 0 - Uncommon - Skill Choose 1 of 3 random Skill cards of other colors to add to your Hand, then gain 1 Energy (even if you skip the choice).`
+   - zhs `[*]启示 - 0 - 罕见 - 技能 从3张随机其他颜色的技能牌中选择1张加入你的手牌，然后获得1费（点跳过也照给）。`
+
+**超字数处理**（按用户指示"从新增卡牌旧文本开始删"）：
+删掉了**最旧的一条**（`The Fourth Element` / `第四元素`，128+132 B），
+其余 12 条新增卡牌保留。删 1 条刚好压到 7,909 B。
+
+- `changeNote` → `v0.5.7 — 新增事件「未知海洋」（及相关遗物与诅咒牌）。`（中英）
+- 备份：`WizardWorkspace/workshop.json.v057`
+
+### 41.3 内容量（简介里同步过）
+
+卡牌 **79 → 80**（梦魇）、遗物 **9 → 10**（水蓝之心）、事件 **3 → 4**（未知海洋）；
+附魔 3 个（复奏 / 不朽 + 原版迅速），能力数量不变（32）。
