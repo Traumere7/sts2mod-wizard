@@ -5671,3 +5671,29 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
 3. **梦魇**：抽到时塞一张复制品进抽牌堆（复制品再抽到会继续增殖）；不可打出。
 4. **水蓝之心**：打出带附魔的牌时对全体造成 3 点（不受力量影响）；无附魔的牌不触发；
    图集图标显示正常。
+
+### 40.8「梦魇」三处修正（2026-11-17 用户要求）
+
+1. **加「永恒」词条**（原版 `CardKeyword.Eternal`，引擎渲染）：
+   `CardModel.IsRemovable => !Keywords.Contains(Eternal)` ⇒ 牌组里无法被移除/变化。
+   词条文案由引擎自动生成（`card_keywords.ETERNAL`：无法从你的牌组中移除或变化），不写进 description。
+2. **加牌演出 + 抽牌堆计数即时刷新**（照抄「愤怒」`Anger` / 「超频」`Overclock`）：
+   ```csharp
+   CardPileAddResult r = await CardPileCmd.AddGeneratedCardToCombat(
+       copy, PileType.Draw, Owner, CardPilePosition.Random);
+   CardCmd.PreviewCardPileAdd(r);      // 飞牌动画 + 计数立刻更新
+   ```
+3. **⚠️ 抽牌堆为空时"先等系统洗牌，再补复制品"**（修一次抽 5 张出 5 张梦魇的连锁）：
+
+   **原因**：`CardPileCmd.DrawInternal` 的循环是
+   `ShuffleIfNecessary → 取牌堆顶 → 进手牌 → Hook.AfterCardDrawn`。
+   在 `AfterCardDrawn` 里往**空**抽牌堆塞牌，塞进去的就是下一次循环的牌堆顶 ⇒ 必被立刻抽到。
+
+   **修法**：抽到梦魇时若抽牌堆已空 ⇒ `_pendingCopies++` **挂起**，这次不塞牌；
+   `CardPileCmd.Shuffle` 在**最后**才发 `Hook.AfterShuffle(choiceContext, shuffler)`
+   （洗牌完成、牌已进牌堆之后）——我们在 `AfterShuffle` 里补进去，
+   于是复制品落在**随机位置**（`CardPilePosition.Random`），不会被立刻抽到，
+   之后照常继续后续抽牌。若本次再没有洗牌，就挂到下一次洗牌（字面意义的"等系统洗牌"）。
+   `flush` 前先把 `_pendingCopies` 清零（`CreateClone()` 是 `MemberwiseClone`，会把该字段复制给复制品）。
+
+   日志：`[梦魇] 抽牌堆为空，复制品挂起…` / `[梦魇] 系统洗牌完成，补上挂起的复制品…`。
