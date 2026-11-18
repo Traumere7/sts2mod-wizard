@@ -58,7 +58,7 @@
   "WIZARD-EMBRITTLEMENT.title": "脆化",
   "WIZARD-ENDNOTE.description": "抽 1 張牌。\n當此牌被[gold]消耗[/gold]時，抽 {Cards:diff()} 張牌。",
   "WIZARD-ENDNOTE.title": "尾註",
-  "WIZARD-EPIPHANY.description": "從你的[gold]手牌[/gold]中[gold]消耗[/gold] 2 張牌。\n從你的[gold]抽牌堆[/gold]選擇 {Cards:diff()} 張牌加入你的[gold]手牌[/gold]。",
+  "WIZARD-EPIPHANY.description": "從你的[gold]手牌[/gold]中[gold]消耗[/gold] 1 張牌。\n從你的[gold]抽牌堆[/gold]選擇 {Cards:diff()} 張牌加入你的[gold]手牌[/gold]。",
   "WIZARD-EPIPHANY.selectionScreenPrompt": "選擇 {Amount} 張牌加入你的[gold]手牌[/gold]。",
   "WIZARD-EPIPHANY.title": "頓悟",
   "WIZARD-ETERNAL_ECHO.description": "選擇 1 張你的[gold]手牌[/gold]，為其[gold]附魔[/gold]上[purple]復奏[/purple]。",

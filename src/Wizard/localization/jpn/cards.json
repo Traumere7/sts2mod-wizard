@@ -58,7 +58,7 @@
   "WIZARD-EMBRITTLEMENT.title": "脆化",
   "WIZARD-ENDNOTE.description": "カードを1枚引く。\nこのカードが[gold]廃棄[/gold]された時、カードを{Cards:diff()}枚引く。",
   "WIZARD-ENDNOTE.title": "エンドノート",
-  "WIZARD-EPIPHANY.description": "[gold]手札[/gold]のカードを2枚[gold]廃棄[/gold]する。\n[gold]山札[/gold]からカードを{Cards:diff()}枚選び、[gold]手札[/gold]に加える。",
+  "WIZARD-EPIPHANY.description": "[gold]手札[/gold]のカードを1枚[gold]廃棄[/gold]する。\n[gold]山札[/gold]からカードを{Cards:diff()}枚選び、[gold]手札[/gold]に加える。",
   "WIZARD-EPIPHANY.selectionScreenPrompt": "[gold]手札[/gold]に加えるカードを{Amount}枚選ぶ。",
   "WIZARD-EPIPHANY.title": "悟り",
   "WIZARD-ETERNAL_ECHO.description": "[gold]手札[/gold]のカードを1枚選び、[purple]リプリーズ[/purple]を[gold]エンチャント[/gold]する。",
