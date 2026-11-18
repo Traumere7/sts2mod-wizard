@@ -5768,3 +5768,33 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
 - 类注释里的旧数值一并更新。
 
 ⚠️ `zht` / `jpn` 的「顿悟」文案仍是旧值（2 张），属本地化团队范围，未动。
+
+---
+
+## 43. 2026-11-18 发布 v0.5.8
+
+> 只含一项平衡性改动：「顿悟」加强（消耗 2→1；抽牌堆取牌 1(2)→2(3)）。
+
+### 43.1 产物
+
+| 项 | 值 |
+|---|---|
+| `Wizard.json` | `version = 0.5.8`（BaseLib `min_version` 仍为 3.4.8） |
+| `Wizard.dll` | MD5 前 8 位 **`FEEDD2F8`**（325,120 B） |
+| `Wizard.pck` | MD5 前 8 位 **`7A8964EF`**（158,504,164 B） |
+| `Wizard.json` | MD5 前 8 位 **`CFFC6FDB`** |
+| GitHub Release | <https://github.com/Traumere7/sts2mod-wizard/releases/tag/v0.5.8>，`Wizard-v0.5.8.zip` |
+| 创意工坊 | item 3807136195，更新于 2026-11-18 13:22，file_size 158,829,735 B |
+| 发布说明 | `docs/releases/v0.5.8.md` |
+
+### 43.2 简介（7,909 → **7,863 B**，余量 137 B）
+
+- 「平衡性调整」新增两条：
+  - eng `[*]Epiphany - 0 - Skill Exhaust 1 card instead of 2. Take 2(3) cards from your Draw Pile into your Hand instead of 1(2).`
+  - zhs `[*]顿悟 - 0 - 技能 选择手牌消耗 2 张 → 1 张；从抽牌堆取牌 1（2）张 → 2（3）张。`
+- 超限后按指示从「新增卡牌」删掉**最旧的一条**（`Mana Burst` / `魔力爆发`），其余保留。
+- `changeNote` → `v0.5.8 — 「顿悟」加强…`（中英）
+- 备份 `WizardWorkspace/workshop.json.v058`
+
+> ⚠️ 简介余量只剩 137 B；下一次再往「平衡性调整」加条目时，
+> 需要继续从「新增卡牌」删旧条目（目前剩 10 条）。
