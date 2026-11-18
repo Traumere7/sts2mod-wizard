@@ -5752,3 +5752,19 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
 
 卡牌 **79 → 80**（梦魇）、遗物 **9 → 10**（水蓝之心）、事件 **3 → 4**（未知海洋）；
 附魔 3 个（复奏 / 不朽 + 原版迅速），能力数量不变（32）。
+
+---
+
+## 42. 2026-11-18「顿悟」加强（设计稿 208 行）
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 选择手牌消耗 | 2 张 | **1 张**（`ExhaustCount` 2 → 1，固定不随升级变化） |
+| 从抽牌堆取牌 | 1（2）张 | **2（3）张**（`CardsVar(1)` → `CardsVar(2)`，升级 +1 不变） |
+
+改动位置：
+- `Epiphany.ExhaustCount` = 1；`CanonicalVars` 的 `CardsVar(2)`；`OnUpgrade` 仍 `UpgradeValueBy(1m)`。
+- 文案（zhs/eng）「选2张牌消耗 / Exhaust 2 cards」→「选1张牌 / Exhaust 1 card」（抽牌数仍用 `{Cards:diff()}` 自动跟随 2/3）。
+- 类注释里的旧数值一并更新。
+
+⚠️ `zht` / `jpn` 的「顿悟」文案仍是旧值（2 张），属本地化团队范围，未动。

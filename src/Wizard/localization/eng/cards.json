@@ -58,7 +58,7 @@
   "WIZARD-EMBRITTLEMENT.title": "Embrittlement",
   "WIZARD-ENDNOTE.description": "Draw 1 card. When this card is [gold]Exhausted[/gold], draw {Cards:diff()} cards.",
   "WIZARD-ENDNOTE.title": "Endnote",
-  "WIZARD-EPIPHANY.description": "[gold]Exhaust[/gold] 2 cards in your [gold]Hand[/gold]. Choose {Cards:diff()} {Cards:plural:card|cards} in your [gold]Draw Pile[/gold] and put {Cards:plural:it|them} into your [gold]Hand[/gold].",
+  "WIZARD-EPIPHANY.description": "[gold]Exhaust[/gold] 1 card in your [gold]Hand[/gold]. Choose {Cards:diff()} {Cards:plural:card|cards} in your [gold]Draw Pile[/gold] and put {Cards:plural:it|them} into your [gold]Hand[/gold].",
   "WIZARD-EPIPHANY.selectionScreenPrompt": "Choose {Amount} {Amount:plural:card|cards} to put into your [gold]Hand[/gold].",
   "WIZARD-EPIPHANY.title": "Epiphany",
   "WIZARD-ETERNAL_ECHO.description": "Choose 1 card in your [gold]Hand[/gold] and [gold]Enchant[/gold] it with [purple]Reprise[/purple].",

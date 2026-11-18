@@ -12,13 +12,13 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 顿悟 - 0 费 - 技能 - 衍生（Token）
-/// 保留。选择 2 张手牌消耗。从抽牌堆选 1(2) 张牌加入你的手牌。消耗。
+/// 保留。选择 1 张手牌消耗。从抽牌堆选 2(3) 张牌加入你的手牌。消耗。
 ///
 /// <para>
 /// 两部分分别照抄原版：
 /// <list type="bullet">
 ///   <item>消耗手牌 → 「燃烧契约」<c>BurningPact</c>
-///         （<c>FromHand(ExhaustSelectionPrompt, 2)</c>）</item>
+///         （<c>FromHand(ExhaustSelectionPrompt, N)</c>）</item>
 ///   <item>从抽牌堆取牌 → 「许愿」<c>Wish</c> / 「疏浚」<c>Dredge</c>
 ///         （<c>CardSelectCmd.FromCombatPile(PileType.Draw)</c> + <c>CardPileCmd.Add(..., PileType.Hand)</c>）</item>
 /// </list>
@@ -41,7 +41,7 @@ namespace Wizard.Scripts.Cards;
 ///
 /// <para>
 /// <b>⚠️ 本地化必须用占位符，不能写死数字。</b>
-/// 本牌升级改的是 <c>CardsVar</c>（1 → 2），文案要写
+/// 本牌升级改的是 <c>CardsVar</c>（2 → 3），文案要写
 /// <c>{Cards:diff()}</c>，选牌提示要写 <c>{Amount}</c>
 /// （<c>{Amount}</c> 由 <c>CardSelectorPrefs</c> 构造时自动注入 =
 /// 上面传给它的 <c>take</c>）。
@@ -54,7 +54,8 @@ public class Epiphany : WizardCardModel
 {
     private const int Cost = 0;
 
-    private const int ExhaustCount = 2;
+    /// <summary>选择几张手牌消耗（2026-11-18 加强：2 → 1）。</summary>
+    private const int ExhaustCount = 1;
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
@@ -64,8 +65,8 @@ public class Epiphany : WizardCardModel
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        // 从抽牌堆取几张（升级 1 → 2）
-        new CardsVar(1),
+        // 从抽牌堆取几张（2026-11-18 加强：2 张，升级 3 张）
+        new CardsVar(2),
     ];
 
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
@@ -81,7 +82,7 @@ public class Epiphany : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
-        // ① 选择 2 张手牌消耗（照抄 BurningPact）。
+        // ① 选择 1 张手牌消耗（照抄 BurningPact）。
         IEnumerable<CardModel> toExhaust = await CardSelectCmd.FromHand(
             choiceContext,
             Owner,
@@ -115,7 +116,7 @@ public class Epiphany : WizardCardModel
         }
     }
 
-    /// <summary>升级：从抽牌堆取 1 → 2 张。</summary>
+    /// <summary>升级：从抽牌堆取 2 → 3 张（消耗手牌数固定 1，不随升级变化）。</summary>
     protected override void OnUpgrade()
     {
         DynamicVars.Cards.UpgradeValueBy(1m);
