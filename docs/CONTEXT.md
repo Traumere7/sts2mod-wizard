@@ -5798,3 +5798,37 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
 
 > ⚠️ 简介余量只剩 137 B；下一次再往「平衡性调整」加条目时，
 > 需要继续从「新增卡牌」删旧条目（目前剩 10 条）。
+
+---
+
+## 44. 2026-11-20 修「魔力凝聚」格挡吃了敏捷/脆弱
+
+### 44.1 规范
+
+**能力给予的格挡只由层数决定**，不吃「敏捷」加成、也不被「脆弱」削减。
+原版参考：
+- 无惧疼痛 `FeelNoPainPower`：`CreatureCmd.GainBlock(Owner, Amount, ValueProp.Unpowered, null)`
+- 创世之柱 `PillarOfCreationPower`：同上
+
+引擎判定：`ValuePropExtensions.IsPoweredCardOrMonsterMoveBlock()`
+= `props.HasFlag(Move) && !props.HasFlag(Unpowered)`，
+`DexterityPower` / `FrailPower` / `FastenPower` / `StretchPower` /
+`MultiplayerScalingModel` 都在**为真时**才改格挡值。
+⇒ 只传 `ValueProp.Unpowered`（不带 `Move`）即为固定值。
+
+### 44.2 修复
+
+`ManaCondensePower.BeforeSideTurnEndEarly` 里原先误用 `ValueProp.Move`
+（= 视为"牌/攻击来源"）⇒ 敏捷加成与脆弱削减都会生效。
+改为 `ValueProp.Unpowered`（2026-11-20）。
+
+### 44.3 全量审计结果（能力 / 遗物）
+
+| 来源 | 格挡属性 | 结论 |
+|---|---|---|
+| 魔力凝聚 `ManaCondensePower` | `Move` → **`Unpowered`** | ✅ 已修 |
+| 伟大法袍 `MagusRobePower` | `Unpowered` | ✅ 本来就正确 |
+| 铅咒板 `CurseTablet`（遗物） | `BlockVar(4m, Unpowered)` | ✅ 正确 |
+| 其余 `GainBlock` 调用 | 都在**卡牌**里（`DynamicVars.Block` + `cardPlay`） | ✅ 卡牌格挡本就该吃敏捷/脆弱 |
+
+> 注：`BurningSoulPower` / `BurnPower` / `CurrentOverflowPower` 里的 `Unpowered` 是**伤害**属性，与格挡无关。

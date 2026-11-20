@@ -29,6 +29,14 @@ namespace Wizard.Scripts.Powers;
 /// </para>
 ///
 /// <para>
+/// ⚠️⚠️ <b>格挡必须是 <c>ValueProp.Unpowered</c></b>（2026-11-20 用户报告并修正）：
+/// 能力给予的格挡<b>只由层数决定</b>，不受「敏捷」加成、也不受「脆弱」削减。
+/// 原版参考：无惧疼痛 <c>FeelNoPainPower</c>、创世之柱 <c>PillarOfCreationPower</c>
+/// 都用 <c>CreatureCmd.GainBlock(Owner, Amount, ValueProp.Unpowered, null)</c>。
+/// 本牌原先误用了 <c>ValueProp.Move</c>，导致敏捷加成会生效。
+/// </para>
+///
+/// <para>
 /// <b>不叠层语义</b>：打第二张只是让层数 +1，但效果是"获得等同于法术增益的格挡"，
 /// 与层数无关 —— 所以 <see cref="StackType"/> 用 <see cref="PowerStackType.Single"/>
 /// 反而更诚实？<b>不。</b>这里仍用 <c>Counter</c>：
@@ -110,10 +118,15 @@ public class ManaCondensePower : CustomPowerModel
 
         for (int i = 0; i < times; i++)
         {
+            // ★ 必须用 Unpowered（2026-11-20 修）：
+            //   能力给予的格挡**只由层数决定**，不该吃「敏捷」加成、也不该被「脆弱」削减。
+            //   原来这里写的是 ValueProp.Move（= 视为"牌/攻击"来源）⇒ 敏捷/脆弱会生效，不符合规范。
+            //   原版参考：无惧疼痛 FeelNoPainPower / 创世之柱 PillarOfCreationPower
+            //   都是 CreatureCmd.GainBlock(Owner, Amount, ValueProp.Unpowered, null)。
             await CreatureCmd.GainBlock(
                 Owner,
                 spellPower,
-                ValueProp.Move,
+                ValueProp.Unpowered,
                 null,
                 false);
         }
