@@ -48,6 +48,7 @@ public class AlternatingCurrent : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         await PowerCmd.Apply<AlternatingCurrentPower>(
             choiceContext,
             Owner.Creature,

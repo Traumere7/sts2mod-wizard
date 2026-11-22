@@ -111,6 +111,7 @@ public class ManaBurst : WizardSpellCard
         await DamageCmd.Attack(stacks)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
+            .WithAttackerAnim("PowerUp", Owner.Character.PowerUpAnimDelay)
             .TargetingAllOpponents(combatState)
             // 命中音：Regent 的「引导之星」星光音（初版那声）。
             .WithHitFx(null, WizardVfx.GuidingStarSfx)

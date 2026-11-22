@@ -53,6 +53,7 @@ public class TheFourthElement : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         await PowerCmd.Apply<TheFourthElementPower>(
             choiceContext,
             Owner.Creature,

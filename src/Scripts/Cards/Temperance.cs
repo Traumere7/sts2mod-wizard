@@ -52,6 +52,7 @@ public class Temperance : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ① 先抽牌（设计顺序：抽 2(3) 张牌 → 再限制本回合剩余出牌数）。
         await CardPileCmd.Draw(choiceContext, DynamicVars.Cards.BaseValue, Owner);
 

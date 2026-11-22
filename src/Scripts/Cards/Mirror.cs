@@ -110,6 +110,7 @@ public class Mirror : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ⚠️ 先快照：不然后面会把新加的复制品也复制进去（指数爆炸）。
         //
         // ⚠️ 同时过滤掉「镜像」自己（2026-10-25 用户要求）：

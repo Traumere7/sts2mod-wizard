@@ -105,6 +105,7 @@ public class ForgetMeNot : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ① 从消耗牌堆取牌加入手牌（结构与 Epiphany 的"从抽牌堆取牌"完全一致，
         //    只把 PileType.Draw 换成 PileType.Exhaust）。
         await TakeFromExhaust(choiceContext);

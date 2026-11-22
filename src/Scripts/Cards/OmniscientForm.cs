@@ -53,6 +53,7 @@ public class OmniscientForm : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         // 演出（G04）：「形态展开」——
         // 原版形态牌（恶魔/回响/虚空/收割者/蛇）用的是 NFormVfx 光环，
         // 但它按**原版角色的 spine 骨骼名**绑定（NFormVfx.Initialize 里要求

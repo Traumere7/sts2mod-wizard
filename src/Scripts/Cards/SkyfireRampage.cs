@@ -137,7 +137,7 @@ public class SkyfireRampage : WizardSpellCard
             return;
         }
 
-        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
 
         // 演出（A01）：整屏横向扫描线 —— 原版「大风车」Whirlwind 的 NHorizontalLinesVfx。
         WizardVfx.HorizontalLines(WizardVfx.EmberTint, 1.2);

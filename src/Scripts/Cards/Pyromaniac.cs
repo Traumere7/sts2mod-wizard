@@ -60,6 +60,7 @@ public class Pyromaniac : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         // 本牌给**两个**效果：
         //   ① 「燃烧免疫」—— 布尔状态，不叠层
         //   ② 「纵火狂」  —— 叠层 = 每次给的活力变多

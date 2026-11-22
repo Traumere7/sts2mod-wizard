@@ -65,6 +65,7 @@ public class Crystallization : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ① 先结算一次格挡。
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
 

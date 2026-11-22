@@ -77,6 +77,7 @@ public class IceArmor : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         // ⚠️ 结算**自己算**，不读卡面展示变量 ——
         // 展示变量只在卡面刷新时更新，与"真正给多少"应当各自独立可验证
         // （这与「治疗术」HealingSpell 同一条原则）。

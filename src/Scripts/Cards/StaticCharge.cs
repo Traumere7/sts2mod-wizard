@@ -55,6 +55,7 @@ public class StaticCharge : WizardSpellCard
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
             .WithHitCount(DynamicVars.Repeat.IntValue)
+            .OnlyPlayAnimOnce()
             .WithHitFx("vfx/vfx_starry_impact")
             .Execute(choiceContext);
     }

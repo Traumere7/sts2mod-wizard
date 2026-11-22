@@ -68,6 +68,7 @@ public class DarkMysticism : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         if (Owner.Creature.CombatState == null)
         {
             return;

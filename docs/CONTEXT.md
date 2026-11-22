@@ -5832,3 +5832,62 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
 | 其余 `GainBlock` 调用 | 都在**卡牌**里（`DynamicVars.Block` + `cardPlay`） | ✅ 卡牌格挡本就该吃敏捷/脆弱 |
 
 > 注：`BurningSoulPower` / `BurnPower` / `CurrentOverflowPower` 里的 `Unpowered` 是**伤害**属性，与格挡无关。
+
+---
+
+## 45. 2026-11-22 实装「嬗变 / Transmutation」（替换原版"变化"）
+
+> design.md 第 18~20 行。使用嬗变的卡：**幻化** `Transmogrify`、**泛灵论** `Animism`、**创生** `Quickening`。
+
+### 45.1 实现方式
+
+新增 `Scripts/Utils/Transmutation.cs`：
+- **只重写"选谁"这一步**：自己挑好替代牌 → `new CardTransformation(original, replacement)`（指定替代，
+  绕开原版 `CardFactory.GetFilteredTransformationOptions` 的稀有度规则）→ 交给 **`CardCmd.Transform(...)`**。
+  落位顺序、`CardsTransformed` 历史、翻牌演出、牌组场景的 `ModifyCardBeingAddedToDeck` 全部沿用原版。
+- **算作"生成"**：变换完成后再补 `CombatManager.Instance.History.CardGenerated(...)` +
+  `Hook.AfterCardGeneratedForCombat(...)`（原版变化不发这两件事；「催化」「孔雀之尾」「结晶」会响应）。
+- 升级 / 附魔不保留（与原版一致，替代牌是卡池原型新建的牌）。
+- `CanTransmute(card) => card.IsTransformable`（`Eternal` 牌不可移除 ⇒ 不可嬗变）。
+
+### 45.2 候选规则（含用户 2026-11-22 口头补充）
+
+| 本源 | 候选卡池 | 稀有度 |
+|---|---|---|
+| 普通 / **基础(Basic)** | 本源自己的卡池（同颜色） | 普通 / 罕见 / 稀有 |
+| 罕见 | 同上 | 罕见 / 稀有 |
+| 稀有 | 同上 | 稀有 |
+| **先古** | **无色** | **稀有**（design 特别要求） |
+| 事件 / 衍生 | **无色** | 普通 / 罕见 / 稀有（原版口径） |
+| **状态 / 诅咒** | 全部颜色（红/绿/蓝/橙/紫/**愚者**/无色/**巫师**）+ 事件牌 + 衍生牌 | 任意，但**排除 基础 & 先古** |
+
+状态/诅咒额外过滤（"一定为正面牌、一定可打出"）：
+`Type ∈ {Attack, Skill, Power}`、`Rarity ∉ {Basic, Ancient}`、无 `Unplayable`、
+`CanBeGeneratedInCombat`、`IsAllowedInRun`、`Id != 本源`。
+⇒ 懒惰/衰朽/瓦解/心灵腐化这类（状态/诅咒）自然出局；
+**基础牌与先古牌按用户要求一律排除**（"这两种牌不应该在任何时候被生成"）。
+
+> 局外收益牌（原版王国资产/贪婪之手/狂宴/狩猎，本 mod 修行/治疗术/永恒回响）都有
+> `CanBeGeneratedInCombat => false`，所以被 `CanBeGeneratedInCombat` 一并排除。
+
+### 45.3 文案与悬停
+
+- 三张卡文案：变化 → **嬗变**（eng `Transform` → `Transmute`）。
+- 新增两张文案表（zhs/eng）：
+  - `static_hover_tips.json`：`WIZARD-TRANSMUTATION.title/.description`
+    —— **不用**原版 `StaticHoverTip.Transform`（那是"变化"的解释，规则不同）。
+  - `card_selection.json`：`WIZARD-TO_TRANSMUTE`（"选择要嬗变的牌"）
+    —— **不用**原版 `TransformSelectionPrompt`。
+
+### 45.4 启动自检
+
+15/15 补丁、`card_selection.json` / `static_hover_tips.json` 四语言表已合并、**无缺失文案/异常**。
+
+### 45.5 待实机验证
+
+1. 幻化/创生：选牌提示是"嬗变"、悬停是嬗变解释；选中的牌变成**同颜色且稀有度不降**的牌。
+2. 泛灵论：所有手牌被替换、新牌带「虚无」、**不会**出现基础/先古牌（普通牌 → 普通/罕见/稀有）。
+3. 状态/诅咒（如可移除的诅咒）被嬗变 → 得到一张**可打出的正面牌**（不会得到基础/先古/状态/诅咒）。
+4. 先古牌（落日/远古残章）被嬗变 → **无色稀有牌**。
+5. 生成联动：嬗变出的牌能触发「催化」「孔雀之尾」「结晶」的"生成"计数。
+6. 永恒牌（梦魇）不能作为嬗变目标（选牌时被过滤掉）。

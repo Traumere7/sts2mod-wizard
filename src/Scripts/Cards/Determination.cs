@@ -112,6 +112,7 @@ public class Determination : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         Creature self = Owner.Creature;
 
         ICombatState? combatState = CombatState;

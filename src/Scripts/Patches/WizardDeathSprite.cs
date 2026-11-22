@@ -106,6 +106,18 @@ internal static class WizardDeathSprite
         }
 
         int count = 0;
+
+        // 优先处理骨骼动画版 Visuals（Node2D 下含 Parts + DeathSprite + AnimationPlayer）：
+        // 停播待机动画、隐藏骨骼部件、显示预对齐好的倒地贴图。
+        foreach (Node2D riggedVisuals in FindOwnedRiggedVisuals(root))
+        {
+            if (SwapRiggedOne(riggedVisuals, death))
+            {
+                count++;
+            }
+        }
+
+        // 再处理静态 Sprite2D 载体（商店 / 火堆 / B 版静态回退场景）
         foreach (Sprite2D sprite in FindOwnedSprites(root))
         {
             if (SwapOne(sprite, death))
@@ -115,6 +127,70 @@ internal static class WizardDeathSprite
         }
 
         return count;
+    }
+
+    /// <summary>切换单个骨骼动画场景为倒地贴图（在 die 骨骼动画完成前的兜底）。</summary>
+    private static bool SwapRiggedOne(Node2D visuals, Texture2D death)
+    {
+        if (visuals.HasMeta(AppliedMeta))
+        {
+            return false;
+        }
+
+        visuals.SetMeta(AppliedMeta, true);
+
+        if (visuals.GetNodeOrNull<AnimationPlayer>("AnimationPlayer") is { } anim)
+        {
+            // 若已有 die 骨骼动画，统一交由 WizardAnimController 幂等播放并锁定死亡态。
+            if (WizardAnimController.PlayDie(anim))
+            {
+                Entry.Logger.Info($"[Wizard] 战败动画已触发（骨骼 die）：path={visuals.GetPath()}");
+                return true;
+            }
+
+            anim.Stop();
+        }
+
+        if (visuals.GetNodeOrNull<Node2D>("Parts") is { } parts)
+        {
+            parts.SetDeferred(CanvasItem.PropertyName.Visible, false);
+        }
+
+        if (visuals.GetNodeOrNull<Sprite2D>("DeathSprite") is { } deathSprite)
+        {
+            deathSprite.SetDeferred(Sprite2D.PropertyName.Texture, death);
+            deathSprite.SetDeferred(CanvasItem.PropertyName.Visible, true);
+        }
+
+        Entry.Logger.Info($"[Wizard] 战败立绘已切换（骨骼场景）：path={visuals.GetPath()}");
+        return true;
+    }
+
+    private static IEnumerable<Node2D> FindOwnedRiggedVisuals(Node root)
+    {
+        var found = new List<Node2D>();
+        CollectRigged(root, found);
+        return found;
+    }
+
+    private static void CollectRigged(Node node, List<Node2D> found)
+    {
+        if (node is Node2D n2d
+            && node is not Sprite2D
+            && node.Name == "Visuals"
+            && n2d.IsInsideTree()
+            && BelongsToWizardScene(node)
+            && n2d.GetNodeOrNull<Node2D>("Parts") != null
+            && n2d.GetNodeOrNull<Sprite2D>("DeathSprite") != null)
+        {
+            found.Add(n2d);
+            return;
+        }
+
+        foreach (Node child in node.GetChildren())
+        {
+            CollectRigged(child, found);
+        }
     }
 
     /// <summary>换单个 Sprite（已是战败图则跳过）。</summary>

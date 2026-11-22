@@ -63,6 +63,7 @@ public class Asceticism : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         Log.Info($"[Wizard/Asceticism] 打出卡牌，准备施加能力；CombatState={(Owner.Creature.CombatState != null)}");
 
         var applied = await PowerCmd.Apply<AsceticismPower>(

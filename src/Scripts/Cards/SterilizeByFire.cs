@@ -77,6 +77,7 @@ public class SterilizeByFire : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         Creature self = Owner.Creature;
         if (self.CombatState == null)
         {

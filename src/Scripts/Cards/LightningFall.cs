@@ -129,8 +129,10 @@ public class LightningFall : WizardSpellCard
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
+            .WithAttackerAnim("PowerUp", Owner.Character.PowerUpAnimDelay)
             .TargetingAllOpponents(combatState)
             .WithHitCount(hitCount)
+            .OnlyPlayAnimOnce()
             // 原版闪电球激发的打击特效，并且**每个敌人身上各播一发**
             // （默认多目标只在场中央播一次，SpawningHitVfxOnEachCreature 才是逐目标）。
             .WithHitFx(WizardVfx.LightningOrbImpact, WizardVfx.LightningOrbEvokeSfx)

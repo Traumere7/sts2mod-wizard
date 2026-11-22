@@ -100,6 +100,7 @@ public class MagnumOpus : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // 演出（A05）：整屏紫色烟雾暗角（与 A03「暗黑神秘学」同款）——
         // 原版「噩梦」Nightmare 的 NSmokyVignetteVfx。
         WizardVfx.SmokyVignette(

@@ -126,6 +126,7 @@ public class PurifySin : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ⚠️ 先快照再消耗：CardCmd.Exhaust 会改动牌堆，边遍历边改会抛异常。
         //    AllCards 覆盖 手牌 / 抽牌堆 / 弃牌堆 / 消耗堆 / Play 堆。
         List<CardModel> targets = (Owner.PlayerCombatState?.AllCards

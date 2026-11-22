@@ -51,6 +51,7 @@ public class IceWall : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
 
         // 演出（I02）：冰蓝尖刺飞溅 —— 原版 CRUSH UNDER/STOMP 的 NSpikeSplashVfx（默认 Cyan）。

@@ -149,6 +149,7 @@ public class MindFlow : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ResolveEnergyXValue 已含 Hook.ModifyXValue（「化学X」等 X 修正遗物会生效）。
         int x = ResolveEnergyXValue();
         if (x < 0)

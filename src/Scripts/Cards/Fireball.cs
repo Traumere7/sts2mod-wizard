@@ -81,6 +81,7 @@ public class Fireball : WizardSpellCard, ITranscendenceCard
             .FromCard(this, cardPlay)
             .Targeting(cardPlay.Target)
             .WithHitCount(Hits)
+            .OnlyPlayAnimOnce()
             .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
 

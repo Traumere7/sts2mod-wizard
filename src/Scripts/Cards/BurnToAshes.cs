@@ -101,6 +101,7 @@ public class BurnToAshes : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         ICombatState? combatState = CombatState;
         if (combatState == null)
         {

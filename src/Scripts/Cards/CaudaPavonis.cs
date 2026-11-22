@@ -62,6 +62,7 @@ public class CaudaPavonis : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         // 每次打出 +1 层 = 结算次数 n；层数（每次给几层）由能力类自己定，
         // 升级过的牌挂的是另一个能力模型，因此两个 buff 各自叠层、互不干扰。
         if (IsUpgraded)

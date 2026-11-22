@@ -77,8 +77,15 @@ public class WizardCharacter : PlaceholderCharacterModel
     // 下面这些覆盖掉铁甲战士的占位资源，指向巫师自己的场景。
     // 场景内部目前仍使用 icon.svg 占位图，替换场景里的贴图即可完成美术替换。
 
-    /// <summary>战斗人物场景。</summary>
-    public override string CustomVisualPath => "res://Wizard/scenes/wizard_character.tscn";
+    /// <summary>
+    /// 战斗人物场景。
+    /// A 版（默认）使用 Godot 原生 2D 骨骼动画场景；
+    /// 若已挂载 B 版替换美术包且 B 版尚未制作独立骨骼场景，则回退到静态立绘场景（吃 B 版 wizard_battle.png）。
+    /// </summary>
+    public override string CustomVisualPath =>
+        Entry.AltArtMounted && !ResourceLoader.Exists("res://Wizard/scenes/wizard_character_alt_rig.tscn")
+            ? "res://Wizard/scenes/wizard_character_static.tscn"
+            : "res://Wizard/scenes/wizard_character.tscn";
 
     /// <summary>能量表盘场景。</summary>
     public override string CustomEnergyCounterPath => "res://Wizard/scenes/wizard_energy_counter.tscn";
@@ -135,10 +142,14 @@ public class WizardCharacter : PlaceholderCharacterModel
         ModelDb.Relic<SpellScroll>(),
     ];
 
-    // ── 动画对齐延迟（沿用铁甲战士占位值）──
+    // ── 动画对齐延迟 ──
     public override float AttackAnimDelay => 0.15f;
 
     public override float CastAnimDelay => 0.25f;
+
+    public override float PowerUpAnimDelay => 0.35f;
+
+    public override float DeathAnimTime => 1.20f;
 
     // ── 攻击建筑师时的特效列表 ──
     public override List<string> GetArchitectAttackVfx() =>

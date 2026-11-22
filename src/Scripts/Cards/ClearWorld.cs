@@ -125,6 +125,7 @@ public class ClearWorld : WizardSpellCard
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
+            .WithAttackerAnim("PowerUp", Owner.Character.PowerUpAnimDelay)
             .TargetingAllOpponents(combatState)
             .WithHitVfxNode(t => NThinSliceVfx.Create(t, VfxColor.Cyan))
             .Execute(choiceContext);

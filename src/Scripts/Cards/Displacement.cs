@@ -66,6 +66,7 @@ public class Displacement : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         Creature self = Owner.Creature;
 
         // ① 先读格挡（LoseBlock 之后就读不到了）。

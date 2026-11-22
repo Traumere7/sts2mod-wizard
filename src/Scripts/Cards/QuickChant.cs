@@ -53,6 +53,7 @@ public class QuickChant : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         await PowerCmd.Apply<TemporarySpellPowerPower>(
             choiceContext,
             Owner.Creature,

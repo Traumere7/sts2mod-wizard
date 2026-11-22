@@ -73,6 +73,7 @@ public class Superconduct : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         // 施加的数量就是**本张卡贡献的百分点数**（50，升级后 75）。
         // 引擎对已存在实例走 ModifyAmount —— 于是多张自动累加，
         // 混合升级也各贡献各的（50+50+75 = 175）。

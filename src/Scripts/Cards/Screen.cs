@@ -62,6 +62,7 @@ public class Screen : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ① 先给自己格挡。
         await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
 

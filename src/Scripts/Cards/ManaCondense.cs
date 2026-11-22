@@ -54,6 +54,7 @@ public class ManaCondense : WizardCardModel
     /// </summary>
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         await PowerCmd.Apply<ManaCondensePower>(
             choiceContext,
             Owner.Creature,

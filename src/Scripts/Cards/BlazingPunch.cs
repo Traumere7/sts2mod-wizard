@@ -160,8 +160,10 @@ public class BlazingPunch : WizardSpellCard
         await DamageCmd.Attack(perHit)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
+            .WithAttackerAnim("PowerUp", Owner.Character.PowerUpAnimDelay)
             .Targeting(cardPlay.Target)
             .WithHitCount(Hits)
+            .OnlyPlayAnimOnce()
             .WithHitFx("vfx/vfx_molten_fist")
             .Execute(choiceContext);
     }

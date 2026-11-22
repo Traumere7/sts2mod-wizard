@@ -82,6 +82,7 @@ public class Epiphany : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ① 选择 1 张手牌消耗（照抄 BurningPact）。
         IEnumerable<CardModel> toExhaust = await CardSelectCmd.FromHand(
             choiceContext,

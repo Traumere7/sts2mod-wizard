@@ -66,6 +66,7 @@ public class Catalyzation : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         CatalyzationPower? power = await PowerCmd.Apply<CatalyzationPower>(
             choiceContext,
             Owner.Creature,

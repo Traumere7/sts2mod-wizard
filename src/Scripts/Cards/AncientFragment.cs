@@ -97,6 +97,7 @@ public class AncientFragment : WizardCardModel, ITomeCard
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         // 施加数量固定 1；叠层由引擎累加，实际加成 = 每层 25% × 层数。
         await PowerCmd.Apply<AncientFragmentPower>(
             choiceContext,

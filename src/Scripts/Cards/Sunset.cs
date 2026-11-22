@@ -139,8 +139,10 @@ public class Sunset : WizardSpellCard
         await DamageCmd.Attack(damagePerHit)
             .WithValueProp(ValueProp.Move | SpellProps.For(School))
             .FromCard(this, cardPlay)
+            .WithAttackerAnim("PowerUp", Owner.Character.PowerUpAnimDelay)
             .TargetingAllOpponents(combatState)
             .WithHitCount(hits)
+            .OnlyPlayAnimOnce()
             .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
 

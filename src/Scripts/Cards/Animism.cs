@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using Wizard.Scripts.Pools;
+using Wizard.Scripts.Utils;
 using MegaCrit.Sts2.Core.Models;
 
 namespace Wizard.Scripts.Cards;
@@ -62,7 +63,7 @@ public class Animism : WizardCardModel
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
-        HoverTipFactory.Static(StaticHoverTip.Transform),
+        Transmutation.HoverTip,
         HoverTipFactory.FromKeyword(CardKeyword.Ethereal),
     ];
 
@@ -73,30 +74,25 @@ public class Animism : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         // ① 抽 1 张。
         await CardPileCmd.Draw(choiceContext, DrawCount, Owner);
 
-        // ② 变化所有手牌，并给变化后的新牌上「虚无」。
+        // ② 嬗变所有手牌，并给嬗变后的新牌上「虚无」。
         //
-        // ⚠️ 先快照：变化会替换手牌里的元素。
-        List<CardModel> hand = PileType.Hand.GetPile(Owner).Cards.ToList();
+        // ⚠️ 先快照：嬗变会替换手牌里的元素。
+        List<CardModel> hand = PileType.Hand.GetPile(Owner).Cards
+            .Where(Transmutation.CanTransmute)
+            .ToList();
 
-        foreach (CardModel original in hand)
+        // 嬗变 = 本 mod 自己重写的"变化"（见 Transmutation 类注释）。
+        IReadOnlyList<CardModel> created = await Transmutation.TransmuteMany(
+            hand, Owner.RunState.Rng.CombatCardSelection);
+
+        // 给"嬗变后"的新牌上「虚无」。
+        foreach (CardModel card in created)
         {
-            // 不可变化的牌跳过 —— 否则 CardCmd.Transform 会抛异常。
-            if (!original.IsTransformable)
-            {
-                continue;
-            }
-
-            CardPileAddResult result = await CardCmd.TransformToRandom(
-                original, Owner.RunState.Rng.CombatCardSelection);
-
-            // 给"变化后"的新牌上「虚无」。
-            if (result.success && result.cardAdded != null)
-            {
-                CardCmd.ApplyKeyword(result.cardAdded, CardKeyword.Ethereal);
-            }
+            CardCmd.ApplyKeyword(card, CardKeyword.Ethereal);
         }
     }
 

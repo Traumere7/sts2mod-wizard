@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Pools;
+using Wizard.Scripts.Utils;
 
 namespace Wizard.Scripts.Cards;
 
@@ -52,7 +53,7 @@ public class Quickening : WizardCardModel
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
-        HoverTipFactory.Static(StaticHoverTip.Transform),
+        Wizard.Scripts.Utils.Transmutation.HoverTip,
     ];
 
     public Quickening()
@@ -62,6 +63,7 @@ public class Quickening : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         if (CombatState == null)
         {
             return;
@@ -86,15 +88,12 @@ public class Quickening : WizardCardModel
         List<CardModel> selected = (await CardSelectCmd.FromHand(
             choiceContext,
             Owner,
-            new CardSelectorPrefs(SelectionScreenPrompt, 1, max),
-            c => c.IsTransformable,
+            new CardSelectorPrefs(Transmutation.SelectionPrompt, 1, max),
+            c => Transmutation.CanTransmute(c),
             this)).ToList();
 
-        // ③ 逐张变化（先 ToList 快照：变化会替换手牌里的元素）。
-        foreach (CardModel card in selected)
-        {
-            await CardCmd.TransformToRandom(card, Owner.RunState.Rng.CombatCardSelection);
-        }
+        // ③ 嬗变（本 mod 重写的变化；一次调用交给引擎统一处理落位与演出）。
+        await Transmutation.TransmuteMany(selected, Owner.RunState.Rng.CombatCardSelection);
     }
 
     protected override void OnUpgrade()

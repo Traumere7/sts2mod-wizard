@@ -63,6 +63,7 @@ public class PyroJudgment : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
         // ⚠️ 施加的数量传的是**成长增量**（1），不是燃烧量。
         //
         // 能力的 Amount 是"成长值"，靠引擎的层数累加实现"每张 +1"：

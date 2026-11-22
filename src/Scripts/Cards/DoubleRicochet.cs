@@ -141,10 +141,11 @@ public class DoubleRicochet : WizardSpellCard
             .WithHitFx(WizardVfx.MoltenFistFx, WizardVfx.FireHitSfx)
             .Execute(choiceContext);
 
-        // ② 雷电段（吃「超导」加成，不吃「寒冷」）。
+        // ② 雷电段（吃「超导」加成，不吃「寒冷」；与火焰段属同一张多段牌，不再重复播攻击动画）。
         await DamageCmd.Attack(LightningVar.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(SpellSchool.Lightning))
             .FromCard(this, cardPlay)
+            .WithNoAttackerAnim()
             .Targeting(cardPlay.Target)
             .WithHitFx("vfx/vfx_starry_impact")
             .Execute(choiceContext);

@@ -123,12 +123,17 @@ public class IceShard : WizardSpellCard
             int index = Owner.RunState.Rng.CombatTargets.NextInt(alive.Count);
             Creature victim = alive[index];
 
-            await DamageCmd.Attack(damage)
+            var attack = DamageCmd.Attack(damage)
                 .WithValueProp(ValueProp.Move | SpellProps.For(School))
                 .FromCard(this, cardPlay)
                 .Targeting(victim)
-                .WithHitFx("vfx/vfx_starry_impact")
-                .Execute(choiceContext);
+                .WithHitFx("vfx/vfx_starry_impact");
+            if (i > 0)
+            {
+                attack.WithNoAttackerAnim();
+            }
+
+            await attack.Execute(choiceContext);
 
             // 每次命中各给 1 层寒冷（与"每段伤害"配对）。
             // 走 SpellCmd.ApplyChill 统一收口 —— 这样"每当施加寒冷时"的效果

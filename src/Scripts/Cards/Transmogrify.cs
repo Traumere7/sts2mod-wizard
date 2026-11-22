@@ -9,6 +9,7 @@ using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
+using Wizard.Scripts.Utils;
 using Wizard.Scripts.Spells;
 using MegaCrit.Sts2.Core.Models;
 
@@ -60,7 +61,7 @@ public class Transmogrify : WizardSpellCard
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
-        HoverTipFactory.Static(StaticHoverTip.Transform),
+        Wizard.Scripts.Utils.Transmutation.HoverTip,
     ];
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
@@ -85,18 +86,15 @@ public class Transmogrify : WizardSpellCard
             .WithHitFx("vfx/vfx_starry_impact")
             .Execute(choiceContext);
 
-        // ② 选 1 张手牌变化（照抄 EntropyPower 的 FromHand + TransformToRandom）。
+        // ② 选 1 张手牌嬗变（本 mod 重写的变化，见 Transmutation 类注释）。
         List<CardModel> chosen = (await CardSelectCmd.FromHand(
             choiceContext,
             Owner,
-            new CardSelectorPrefs(CardSelectorPrefs.TransformSelectionPrompt, TransformCount),
-            filter: c => c.IsTransformable,
+            new CardSelectorPrefs(Transmutation.SelectionPrompt, TransformCount),
+            filter: c => Transmutation.CanTransmute(c),
             this)).ToList();
 
-        foreach (CardModel card in chosen)
-        {
-            await CardCmd.TransformToRandom(card, Owner.RunState.Rng.CombatCardSelection);
-        }
+        await Transmutation.TransmuteMany(chosen, Owner.RunState.Rng.CombatCardSelection);
     }
 
     protected override void OnUpgrade()

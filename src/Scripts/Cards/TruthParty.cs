@@ -84,6 +84,7 @@ public class TruthParty : WizardCardModel
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
 
         // ① 先上燃烧 —— 本牌自己给的燃烧也要参与下面的"最高层数"。

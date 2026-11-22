@@ -79,6 +79,9 @@ public class Entry
     /// <summary>替换美术包的文件名。</summary>
     private const string AltPackName = "WizardAlt.pck";
 
+    /// <summary>本次启动是否已成功挂载替换美术包（B 版）。</summary>
+    internal static bool AltArtMounted { get; private set; }
+
     /// <summary>
     /// 若玩家在设置里勾了「使用替换美术」，就找一个 <see cref="AltPackName"/>
     /// 作为**覆盖包**挂载上去。
@@ -153,6 +156,7 @@ public class Entry
             bool ok = ProjectSettings.LoadResourcePack(found, replaceFiles: true);
             if (ok)
             {
+                AltArtMounted = true;
                 Logger.Info($"美术：已挂载替换美术包 {found}");
             }
             else
