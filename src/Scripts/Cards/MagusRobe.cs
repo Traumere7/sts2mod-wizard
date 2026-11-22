@@ -23,7 +23,7 @@ namespace Wizard.Scripts.Cards;
 /// <b>无触发上限</b>：一张牌给多种负面就触发多次，每次按层数给。
 /// </para>
 ///
-/// <para><b>升级</b>：获得「固有」（不写进文案，引擎渲染词条）。</para>
+/// <para><b>升级</b>：每层负面效果的格挡 1 → 2（2026-11-22 起不再给「固有」）。</para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
 public class MagusRobe : WizardCardModel
@@ -75,9 +75,17 @@ public class MagusRobe : WizardCardModel
             this);
     }
 
-    /// <summary>升级：获得「固有」（与「第四元素」等"升级只给词条"的牌同口径）。</summary>
+    /// <summary>
+    /// 升级：**每层负面效果的格挡 1 → 2**（不再给予「固有」）。
+    ///
+    /// <para>
+    /// 2026-11-22 平衡调整：旧版升级是"给固有"，现在改成直接加强数值。
+    /// 数值由 <c>MagusRobePower.Amount</c>（每层格挡）承载 ——
+    /// 卡面用 <c>{MagusRobePower:diff()}</c> 显示 1(2)，能力悬停的 smartDescription 用 <c>{Amount}</c>。
+    /// </para>
+    /// </summary>
     protected override void OnUpgrade()
     {
-        AddKeyword(CardKeyword.Innate);
+        DynamicVars[PowerKey].UpgradeValueBy(1m);
     }
 }

@@ -54,6 +54,9 @@ public class MagnumOpus : WizardCardModel
 
     private const int EnergyGain = 3;
 
+    /// <summary>能量 3 → 5（2026-11-22 平衡：升级也加能量）。</summary>
+    private const int EnergyUpgrade = 2;
+
     private const int Draw = 3;
 
     /// <summary>3 → 5。</summary>
@@ -122,9 +125,10 @@ public class MagnumOpus : WizardCardModel
             this);
     }
 
-    /// <summary>升级：抽牌 3 → 5（能量与跳过层数不变）。</summary>
+    /// <summary>升级：能量 3 → 5、抽牌 3 → 5（跳过层数不变）。</summary>
     protected override void OnUpgrade()
     {
+        DynamicVars[EnergyKey].UpgradeValueBy(EnergyUpgrade);
         DynamicVars.Cards.UpgradeValueBy(DrawUpgrade);
     }
 }

@@ -5891,3 +5891,32 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
 4. 先古牌（落日/远古残章）被嬗变 → **无色稀有牌**。
 5. 生成联动：嬗变出的牌能触发「催化」「孔雀之尾」「结晶」的"生成"计数。
 6. 永恒牌（梦魇）不能作为嬗变目标（选牌时被过滤掉）。
+
+---
+
+## 46. 2026-11-22 两张卡的平衡调整（设计稿 152 / 184 行）
+
+### 46.1 杰作 `MagnumOpus`
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 升级获得能量 | 3（不变） | **3 → 5** |
+| 升级抽牌 | 3 → 5 | 3 → 5（不变） |
+
+实现：新增 `EnergyUpgrade = 2`，`OnUpgrade` 里
+`DynamicVars[EnergyKey].UpgradeValueBy(EnergyUpgrade)` + 原有的 `DynamicVars.Cards.UpgradeValueBy(2)`。
+卡面用 `{Energy:energyIcons()}`，升级后自动显示 5 个能量图标（不需要改文案）。
+
+### 46.2 伟大法袍 `MagusRobe`
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 升级效果 | 获得「固有」 | **每层负面效果的格挡 1 → 2** |
+
+实现：`OnUpgrade` 从 `AddKeyword(CardKeyword.Innate)` 改为
+`DynamicVars[PowerKey].UpgradeValueBy(1m)`（`PowerVar<MagusRobePower>` 1 → 2）。
+卡面文案改为占位符：`你每给予敌人1层[gold]负面效果[/gold]，就获得{MagusRobePower:diff()}点[gold]格挡[/gold]。`
+（升级后自动显示 **1（2）**；能力悬停的 smartDescription 本来就用 `{Amount}`，也自动跟随。）
+
+> 设计稿第 184 行原文只写了"获得2点格挡"，容易误读成固定 2；
+> 用户 2026-11-22 明确：**升级前 1 点、升级后 2 点**，设计稿已同步成「1（2）」。
