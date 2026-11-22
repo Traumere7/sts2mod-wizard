@@ -131,7 +131,7 @@
   "WIZARD-PYRO_JUDGMENT.description": "At the start of your turn, apply {BurnRate:diff()} [gold]Burn[/gold] to ALL enemies, then increase this amount by 1.",
   "WIZARD-PYRO_JUDGMENT.title": "Pyro Judgment",
   "WIZARD-QUICKENING.description": "Choose up to {Cards:diff()} cards in your [gold]Hand[/gold] to [gold]Transmute[/gold].",
-  "WIZARD-QUICKENING.selectionScreenPrompt": "Choose cards to Transform.",
+  "WIZARD-QUICKENING.selectionScreenPrompt": "Choose cards to Transmute.",
   "WIZARD-QUICKENING.title": "Quickening",
   "WIZARD-QUICK_CHANT.description": "Gain {SpellPowerPower:diff()} [purple]Spell Power[/purple] this turn.",
   "WIZARD-QUICK_CHANT.title": "Quick Chant",

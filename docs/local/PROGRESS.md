@@ -9,6 +9,8 @@
 | cards.json | ✅ 完成 | 171 条；82 张卡 |
 | card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
 | enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
+| card_selection.json | ✅ 完成 | 1 条 |
+| static_hover_tips.json | ✅ 完成 | 2 条；嬗变机制 |
 | relics.json | ✅ 完成 | 30 条；10 个遗物 |
 | potions.json | ✅ 完成 | 7 条 |
 | monsters.json | ✅ 完成 | 4 条 |
@@ -26,6 +28,8 @@
 | cards.json | ✅ 完成 | 171 条；82 张卡 |
 | card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
 | enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
+| card_selection.json | ✅ 完成 | 1 条 |
+| static_hover_tips.json | ✅ 完成 | 2 条；嬗变机制 |
 | relics.json | ✅ 完成 | 30 条；10 个遗物 |
 | potions.json | ✅ 完成 | 7 条 |
 | monsters.json | ✅ 完成 | 4 条 |
@@ -43,6 +47,7 @@
 - [x] Eternal Echo / Mercury 版本新增 2 卡 + 1 能力已补 zht/jpn
 - [x] Temperance / Magus Robe 版本新增 2 卡 + 2 能力已补 zht/jpn
 - [x] Unknown Sea / Nightmare / Aqua Heart / Immortal 已补 zht/jpn（含 card_keywords、enchantments 新文件）
+- [x] Transmute（嬗變 / 変成）机制及 Animism / Quickening / Transmogrify 已同步
 - [ ] zht / jpn 全量自动 JSON 解析 / 标签逐 key diff（建议在 CI 或本地脚本跑）
 - [ ] zht / jpn 术语一致性抽查
 - [ ] 确认 `Burn` 能力改名「焚燒」后的文本一致性（zht）
@@ -69,3 +74,7 @@
 - Nightmare：zht **夢魘** / jpn **悪夢**；按用户指定保留，与原版 Silent 的 NIGHTMARE 同名（见 `GLOSSARY.md` 冲突表）。
 - Aqua Heart：zht **水藍之心** / jpn **アクアハート**。
 - 新文件：`card_keywords.json`（Obliterate zht 即毀 / jpn 抹消）、`enchantments.json`（Immortal 不朽；Reprise zht 復奏 / jpn リプリーズ）。
+- Transmute：zht **嬗變** / jpn **変成**；新增 `card_selection.json`、`static_hover_tips.json`，并更新 `Animism`、`Quickening`、`Transmogrify`。
+- `Quickening` 的 `selectionScreenPrompt` 在 eng/zhs 仍写 Transform，已改为 Transmute / 嬗变；zht/jpn 同步为嬗變 / 変成。
+- `Magus Robe` 卡面改为 `{MagusRobePower:diff()}` 变量；zht/jpn 已补占位符。
+- `Magnum Opus`（杰作）：当前 eng/zhs 效果文本与 zht/jpn 一致，未发现可见文本 diff；本次未改其文案。

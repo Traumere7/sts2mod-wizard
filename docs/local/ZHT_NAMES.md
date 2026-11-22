@@ -163,11 +163,12 @@
 | The Wizard | 巫師 |
 | Art | 美術 |
 
-## 关键词（1）
+## 关键词（2）
 
 | 英文 | zht |
 |---|---|
 | Obliterate | 即毀 |
+| Transmute | 嬗變 |
 
 ## 附魔（2）
 
