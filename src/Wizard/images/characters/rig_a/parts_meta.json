@@ -1,0 +1,326 @@
+{
+  "canvas_size": [
+    512,
+    768
+  ],
+  "canvas_center": [
+    256.0,
+    384.0
+  ],
+  "draw_order": [
+    "legs_boots",
+    "left_sleeve",
+    "robe_lower",
+    "torso",
+    "head",
+    "hat",
+    "spellbook",
+    "right_hand",
+    "right_sleeve",
+    "staff",
+    "left_forearm_hand",
+    "gem"
+  ],
+  "parts": {
+    "legs_boots": {
+      "file": "res://Wizard/images/characters/rig_a/legs_boots.png",
+      "bbox": [
+        148,
+        534,
+        320,
+        673
+      ],
+      "size": [
+        172,
+        139
+      ],
+      "pivot_canvas": [
+        235.0,
+        662.0
+      ],
+      "pivot_local": [
+        -21.0,
+        278.0
+      ],
+      "sprite_offset": [
+        -87.0,
+        -128.0
+      ]
+    },
+    "left_sleeve": {
+      "file": "res://Wizard/images/characters/rig_a/left_sleeve.png",
+      "bbox": [
+        266,
+        270,
+        322,
+        471
+      ],
+      "size": [
+        56,
+        201
+      ],
+      "pivot_canvas": [
+        286.0,
+        286.0
+      ],
+      "pivot_local": [
+        30.0,
+        -98.0
+      ],
+      "sprite_offset": [
+        -20.0,
+        -16.0
+      ]
+    },
+    "robe_lower": {
+      "file": "res://Wizard/images/characters/rig_a/robe_lower.png",
+      "bbox": [
+        148,
+        370,
+        308,
+        603
+      ],
+      "size": [
+        160,
+        233
+      ],
+      "pivot_canvas": [
+        236.0,
+        396.0
+      ],
+      "pivot_local": [
+        -20.0,
+        12.0
+      ],
+      "sprite_offset": [
+        -88.0,
+        -26.0
+      ]
+    },
+    "torso": {
+      "file": "res://Wizard/images/characters/rig_a/torso.png",
+      "bbox": [
+        162,
+        230,
+        291,
+        411
+      ],
+      "size": [
+        129,
+        181
+      ],
+      "pivot_canvas": [
+        236.0,
+        392.0
+      ],
+      "pivot_local": [
+        -20.0,
+        8.0
+      ],
+      "sprite_offset": [
+        -74.0,
+        -162.0
+      ]
+    },
+    "head": {
+      "file": "res://Wizard/images/characters/rig_a/head.png",
+      "bbox": [
+        194,
+        181,
+        290,
+        263
+      ],
+      "size": [
+        96,
+        82
+      ],
+      "pivot_canvas": [
+        242.0,
+        252.0
+      ],
+      "pivot_local": [
+        -14.0,
+        -132.0
+      ],
+      "sprite_offset": [
+        -48.0,
+        -71.0
+      ]
+    },
+    "hat": {
+      "file": "res://Wizard/images/characters/rig_a/hat.png",
+      "bbox": [
+        147,
+        106,
+        342,
+        227
+      ],
+      "size": [
+        195,
+        121
+      ],
+      "pivot_canvas": [
+        242.0,
+        198.0
+      ],
+      "pivot_local": [
+        -14.0,
+        -186.0
+      ],
+      "sprite_offset": [
+        -95.0,
+        -92.0
+      ]
+    },
+    "spellbook": {
+      "file": "res://Wizard/images/characters/rig_a/spellbook.png",
+      "bbox": [
+        181,
+        360,
+        246,
+        427
+      ],
+      "size": [
+        65,
+        67
+      ],
+      "pivot_canvas": [
+        208.0,
+        368.0
+      ],
+      "pivot_local": [
+        -48.0,
+        -16.0
+      ],
+      "sprite_offset": [
+        -27.0,
+        -8.0
+      ]
+    },
+    "right_hand": {
+      "file": "res://Wizard/images/characters/rig_a/right_hand.png",
+      "bbox": [
+        121,
+        430,
+        170,
+        498
+      ],
+      "size": [
+        49,
+        68
+      ],
+      "pivot_canvas": [
+        148.0,
+        452.0
+      ],
+      "pivot_local": [
+        -108.0,
+        68.0
+      ],
+      "sprite_offset": [
+        -27.0,
+        -22.0
+      ]
+    },
+    "right_sleeve": {
+      "file": "res://Wizard/images/characters/rig_a/right_sleeve.png",
+      "bbox": [
+        109,
+        265,
+        201,
+        469
+      ],
+      "size": [
+        92,
+        204
+      ],
+      "pivot_canvas": [
+        178.0,
+        286.0
+      ],
+      "pivot_local": [
+        -78.0,
+        -98.0
+      ],
+      "sprite_offset": [
+        -69.0,
+        -21.0
+      ]
+    },
+    "staff": {
+      "file": "res://Wizard/images/characters/rig_a/staff.png",
+      "bbox": [
+        326,
+        153,
+        422,
+        658
+      ],
+      "size": [
+        96,
+        505
+      ],
+      "pivot_canvas": [
+        362.0,
+        340.0
+      ],
+      "pivot_local": [
+        106.0,
+        -44.0
+      ],
+      "sprite_offset": [
+        -36.0,
+        -187.0
+      ]
+    },
+    "left_forearm_hand": {
+      "file": "res://Wizard/images/characters/rig_a/left_forearm_hand.png",
+      "bbox": [
+        293,
+        315,
+        385,
+        396
+      ],
+      "size": [
+        92,
+        81
+      ],
+      "pivot_canvas": [
+        302.0,
+        370.0
+      ],
+      "pivot_local": [
+        46.0,
+        -14.0
+      ],
+      "sprite_offset": [
+        -9.0,
+        -55.0
+      ]
+    },
+    "gem": {
+      "file": "res://Wizard/images/characters/rig_a/gem.png",
+      "bbox": [
+        368,
+        165,
+        395,
+        231
+      ],
+      "size": [
+        27,
+        66
+      ],
+      "pivot_canvas": [
+        382.0,
+        169.0
+      ],
+      "pivot_local": [
+        126.0,
+        -215.0
+      ],
+      "sprite_offset": [
+        -14.0,
+        -4.0
+      ]
+    }
+  }
+}
