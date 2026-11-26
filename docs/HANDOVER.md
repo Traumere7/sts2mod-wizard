@@ -1,614 +1,619 @@
-# 巫师 Mod — 交接文档
+# 巫师 Mod — 工程交接文档
 
-> 本文档只讲三件事：**要换哪些美术**、**要换哪些文案**、**内容做到哪一步了**。
-> 环境、构建方式、代码设计见 `README.md`；接口细节见 `reference/ENVIRONMENT.md`。
+> **2026-11-26 整理。** 写给接手这个项目的开发者 / AI agent。
+>
+> 本文档只讲三件最重要的事：
+> 1. **怎么写一张卡**（工程实践、代码骨架、踩坑点）
+> 2. **怎么调 bug**（方法论 + 排障速查表 + 经典案例）
+> 3. **已经定死的规范**（哪些必须做、哪些绝对不能做）
+>
+> 环境搭建、发布流程、美术替换等属于"按需查阅"，都放在文末索引里。
+>
+> **事实来源优先级**：
+> `docs/design.md`（卡面文案 / 效果，**唯一事实来源**）
+> → `docs/CONTEXT.md`（工程细节与逐日踩坑日志，含全部"为什么"）
+> → 本文档（提炼与索引）
+> → `README.md`（对外介绍）。
 
 ---
 
-## 一句话现状
+## 目录
 
-**角色机制（含最难的「冻结」）已全部实现并实测通过；卡牌 17 / 32。**
-角色能跑起来，但**美术仍是占位**——借用原版铁甲战士，文案是我写的临时稿。
+- [0. 30 秒速览](#0-30-秒速览)
+- [1. 环境与构建（最小必要）](#1-环境与构建最小必要)
+- [2. 写一张卡：标准流程](#2-写一张卡标准流程)
+- [3. 已定死的规范](#3-已定死的规范)
+- [4. Bug 调试手册](#4-bug-调试手册)
+- [5. 工程结构与关键文件](#5-工程结构与关键文件)
+- [6. 交接清单 / 下次游戏更新后](#6-交接清单--下次游戏更新后)
+- [7. 命令速查](#7-命令速查)
 
 ---
 
-# 第一部分：需要替换的美术素材
+## 0. 30 秒速览
 
-## 1.1 我生成的占位图（11 张，可直接覆盖同名文件）
+| 项 | 值 |
+|---|---|
+| 项目 | 《杀戮尖塔 2》**角色 mod「巫师 / Wizard」**，基于 [BaseLib](https://github.com/Alchyr/BaseLib-StS2/) |
+| 仓库 | `D:\Projects\STS2\Wizard`（<https://github.com/Traumere7/sts2mod-wizard>） |
+| 当前版本 | `src/Wizard.json` → `0.6.0`；BaseLib `min_version 3.4.8`；`min_game_version 0.107.1` |
+| 目标游戏 | 公共测试版，buildid **26625880**（2026-11-13），Godot 4.5.1 |
+| 内容量 | **80 张卡** / 36 个能力 / 10 个遗物 / 3 瓶药水 / 2 个附魔 / 4 个事件 / 1 个怪物 / 9 位先古之民对话 |
+| 语言 | `zhs` + `eng`（我维护）；`zht` + `jpn`（本地化团队维护） |
+| 构建 | `.\build.ps1`：编译 → Godot import → GDRE 打包 `.pck` → 部署到游戏 `mods\Wizard` → 可选 B 版美术 |
+| 部署目标 | `D:\SteamLibrary\steamapps\common\Slay the Spire 2\mods\Wizard`（**优先级高于工坊**，日常迭代只认这里） |
+| 日志 | `%APPDATA%\SlayTheSpire2\logs\godot.log`（历史轮转：`godot2026-11-22T23.17.32.log` 这种） |
+| 游戏存档 | `%APPDATA%\SlayTheSpire2\steam\<SteamID64>\`，**modded / 未改装是两套独立目录** |
+| 未提交内容 | `reference/`（反编译树、工具）、`build/`、`art_alt/` 都在 `.gitignore` 或未纳入版本库 |
 
-这些是纯色几何图形的临时货，用来让资源路径能解析。**替换时直接覆盖同名文件即可，不用改代码。**
+**协作方式**：用户在游戏里实测并反馈；agent 负责实现、构建、部署、自检、写文档。
+**规矩：启动游戏前必须先告知用户**（人机协作，别偷偷启动抢存档/抢窗口）。
 
-| # | 文件路径（相对 `src/Wizard/`） | 当前尺寸 | 建议正式尺寸 | 用途 / 引用位置 |
-|---|---|---|---|---|
-| 1 | `images/cards/StrikeWizard.png` | 250×190 | **1000×760** | 打击卡图 |
-| 2 | `images/cards/DefendWizard.png` | 250×190 | **1000×760** | 防御卡图 |
-| 3 | `images/relics/wizard_starter_relic.png` | 85×85 | **256×256** | 初始遗物图标 |
-| 4 | `images/potions/wizard_blood_potion.png` | 85×85 | **256×256** | 药水图标 |
-| 5 | `images/potions/wizard_blood_potion_outline.png` | 85×85 | **256×256** | 药水轮廓图（未知药水时的剪影） |
-| 6 | `images/ui/char_icon_wizard.png` | 256×256 | **88×88** | 顶部面板头像、角色统计页头像 |
-| 7 | `images/ui/char_select_wizard.png` | 256×256 | **132×195** | 角色选择界面立绘 |
-| 8 | `images/ui/char_select_wizard_locked.png` | 256×256 | **132×195** | 同上，未解锁状态（剪影） |
-| 9 | `images/ui/map_marker_wizard.png` | 128×128 | **49×64** | 地图上的角色标记、表情轮盘头像 |
-| 10 | `images/ui/energy_wizard.png` | 24×24 | **24×24** ✅ | 描述文本里的能量图标 |
-| 11 | `images/ui/energy_wizard_big.png` | 74×74 | **74×74** ✅ | tooltip / 卡牌左上角的能量图标 |
+---
 
-> **建议尺寸的依据**：3、4、5 号取自原版同类素材实测（`burning_blood.png` = 256×256）；
-> 1、2 号取自原版卡图实测（`strike_ironclad.png` = 1000×760）；
-> 6～9 号取自原版角色素材实测（88×88 / 132×195 / 49×64）；
-> 10、11 号来自 BaseLib 教程文档的明确要求。
-> **尺寸不必严格相等**——游戏会自动缩放，但保持宽高比能避免拉伸。
-> 注意 6 号和 7 号原版是**不同宽高比**（正方形 vs 竖长方形），别混用同一张图。
+## 1. 环境与构建（最小必要）
 
-### 1.1b 后补的占位图（8 张，2026-09 新增）
-
-上表的 11 张是**最早**生成的。之后新增了卡牌与能力，又补了下面 8 张。
-两批画风一致（深色底 + 同色几何符号），配色严格取自 `art/art_design.md`
-§5.2（三系色）与 §5.3（状态色），底色统一 `#1C142E`。
-
-| # | 文件路径（相对 `src/Wizard/`） | 尺寸 | 用途 |
-|---|---|---|---|
-| 1 | `images/cards/Determination.png` | 1000×760 | 决心 `Determination` 卡图 |
-| 2 | `images/cards/Concentrate.png` | 1000×760 | 凝神 `Concentrate` 卡图 |
-| 3 | `images/powers/burning_soul_power.png` | 64×64 | 燃烧之魂 小图标 |
-| 4 | `images/powers/burning_soul_power_big.png` | 128×128 | 燃烧之魂 大图标 |
-| 5 | `images/powers/circulation_power.png` | 64×64 | 环流 小图标 |
-| 6 | `images/powers/circulation_power_big.png` | 128×128 | 环流 大图标 |
-| 7 | `images/powers/concentrate_power.png` | 64×64 | 凝神 小图标 |
-| 8 | `images/powers/concentrate_power_big.png` | 128×128 | 凝神 大图标 |
-
-> **能力图标必须成对提供**：代码里 `CustomPackedIconPath`（64×64，
-> 战斗中的状态条）与 `CustomBigIconPath`（128×128，悬停详情）是两个独立路径，
-> 只给一个会让另一处显示空白。
-
-生成脚本：`reference/tools/make_new_placeholders.py`（只生成上面这 8 张，
-不会覆盖别人的卡图）。
-
-> ⚠️ 卡图标签用的是**英文**：占位图里的 TTF 不含中文字形，
-> 写中文会渲染成豆腐块。中文卡名本来由游戏在卡框上另外显示，不影响。
-
-> 📌 **历史遗留**：`make_placeholders.py` 里卡图仍是 250×190，
-> 与现有 1000×760 不一致。现在 17 张已实现卡**全部有图**，
-> 所以那个脚本的卡图分支已无实际用途，不必再跑。
-
-### 占位图怎么来的
-
-`reference/tools/make_placeholders.py`（Python + PIL）。改完脚本重跑一次就能重新生成全部占位图：
+### 1.1 构建链路
 
 ```powershell
-python reference\tools\make_placeholders.py
+# 日常迭代（推荐）：编译 + 打包 + 部署，不提交、不处理 B 版美术
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -SkipAltArt -NoCommit
+
+# 完整发布产物（含 B 版美术覆盖包）
+.\build.ps1
 ```
 
-## 1.2 场景里内嵌的占位贴图（6 个 .tscn）
-
-所有场景目前都用 `res://icon.svg`（我画的紫色巫师帽）当贴图。**这些需要你在 Godot 编辑器里打开场景替换**。
-
-| 场景文件 | 用途 | 需要做的事 |
-|---|---|---|
-| `scenes/wizard_character.tscn` | 战斗人物 | 把 `Visuals`(Sprite2D) 换成你的角色动画节点 |
-| `scenes/wizard_energy_counter.tscn` | 能量表盘 | 替换 `Layers/Layer1` 的贴图；可增设旋转图层 |
-| `scenes/wizard_character_merchant.tscn` | 商店里的巫师 | 换成你的动画节点 |
-| `scenes/wizard_character_rest_site.tscn` | 篝火旁的巫师 | 换成你的动画节点 |
-| `scenes/wizard_bg.tscn` | 角色选择背景 | 换 `Control/Icon` 贴图；可调 `ColorRect` 底色与两个粒子节点 |
-| `scenes/wizard_icon.tscn` | 左上角头像场景 | 换贴图（当前是方块占位） |
-
-### ⚠️ 场景结构有硬性约束，改的时候别动节点名
-
-`wizard_character.tscn` 与 `wizard_energy_counter.tscn` 的节点名是 BaseLib 按名字查找的，
-**改名或不勾选「作为唯一名称访问」(% 号) 就会失效**：
-
-```
-wizard_character.tscn        必须是以下结构，这 4 个节点不能改名、必须勾选 %
-  WizardCharacter (Node2D)
-  ├── Visuals   (可换成 SpineSprite / AnimatedSprite2D / Sprite2D / AnimationPlayer)
-  ├── Bounds    (Control，= 血条长度和 hitbox 大小)
-  ├── IntentPos (Marker2D)
-  └── CenterPos (Marker2D)
-
-wizard_energy_counter.tscn   同上
-  WizardEnergyCounter (Control)
-  ├── EnergyVfxBack (Node2D) %
-  ├── Layers (Control) %
-  │   ├── Layer1 (TextureRect)
-  │   └── RotationLayers (Control) %   ← 要旋转的图层放这里
-  ├── EnergyVfxFront (Node2D) %
-  └── Label (Label)                    ← 数字文本，名字也不能改
-```
-
-`wizard_character_rest_site.tscn` 需要这 4 个节点名（勾选 %）：
-`ControlRoot` / `SelectionReticle` / `Hitbox` / `ThoughtBubbleRight` / `ThoughtBubbleLeft`。
-
-**这些场景目前都没有挂脚本**，资源由 BaseLib 自动转换，不需要你手动挂。
-
-## 1.3 仍在借用铁甲战士的资源（看不到但存在）★ 最容易漏
-
-角色继承的是 `PlaceholderCharacterModel`，**下面这些我没写代码，所以游戏会自动用铁甲战士的**。
-它们不出现在你的文件列表里，容易漏掉。要替换就给 `WizardCharacter.cs` 加上对应的
-`public override string? CustomXxx => "...";`。
-
-| 资源 | 对应属性 | 现在的效果 |
-|---|---|---|
-| **Spine 骨骼动画** | （由 `wizard_character.tscn` 的 `Visuals` 节点类型决定） | 整个战斗动画都是铁甲战士的 |
-| 卡牌拖尾 | `CustomTrailPath` | 铁甲战士的红色拖尾 |
-| 音效：攻击 | `CustomAttackSfx` | 铁甲战士攻击音效 |
-| 音效：施法 | `CustomCastSfx` | 铁甲战士施法音效 |
-| 音效：死亡 | `CustomDeathSfx` | 铁甲战士死亡音效 |
-| 音效：角色选择 | `CharacterSelectSfx` | 铁甲战士选择音效 |
-| 音效：转场 | `CharacterTransitionSfx` | `wipe_ironclad`（**这个不能为空，当前是继承值**） |
-| 多人模式：手指 | `CustomArmPointingTexturePath` | 铁甲战士的手 |
-| 多人模式：石头 | `CustomArmRockTexturePath` | 同上 |
-| 多人模式：布 | `CustomArmPaperTexturePath` | 同上 |
-| 多人模式：剪刀 | `CustomArmScissorsTexturePath` | 同上 |
-| 选人转场材质 | `CustomCharacterSelectTransitionPath` | `ironclad_transition_mat.tres` |
-| 顶部头像描边 | `CustomIconOutlineTexturePath` | `character_icon_ironclad_outline.png`（**我还没提供对应文件**） |
-
-> 想换 `PlaceholderID` 一次性借别的角色的全部资源也可以：加 `public override string PlaceholderID => "silent";`
-
-### 关于 Spine 动画
-
-要换成真正的巫师骨骼动画，需要：`Visuals` 节点类型改为 `SpineSprite`，
-且骨骼里要有这些动画名：`idle_loop`、`attack`、`cast`、`hurt`、`die`。
-若用帧动画则设 `AnimatedSprite2D`，动画名同上。若只有一张静态图，`Sprite2D` 即可。
-
-参考：`reference/docs/tutorials-src/Visuals/01 - 卡图&Spine/` 与
-`reference/docs/tutorials-src/BaseLib/14 - 添加新人物/`，
-以及观者 mod 的 `reference/decompiled/Watcher/Watcher.Code.Nodes/WatcherNCreatureVisuals.cs`（20KB，最完整的实现）。
-
-## 1.4 还没有的资源
-
-| 缺失项 | 说明 |
+| 参数 | 作用 |
 |---|---|
-| `images/ui/char_icon_wizard_outline.png` | 顶部头像描边，88×88。当前继承铁甲战士的 |
-| 正式卡图 | 每新增一张卡都需要 `images/cards/{类名}.png`（见 §3.3 的约定） |
-| 正式遗物图 | 每新增一个遗物需要 `images/relics/{id}.png`，256×256 |
-| 正式药水图 | 每新增一瓶药水需要图 + 轮廓图两张，256×256 |
-
----
-
-# 第二部分：需要替换的个性化文案
-
-所有文案都在 `src/Wizard/localization/{zhs,eng}/` 下，中英双语结构完全对应。
-**改文案不需要懂代码，但键名不能改**。
-
-## 2.1 全部文案清单
-
-| 文件 | 键数(每语言) | 内容 | 状态 |
-|---|---|---|---|
-| `characters.json` | 15 | 角色名、描述、代词、开局独白、多人闲聊 | 我写的临时稿 |
-| `cards.json` | 4 | 打击 / 防御 两张卡的名字与描述 | 跟随原版数值 |
-| `relics.json` | 3 | 初始遗物名 / 描述 / 风味文本 | **对应临时机制，必须重写** |
-| `potions.json` | 2 | 药水名 / 描述 | **对应临时机制，必须重写** |
-| `ancients.json` | 89 | 9 位先古之民 × 3 套对话 | 我原创，见 §2.3 |
-
-## 2.2 必须随机制一起重写的文案 ★
-
-**这两个是占位机制，文案改得再漂亮也没用，得先定机制。**
-
-### 初始遗物（`relics.json` + `Relics/WizardStarterRelic.cs`）
-
-- **当前机制**：战斗开始时获得 8 点格挡（直接抄的原版「锚」）
-- **当前文案**：「奥术核心」/「战斗开始时，获得 8 点格挡」
-- **要做的**：设计巫师自己的初始遗物机制 → 改代码 `BeforeCombatStart()` → 再写文案
-
-### 药水（`potions.json` + `Potions/WizardBloodPotion.cs`）
-
-- **当前机制**：恢复最大生命 20%（直接抄的原版「血瓶」）
-- **当前文案**：「巫师之血」/「恢复最大生命值 20% 的生命」
-- **要做的**：同上，先定机制再写文案
-
-## 2.3 先古之民对话（`ancients.json`，89 键 × 2 语言）
-
-**这部分需要你重点审阅** —— 内容是我原创的，不是官方文案。
-
-已覆盖 **9 位先古之民**，每位 3 套对话：
-
-| 先古之民 ID | 名字 | 套数 |
-|---|---|---|
-| `NEOW` | 涅奥 | `0-0` / `1-0r` / `2-0..2-2` |
-| `DARV` | 达弗 | 同上 |
-| `NONUPEIPE` | 诺努佩佩 | 同上 |
-| `OROBAS` | 欧洛巴斯 | 同上 |
-| `PAEL` | 佩尔 | 同上 |
-| `TANX` | 坦克斯 | 同上 |
-| `TEZCATARA` | 特斯卡特拉 | 同上 |
-| `VAKUU` | 瓦库 | 同上 |
-| `THE_ARCHITECT` | 建筑师 | 同上（仅 `r` 变体） |
-
-**我写的角色设定**（写文案时的依据，**需要你确认或推翻**）：
-一个为了知识烧掉自己藏书的学者，代价是记得每一本的内容却再也写不出来。
-傲慢、疲惫、好奇多于残忍。对话里多次提及「烧书」这一意象。
-
-**还没写的键**（可选，不写会走游戏默认行为）：
-
-| 键 | 作用 | 现状 |
-|---|---|---|
-| `{先古}.talk.firstVisitEver.*` | 全游戏首次遇见该先古时的通用对话 | 未写，走原版 |
-| `{先古}.talk.ANY.*` | 角色不被该先古认识时的兜底 | 未写，走原版 |
-| `{先古}.talk.{角色}.N-visit` | 指定第几次遇见触发 | 未用，走默认递增 |
-| `{先古}.talk.{角色}.N-attack` | 攻击建筑师动画，值可为 `Both`/`Architect`/`Player`/`None` | 未写 |
-
-## 2.4 键名格式硬约束 ★ 已踩过坑
-
-先古对话的键里**角色部分必须写成 `WIZARD-WIZARD_CHARACTER`**（带连字符，不是下划线）：
-
-```
-DARV.talk.WIZARD-WIZARD_CHARACTER.0-0.ancient     ✅
-DARV.talk.WIZARD_WIZARD_CHARACTER.0-0.ancient     ❌ 不生效
-```
-
-原因：BaseLib 把 `{命名空间前缀}-{类名}` 整个作为 `ModelId.Entry`，
-而先古对话的键直接拼接这个 Entry。**我已用创意工坊观者 mod 的真实发布数据交叉验证**：
-
-```
-"THE_ARCHITECT.talk.WATCHER-WATCHER.0-0.char"     ← 观者的真实键
-```
-
-同理，卡牌/遗物/药水的键见 §3.3。**改键名会导致文案不显示（游戏回退成原始键名）。**
-
-## 2.5 不建议改的文案
-
-- 先古之民自己的名字（`DARV.title` / `DARV.epithet`）—— 那是游戏本体的内容，不属于本 mod
-- 打击 / 防御 的描述 —— 跟随原版数值，改了反而容易和实际效果不一致
-
----
-
-# 第三部分：游戏内容实现进度
-
-## 3.1 总览
-
-| 内容类别 | 已完成 | 未开始 | 目标规模 |
-|---|---|---|---|
-| 卡牌 | **17 / 32** | 15 张 | 32 张（`design.md` 定稿） |
-| 能力(Power) | **11 个** | — | 随卡牌增长 |
-| 遗物 | 1 个临时 | 初始遗物系统 / 稀有度分级 | 8 个 |
-| 药水 | 1 瓶临时 | — | 4 瓶 |
-| 先古对话 | 9 位 × 3 套 | `firstVisitEver`/`ANY` | — |
-| 角色机制 | 法术伤害 / 燃烧 / 麻痹 / 电流外溢 / 冻结 / 寒冷 / 法术增益 | — | 已定稿 |
-
-## 3.2 框架部分（已完成 ✓）
-
-- ✅ `Entry.cs` — mod 入口，`[ModInitializer]` + Godot 脚本注册 + **逐类应用 Harmony 补丁**（见下方注意事项）
-- ✅ `WizardCharacter.cs` — 角色定义（75 血 / 99 金币 / 中立性别 / 奥术紫主题色）
-- ✅ 三卡池 `WizardCardPool` / `WizardRelicPool` / `WizardPotionPool`（含主题色与能量图标路径）
-- ✅ `WizardCardModel` / `WizardSpellCard` — 卡牌基类，统一卡图路径约定
-- ✅ 6 个 Godot 场景 + 完整本地化目录结构
-- ✅ 构建链路（编译 / 打包 / 部署）+ 中英双语本地化
-
-### ⚠️ 补丁应用的注意事项（踩过坑）
-
-`Entry.Initialize` **不能**直接用 `harmony.PatchAll(assembly)`：
-
-- `PatchAll` 遇到一个解析不出目标的补丁类会**抛异常**，一路上抛到
-  `ModManager.CallModInitializer`，把**整个 `Initialize` 中断** ——
-  后面的代码全不执行，表现为"改了、编译了、部署了，游戏里毫无变化"，极具误导性。
-- 现在改为**逐类** `CreateClassProcessor(type).Patch()` + 各自 try/catch，
-  失败的只跳过自己，并逐个打印成功/失败。
-- ⚠️ `Patch()` 返回**空列表**表示"类解析到了但一个方法都没打上"（目标为 null
-  或签名不匹配）—— 这种情况**不抛异常、静默无效**，代码里已显式当失败报出。
-
-**启动后先看日志确认补丁状态**：
-
-```text
-[Wizard] 补丁已应用：FrozenIntentPatch -> 1 个方法
-[Wizard] 补丁已应用：ParticlesContainerRestartPatch -> 1 个方法
-[Wizard] 补丁已应用：ParticlesContainerSetEmittingPatch -> 1 个方法
-[Wizard] 补丁已应用：SpellIgnoresStrengthPatch -> 1 个方法
-[Wizard] 补丁汇总：成功 4 个，失败 0 个。
-```
-
-另外：**Harmony 无法解析 Godot 的 virtual 生命周期方法**（如 `_Ready`）。
-补丁目标要挑**类型唯一、非虚、签名无歧义**的方法 ——
-详见 `reference/FEASIBILITY.md` §4.6.8。
-
-## 3.3 卡牌（当前 17 / 32）
-
-> ⚠️ **加新内容时最容易犯的错（已实际踩过，会导致游戏启动致命错误）**
->
-> **每一个** `CustomCardModel` / `CustomRelicModel` / `CustomPotionModel` 的子类
-> **都必须带 `[Pool(typeof(对应的池子))]`**，否则游戏在 `ModelDb.Init` 阶段实例化它时会抛异常，
-> **整个游戏启动被中止**，弹出致命错误对话框。
->
-> 关键点：**初始遗物也必须带**（即使 `Rarity = Starter` 根本不会被随机抽取）。
-> 只有池子类（`CustomXxxPoolModel`）和角色类（`CustomCharacterModel`）不需要。
->
-> 报错长这样：
-> ```
-> System.Exception: Model Xxx.Yyy must be marked with a PoolAttribute
->     to determine which pool to add it to.
->     at BaseLib.Patches.Content.CustomContentDictionary.AddModel(Type modelType)
-> ```
-> 日志位置：`%APPDATA%\SlayTheSpire2\logs\godot.log`
->
-> **注意这个错误会中止模型扫描**，所以一次只报一个——修完一个可能暴露下一个。
-> 加完新内容后建议对照检查所有模型类都有 `[Pool]`。
-
-### 已完成（17 张）
-
-| 卡牌 | 类名 | 费 | 类型 | 稀有度 | 效果 |
-|---|---|---|---|---|---|
-| 打击 | `StrikeWizard` | 1 | Attack | Basic | 造成 6 伤害（升级 +3） |
-| 防御 | `DefendWizard` | 1 | Skill | Basic | 获得 5 格挡（升级 +3） |
-| 火球术 | `Fireball` | 1 | Attack | Basic | 3(4) 火焰伤害 ×2，2 层燃烧 |
-| 镇静 | `CalmMind` | 2 | Skill | Basic | 9(12) 格挡，1 层法术增益 |
-| 火苗 | `FlameSpark` | 0 | Attack | Common | 6(9) 火焰伤害，1 层燃烧 |
-| 观火 | `WatchFire` | 1 | Skill | Common | 8(11) 格挡，全体 1 层燃烧 |
-| 炽焰术 | `BlazingFlame` | 2 | Attack | Uncommon | 6(7) 火焰伤害 ×3，3(5) 层燃烧 |
-| 高温消毒 | `SterilizeByFire` | 0 | Skill | Uncommon | 移除自身所有负面，自加 1 燃烧，消耗（升级移除消耗） |
-| 燃烧之魂 | `BurningSoul` | 1 | Skill | Uncommon | 每段攻击结算后插入等量火焰伤害 + 1 燃烧（不可递归）。升级＝加「保留」 |
-| 决心 | `Determination` | 0 | Skill | Uncommon | 自加 1 易伤/1 脆弱/3 燃烧，获得 3(4) 费 |
-| 雷光 | `LightningBolt` | 2 | Attack | Uncommon | 8(10) 雷电伤害，1(2) 麻痹，1 电流外溢 |
-| 冰之城墙 | `IceWall` | 2 | Skill | Uncommon | 14(18) 格挡，本回合敌人每攻击一次获得 1 冻结 + 2 寒冷 |
-| 超导 | `Superconduct` | 1 | Power | Uncommon | 对寒冷敌人的雷电伤害 +50%(75%) |
-| 环流 | `Circulation` | 1(0) | Power | Uncommon | 电流外溢可对敌人自身结算 |
-| 魔力汲取 | `ManaDrain` | 1(0) | Skill | Uncommon | 目标每有 1 种负面效果，获得 1 费 |
-| 禁书目录 | `IndexOfForbiddenBooks` | 0 | Skill | Rare | 2 易伤/2 燃烧/2 麻痹/2 寒冷，消耗（升级移除消耗） |
-| 凝神 | `Concentrate` | 1(0) | Power | Uncommon | 每消耗 1 张牌，获得 1 层法术增益 |
-| 火刑 | `PyroJudgment` | 1 | Power | Uncommon | 回合开始给全体 3(4) 层燃烧，然后该数值 +1 |
-| 纵火狂 | `Pyromaniac` | 2 | Power | Uncommon | 每当你给予燃烧，获得 1(2) 层法术增益 |
-| 真理派对 | `TruthParty` | 1 | Skill | Uncommon | 给 2(3) 层燃烧；按场上最高燃烧层数抽牌，选至多该数量的牌消耗 |
-| 占卜 | `Divination` | 1 | Skill | Uncommon | 抽 3(4) 张；选 1 张技能牌消耗，否则弃掉所有手牌 |
-| 交流电 | `AlternatingCurrent` | 1 | Power | Rare | 每次雷电伤害额外给 1 层电流外溢。升级＝加「固有」 |
-| 降雷 | `LightningFall` | 1 | Attack | Rare | 对全体 7(10) 雷电伤害；所有敌人负面效果每有 1 种类就再结算 1 次 |
-| 静电 | `StaticCharge` | 1 | Attack | Common | 4(6) 雷电伤害 ×2 |
-| 冰霰 | `IceShard` | 1 | Attack | Common | 随机对敌人 3 寒冰伤害 ×2(3)，每次命中给 1 层寒冷。消耗 |
-| 全知形态 | `OmniscientForm` | 3 | Power | Rare | 虚无。给敌人本回合未给过的一种负面效果时，获得 1 费并抽 1(2) 张 |
-| 落日 | `Sunset` | 1 | Attack | Ancient | 虚无。对全体 5 火焰伤害 ×3（升级 ×4）；每段额外加等量于场上最高燃烧的伤害；给全体 5 层燃烧 |
-| 远古残章 | `AncientFragment` | 2 | Power | Ancient | 敌人每有 1 种负面效果，你对其伤害 +25%。升级＝加「固有」 |
-
-**卡牌已全部实现（34/34）。**
-
-初始卡组 = 4× 打击 + 4× 防御 + 1× 火球术 + 1× 镇静。
-
-**卡池现状**：17 张。`CustomCardPoolModel` 的 `GenerateAllCards()` 被 BaseLib 覆盖，
-卡牌靠 `[Pool(typeof(WizardCardPool))]` 特性自动注册进池子。所以**卡池会随你新增卡牌自动增长**，
-不需要手动维护列表。
-
-> **商店需要卡池里至少有 1 张能力牌**：`MerchantInventory._coloredCardTypes`
-> 固定为 `[Attack, Attack, Skill, Skill, Power]`，池子里没有 Power 会抛
-> `Can't generate valid rarity for merchant card type Power` → **进商店黑屏**。
-
-**新增一张卡的完整步骤**：
-
-1. 在 `src/Scripts/Cards/` 建 `类名.cs`，继承 `WizardCardModel`（法术牌则继承 `WizardSpellCard`），加 `[Pool(typeof(WizardCardPool))]`
-2. 放卡图 `src/Wizard/images/cards/{类名}.png`（路径由基类自动推导，**文件名必须等于类名**）
-3. 在 `localization/{zhs,eng}/cards.json` 加两个键：
-   `WIZARD-{类名UPPER_SNAKE}.title` 和 `.description`
-
-**ID 生成规则**（务必对照，键写错就不显示）：
-
-| 类名 | 生成的键前缀 |
-|---|---|
-| `StrikeWizard` | `WIZARD-STRIKE_WIZARD` |
-| `DefendWizard` | `WIZARD-DEFEND_WIZARD` |
-| `IndexOfForbiddenBooks` | `WIZARD-INDEX_OF_FORBIDDEN_BOOKS` |
-
-**法术伤害的写法**（`WizardSpellCard` 子类）：
-
-```csharp
-public override SpellSchool School => SpellSchool.Fire;
-
-protected override IEnumerable<DynamicVar> CanonicalVars =>
-[
-    new DamageVar(6m, ValueProp.Move | SpellProps.For(School)),
-];
-
-// 出伤时也要带上同样的 ValueProp，否则钩子认不出它是法术
-await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
-    .WithValueProp(ValueProp.Move | SpellProps.For(School))
-    .FromCard(this, cardPlay)
-    .Targeting(cardPlay.Target)
-    .WithHitCount(3)              // 多段用 WithHitCount，不要循环调用 3 次
-    .WithHitFx("vfx/vfx_molten_fist")
-    .Execute(choiceContext);
-```
-
-**燃烧一律走 `SpellCmd.ApplyBurn`**，不要直接 `PowerCmd.Apply<BurnPower>` ——
-燃烧有"不可叠加、取高值"的特殊规则，且需要无条件触发"给予燃烧时"的效果
-（如「纵火狂」），这些逻辑都封在 `ApplyBurn` 里。
-
-**「按目标动态演算」的卡面（参考原版「蜃景」`Mirage` / 「撕裂」`Rend`）**：
-
-要让卡面在"按住牌指向敌人"时实时算出数值，用 `CalculatedVar` 系列：
-
-```csharp
-protected override IEnumerable<DynamicVar> CanonicalVars =>
-[
-    new CalculationBaseVar(0m),      // 基础值
-    new CalculationExtraVar(1m),     // 每单位倍率的价值
-    new CalculatedEnergyVar()        // 卡面写 {CalculatedEnergy:energyIcons()}
-        .WithMultiplier((CardModel _, Creature? target) => 按目标算出的倍率),
-];
-```
-
-- 值 = `CalculationBase + CalculationExtra × 倍率`
-- **未指定目标时倍率函数应返回 0**（`target?.… ?? 0`），卡面即显示基础值
-- 引擎在悬停/拖拽目标时会调 `DynamicVar.UpdateCardPreview(card, mode, target, …)`
-  （`CardModel.cs:1479`），`CalculatedVar` 据此重算 `PreviewValue`
-- 能量版实现在 `src/Scripts/Cards/Vars/CalculatedEnergyVar.cs`（引擎没有现成的）
-
-> ⚠️ **能量必须用 `{CalculatedEnergy:energyIcons()}`，不能写 `{Energy:energyIcons()}`**。
-> `{Energy}` 指向固定的 `EnergyVar`，与目标无关，永远显示同一个数。
-> 另外 `:energyIcons()` 这个格式指令不能省，否则渲染成裸数字而不是能量图标。
-
-> 📌 **本地化里 `{Xxx}` 的格式指令别漏**。漏掉指令会把原始值直接打出来 ——
-> 电流外溢曾显示成 `受到[SplashRatio]倍率的伤害`，第一版又改成 `-50`。
->
-> **百分比有两个方向，别选错**（`reference/decompiled/.../Formatters/`）：
->
-> | 指令 | 公式 | 配对的值 | 适用 |
-> |---|---|---|---|
-> | `percentMore()` | `(v-1)×100` | `1.5` | 受伤 / 伤害**增加** |
-> | `percentLess()` | `(1-v)×100` | `0.5` | 受伤 / 伤害**减少** |
->
-> 电流外溢的 `SplashRatio = 0.5` 表示"造成 50% 的伤害"，
-> 所以要用 `percentLess()` → `50`；用 `percentMore()` 会算出 `-50`。
->
-> **`%` 号要自己写在文本里**：原版是 `[blue]{DamageDecrease:percentLess()}%[/blue]`，
-> 单写 `{...:percentLess()}` 只会得到 `50` 而不是 `50%`。
->
-> 注意 `{Amount}` 是例外：它由能力基类注入，本来就不带格式指令。
-
-### 卡面「只在战斗中显示」的括号动态值
-
-需求：静态描述常驻，**括号内的动态演算只在战斗中出现在卡面上**
-（卡组、选牌、商店等局外场合不显示）。
-
-引擎**已经注入了现成的条件变量**（`CardModel.cs:1379-1387`），
-用它们把括号包起来即可，不需要自己写判断：
-
-| 变量 | 含义 |
-|---|---|
-| `InCombat` | 是否在战斗中（`CombatManager.IsInProgress` 且是战斗牌堆） |
-| `IsTargeting` | 是否已指定目标 |
-| `OnTable` | 是否在 `Hand` / `Play` 牌堆 |
-| `TargetType` | 目标类型名 |
-
-写法（**照抄原版 `BARRAGE` / `BODY_SLAM` / `FINISHER` 等 15+ 张卡**）：
-
-```
-"WIZARD-MANA_DRAIN.description": "目标敌人每具有1种[gold]负面效果[/gold]，获得1{energyPrefix:energyIcons(1)}。{InCombat:\n（获得{CalculatedEnergy:energyIcons()}）|}"
-```
-
-- `{InCombat:真值文本|假值文本}` 是 SmartFormat 的条件语法（假值留空即不显示）
-- 静态段用 `{energyPrefix:energyIcons(1)}`（固定 1 个图标），
-  而**不是** `{CalculatedEnergy:...}` —— 后者才是随目标变化的动态量
-- `energyPrefix` 由引擎注入（`CardModel.cs:1388`），会取到当前角色的能量图标
-
-参考实现：`reference/decompiled/Watcher/Watcher.Code.Cards.{Basic,Common,Uncommon,Rare}/`（共 92 张）
-写效果时先在原版找相似的卡：`reference/decompiled/game/MegaCrit.Sts2.Core.Models.Cards/`（596 张）。
-
-## 3.4 遗物（当前 1 个占位）
-
-| 遗物 | 类名 | 稀有度 | 效果 | 状态 |
-|---|---|---|---|---|
-| 奥术核心 | `WizardStarterRelic` | Starter | 战斗开始获得 8 格挡 | **占位，需重做** |
-
-缺：普通 / 罕见 / 稀有 / 商店 / 事件 / 先古 各稀有度的遗物，一个都没有。
-
-初始遗物还支持「先古升级」机制（原版「欧洛巴斯之触」用）：
-重写 `GetUpgradeReplacement()` 返回升级后的遗物即可。
-
-参考：`reference/decompiled/Watcher/Watcher.Code.Relics/`（8 个，含初始遗物）
-教程：`reference/docs/tutorials-src/BaseLib/03 - 添加新遗物/`
-
-## 3.5 药水（当前 1 瓶占位）
-
-| 药水 | 类名 | 稀有度 | 使用时机 | 效果 | 状态 |
-|---|---|---|---|---|---|
-| 巫师之血 | `WizardBloodPotion` | Common | 随时 | 恢复最大生命 20% | **占位，需重做** |
-
-参考：`reference/decompiled/Watcher/Watcher.Code.Potions/`（4 瓶）
-教程：`reference/docs/tutorials-src/BaseLib/06 - 添加新药水/`
-
-## 3.6 先古之民对话（已完成文本，待审阅）
-
-见 §2.3。结构上已完成 9 位 × 3 套 × 中英双语 = 178 条。
-
-## 3.7 未开始的内容
-
-| 内容 | 说明 |
-|---|---|
-| ~~剩余 15 张卡~~ | **已完成**：32/32 全部实现并部署（卡图也已补齐） |
-| ~~初始遗物系统~~ | **已完成**：魔法卷轴 `SpellScroll` / 死海古卷 `DeadSeaScrolls` |
-| ~~衍生无色牌~~ | **已完成**：思索 `Ponder` / 顿悟 `Epiphany`（`TokenCardPool` + `CardRarity.Token`） |
-| ~~先古替换项~~ | **已完成**（走 BaseLib 扩展点，无需 Harmony）：古老牙齿 火球术→落日；欧洛巴斯之触 魔法卷轴→死海古卷；尘封魔典→远古残章。见 `CONTEXT.md` §6.17 |
-| 剩余遗物 6 个 | 目标 8 个，现有 2 个 |
-| 遗物稀有度分级 | 待定 |
-| 剩余 3 瓶药水 | 目标 4 瓶，现有 1 瓶占位 |
-| 先古对话的 `firstVisitEver` / `ANY` | 现有 9 位 × 3 套 |
-| 清理诊断日志 | `[Wizard/Burn]` `[Wizard/Asceticism]` `[Wizard/Freeze]` `[Wizard/Particles]` |
-
-**其余可选项（角色 mod 通常不需要）**：
-
-| 内容 | 教程章节 |
-|---|---|
-| 自定义卡牌属性（例如「奥术」关键词） | `BaseLib/04 - 添加卡牌属性/` |
-| 自定义关键词（自定义枚举 + tooltip） | Wiki `utilities/enums` |
-| 事件 / 遭遇 / 怪物 | `BaseLib/12 - 添加新事件/`、`11 - 添加新怪物/` |
-| 附魔 | `BaseLib/13 - 添加新附魔/` |
-| 时间线 / 纪元解锁 | `RitsuLib/09 - 添加时间线/`（当前角色设为「不需要时间线」） |
-| 创意工坊上传 | `Basics/11 - 上传工坊/` |
-
----
-
-## 3.8 已澄清的两条规则（原先我理解错了）
-
-### 3.8.1 「升级加词条」而非「升级加数值」
-
-有两张牌的升级是**改词条**，不是改数字：
-
-| 卡牌 | 升级效果 |
-|---|---|
-| `BurningSoul` 燃烧之魂 | **获得「保留」** |
-| `SterilizeByFire` 高温消毒 | **移除「消耗」** |
-
-实现方式：关键字必须**可变** —— 用 `_upgraded` 标记 +
-`CanonicalKeywords` 返回不同集合，**不要**用 `CardKeyword.Retain` 硬写。
-
-### 3.8.2 燃烧之魂的精确语义（我原先理解错了）
-
-**正确：** 你的**每一段**攻击结算后，**立刻插入**一段**等量**的火焰伤害，并给予 1 层燃烧。
-
-- 「每一段」：火球术（3 伤 ×2 段）→ 结算为 3伤 → 3火焰 → 3伤 → 3火焰，共 4 段 ✅
-- 「等量」取该段的 `DamageResult.TotalDamage`（含被格挡部分的理论伤害），
-  所以**打格挡怪也不会缩水**
-- **不可递归**：燃烧之魂不响应自己造成的伤害。两道保险 ——
-  ① 插入的伤害走 `ValueProp.Unpowered`（不带 `Move`），`IsPoweredAttack()` 天然为 false；
-  ② `_resolving` 标志兜底。**两层都要留着**，因为第 ① 条依赖 ValueProps 的传播正确
-- 插入的伤害不带学派、dealer/cardSource 为 null → **不吃法术增益 / 寒冷 / 超导**
-
-> 原先我误以为「等量」指"卡面基础伤害"，并给了一张"升级 +1"的错误设计。
-> 现已按上述语义实现，`BurningSoulPower` 也**不再承载数值**（`StackType.Single`）。
-
-### 3.8.3 决心已改名为 `Determination`
-
-改名历程：`Resolve` → `Resolution` → **`Determination`**（最终定名）。
-同步改动：C# 类名 / 文件名、卡图文件名、本地化键（`WIZARD-RESOLVE` →
-`WIZARD-RESOLUTION` → `WIZARD-DETERMINATION`）、`design.md` 等。
-
-> ⚠️ **注意别误改 `SpellProps.Resolve`** —— 那是 `SpellProps` 上的一个真实方法
-> （判定伤害的法术流派），与这张牌无关。
-
----
-
-## 3.9 建议的推进顺序
-
-1. ~~阶段 2：出牌历史追踪 4 张~~ ✅
-2. ~~阶段 3：动态层数 / 能力钩子 5 张~~ ✅
-3. ~~阶段 4：复杂效果 5 张~~ ✅
-4. ~~阶段 5：衍生牌 + 初始遗物系统~~ ✅
-5. ~~先古替换~~ ✅（BaseLib 扩展点，见 `CONTEXT.md` §6.17）
-6. **同步做**：遗物 8 个（现有 2）、药水 4 瓶（现有 1）
-7. 补 `firstVisitEver` / `ANY` 兜底对话
-8. 清理诊断日志（`[Wizard/Burn]` 等）
-9. **最后统一替换美术** —— 现剩 10 张占位图：
-   `AlternatingCurrent` `Asceticism` `Concentrate` `HealingSpell` `LightningFall`
-   `OmniscientForm` `PyroJudgment` `Pyromaniac` `Determination` `TruthParty`
-   （判断方法：文件 < 100 KB 的是占位图，真美术都是 600–1000 KB）
-9. 上传工坊
-
----
-
-# 附：常用操作速查
+| `-NoCommit` | 不自动 `git add/commit`（**日常必须带**，否则会把别人的改动一起提交） |
+| `-SkipPck` | 只编译 dll，不重打 pck（只改 C# 时可用；但资源改动必须重打） |
+| `-SkipAltArt` | 跳过 B 版美术覆盖包（`WizardAlt.pck`） |
+
+### 1.2 构建链路的三个隐蔽根因（改代码前先读）
+
+1. **`dotnet build` 的输出不一定在游戏加载的目录** —— 部署目标固定为游戏目录 `mods\Wizard`，
+   工坊目录是只读缓存（会被 Steam 覆盖回已发布版本），上传器 workspace 只是"素材源"。
+2. **pck 必须用 GDRE 以 `--pck-version=2` 重打**，否则游戏读不到新资源。
+3. **`build.ps1` 必须保持 Windows PowerShell 5.1 兼容**：UTF-8 **含 BOM**、CRLF，
+   不能依赖 PS7 语法（`??`、`-Parallel` 等）。
+
+### 1.3 两道验证（每次改完都做）
 
 ```powershell
-# 构建 + 打包 + 部署（一条龙）
-& D:\Projects\STS2\Wizard\build.ps1
-
-# 只编译不打包
-& D:\Projects\STS2\Wizard\build.ps1 -SkipPck
-
-# 重新生成占位图
-python D:\Projects\STS2\Wizard\reference\tools\make_placeholders.py
-
-# 游戏内控制台（按 ~ 打开）
-card WIZARD-STRIKE_WIZARD       # 战斗中获得一张打击
+# ① 哈希核对（部署目录 vs 构建产物）
+Get-FileHash 'D:\SteamLibrary\steamapps\common\Slay the Spire 2\mods\Wizard\Wizard.dll' -Algorithm MD5
+# ② pck 字节核对（确认文案/资源真的进了包）
+python -c "from pathlib import Path; b=Path('build/Wizard.pck').read_bytes(); print('文案在包里:', '要做中文原文'.encode() in b)"
 ```
 
-**改完代码/资源后一定要跑 `build.ps1`**，否则游戏加载的还是旧文件。
+启动自检（**先告知用户**）：
 
-**游戏 mods 目录**（部署目标）：
-`D:\SteamLibrary\steamapps\common\Slay the Spire 2\mods\Wizard\`
-里面有 `Wizard.dll` + `Wizard.json` + `Wizard.pck` 三个文件，缺一不可。
-同级的 `mods\BaseLib\` 是依赖，也不能删。
+```powershell
+Start-Process 'steam://rungameid/2868840'; Start-Sleep 100
+Get-Content "$env:APPDATA\SlayTheSpire2\logs\godot.log" | Select-String '补丁已应用|Missing localization|Exception|must be marked'
+# 期望：补丁汇总 15/15（或当前数量）、无缺失文案、无异常
+```
 
+---
 
+## 2. 写一张卡：标准流程
+
+### 2.1 落盘清单（少一样就显示不出来）
+
+| 内容 | 位置 / 约定 |
+|---|---|
+| 卡牌类 | `src/Scripts/Cards/<ClassName>.cs`，继承 `WizardCardModel`（法术牌继承 `WizardSpellCard`） |
+| 卡图 | `src/Wizard/images/cards/<ClassName>.png`（基类自动拼路径；普通 250×190，先古 250×351，尺寸宽松） |
+| 卡牌文案 | `src/Wizard/localization/{zhs,eng}/cards.json`，键 = `WIZARD-<CLASS_SNAKE_UPPER>.description`（`title` 同理） |
+| 能力（如有） | `src/Scripts/Powers/<ClassName>Power.cs` + `powers.json` 的 `WIZARD-<...>_POWER.description` / `.smartDescription` |
+| 能力图标 | `images/powers/<snake>_power.png`(64×64) 与 `_big.png`(128×128) —— **两个都要**，是两条独立路径 |
+| 关键词（如有） | 自定义词条走 BaseLib `[CustomEnum]`，见 §2.7 |
+| 悬停 | `ExtraHoverTips`：文案里提到的机制都要挂，**同名 buff 除外**（§3.2） |
+
+> 类上**必须**有 `[Pool(typeof(WizardCardPool))]`；漏了会在启动时直接崩（§3.6）。
+
+### 2.2 最小骨架（照抄 `CalmMind.cs` 的结构）
+
+```csharp
+using BaseLib.Utils;
+using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
+using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
+using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.ValueProps;
+using Wizard.Scripts.Pools;
+using Wizard.Scripts.Powers;
+
+namespace Wizard.Scripts.Cards;
+
+/// <summary>
+/// 镇静 - 2 费 - 技能 - 初始卡组
+/// 获得 10(13) 点格挡，获得 1 层法术增益。
+/// </summary>
+[Pool(typeof(WizardCardPool))]
+public class CalmMind : WizardCardModel
+{
+    private const int Cost = 2;
+
+    private const string SpellPowerKey = nameof(SpellPowerPower);
+
+    protected override IEnumerable<DynamicVar> CanonicalVars =>
+    [
+        new BlockVar(10m, ValueProp.Move),
+        new PowerVar<SpellPowerPower>(1m),
+    ];
+
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromPower<SpellPowerPower>(),
+    ];
+
+    public CalmMind()
+        : base(Cost, CardType.Skill, CardRarity.Basic, TargetType.Self)
+    {
+    }
+
+    protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
+    {
+        await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);
+        await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);
+
+        await PowerCmd.Apply<SpellPowerPower>(
+            choiceContext, Owner.Creature, DynamicVars[SpellPowerKey].BaseValue, Owner.Creature, this);
+    }
+
+    protected override void OnUpgrade()
+    {
+        DynamicVars.Block.UpgradeValueBy(3m);
+    }
+}
+```
+
+**三条硬性要求**：
+
+1. `CanonicalVars` 里所有"会变动的数值"都要声明 —— 卡面占位符、升级、悬停全靠它。
+2. 实际效果读 `DynamicVars.X.BaseValue` / `DynamicVars[key].BaseValue`（**不要**写死常量）。
+3. 升级只写在 `OnUpgrade()`；卡面文案不写死数字（§2.6）。
+
+### 2.3 常用 `DynamicVar` 对照表
+
+| 需求 | 写法 | 卡面占位符 |
+|---|---|---|
+| 格挡（吃敏捷/脆弱） | `new BlockVar(10m, ValueProp.Move)` | `{Block:diff()}` |
+| 格挡（**能力给的**，不吃敏捷/脆弱） | `new BlockVar(n, ValueProp.Unpowered)` | `{Block:diff()}` |
+| 伤害（吃力量） | `new DamageVar(6m, ValueProp.Move)` | `{Damage:diff()}` |
+| 法术伤害 | `new DamageVar(4m, ValueProp.Move \| SpellProps.For(School))` | `{Damage:diff()}` |
+| 能力层数 | `new PowerVar<T>(1m)` | `{<T 类名去掉 Power>:diff()}` |
+| 抽牌数 | `new CardsVar(2)` | `{Cards:diff()}` |
+| 能量 | `new EnergyVar(3)` | `{Energy:energyIcons()}` |
+| 任意文本 | `new StringVar("Amount", "x")` | `{Amount}` |
+
+- **升级**：`DynamicVars.X.UpgradeValueBy(2m)`、`DynamicVars.Cards.UpgradeValueBy(1)`、`DynamicVars["Key"].UpgradeValueBy(...)`。
+- **动态键**：需要按名字取时用 `private const string XxxKey = nameof(XxxPower);` + `DynamicVars[XxxKey]`。
+- **自定义伤害计算**（如"每有 1 层 X 造成 Y"）用 `CalculatedDamageVar` + `ExtraDamageVar`，
+  ⚠️ 不是 `CalculationExtraVar`（CONTEXT §6.29，写错不报错但数值不动）。
+
+### 2.4 `OnPlay` 常用命令（都是 async）
+
+| 效果 | API |
+|---|---|
+| 打演出 | `await CreatureCmd.TriggerAnim(Owner.Creature, "Cast", Owner.Character.CastAnimDelay);` |
+| 获得格挡 | `await CreatureCmd.GainBlock(Owner.Creature, DynamicVars.Block, cardPlay);` |
+| 伤害 | `await DamageCmd.Attack(v).WithValueProp(...).FromCard(this, cardPlay).Targeting(t).WithHitCount(n).Execute(choiceContext);` |
+| 上能力 | `await PowerCmd.Apply<T>(choiceContext, target, amount, source, this);` |
+| 抽牌 | `await CardPileCmd.Draw(choiceContext, n, Owner);` |
+| 获得能量 | `await PlayerCmd.GainEnergy(n, Owner);` |
+| 给关键词 | `CardCmd.ApplyKeyword(card, CardKeyword.Ethereal);` |
+| 附魔 | `CardCmd.Enchant<T>(card, amount);`（异种附魔会抛异常，见 §3.5） |
+| 加牌进战斗 | `CardPileCmd.AddGeneratedCardsToCombat([card], PileType.Discard, Owner);`（见 §3.4） |
+| 选牌 | `await CardSelectCmd.FromHand(choiceContext, Owner, new CardSelectorPrefs(prompt, min, max), filter, this)` |
+| 结束回合 | `await PlayerCmd.EndTurn(choiceContext, Owner, canBackOut: false);` |
+
+### 2.5 法术牌（火焰 / 雷电 / 寒冰 / 以太）
+
+继承 `WizardSpellCard`，并实现：
+
+```csharp
+public override SpellSchool School => SpellSchool.Fire;   // 自动获得 ISpellCard 标记
+
+// 卡面数值必须带法术 props，否则不吃「法术增益 / 寒冷 / 超导」
+new DamageVar(4m, ValueProp.Move | SpellProps.For(School)),
+await DamageCmd.Attack(v).WithValueProp(ValueProp.Move | SpellProps.For(School)).FromCard(this, cardPlay)...
+```
+
+- 「以太」不是第四系，而是**三系并集**（CONTEXT §28.1）——`SpellSchool` 里要按"问某一系"的接口处理。
+- 卡面「雷电伤害 / 寒冰伤害」用 `[blue]`；其他伤害不许上 `[blue]`（§3.1）。
+
+### 2.6 升级的两种形态（选错就是 bug）
+
+| 升级改变的是 | 正确写法 | 卡面 |
+|---|---|---|
+| **数值**（伤害/格挡/层数/抽牌） | `DynamicVars.X.UpgradeValueBy(n)` | 写 `{X:diff()}`，自动显示 `1(2)` |
+| **词条**（保留/固有/消耗） | `AddKeyword(...)` / `RemoveKeyword(...)` | 词条不写进文案，由引擎渲染 |
+| 费用 | `EnergyCost.UpgradeBy(-1)` | 引擎自动显示 `1(0)` |
+
+⚠️ 卡面文案**不要**为了升级写 `{IfUpgraded:show:...}` 来改数字 —— 那是给"只在升级后出现的整句特效"用的（§2.6 例外：整句机制差异才用）。
+
+### 2.7 自定义关键词（BaseLib）
+
+```csharp
+[CustomEnum(null)]
+[KeywordProperties(AutoKeywordPosition.After)]
+public static CardKeyword Obliterate;
+
+// 本地化：card_keywords.json
+// "WIZARD-OBLITERATE.title": "即毁"
+// "WIZARD-OBLITERATE.description": "打出后从你的牌组中永久移除。"
+```
+
+- 卡面要用 `[gold]即毁[/gold]` 并在 `ExtraHoverTips` 里 `HoverTipFactory.FromKeyword(WizardKeywords.Obliterate)`。
+- 自定义"非词条"机制（如「嬗变」「跳过」）用**自定义 HoverTip**：
+  `new HoverTip(new LocString("static_hover_tips", "WIZARD-TRANSMUTATION.title"), new LocString(..., ".description"))`。
+
+### 2.8 特殊稀有度 / 牌池
+
+| 类型 | Pool | Rarity | 注意 |
+|---|---|---|---|
+| 普通卡 | `WizardCardPool` | Basic/Common/Uncommon/Rare | 进角色卡池 |
+| 衍生牌（Token） | `TokenCardPool` | `CardRarity.Token` | `[Pool(typeof(TokenCardPool))]` |
+| 状态牌 | `StatusCardPool` | `CardRarity.Status` | `Unplayable` 之类 |
+| 诅咒牌 | `CurseCardPool` | `CardRarity.Curse` | `Eternal` = 不能移除 |
+| 先古牌 | `WizardCardPool`（原版先古也在角色池） | `CardRarity.Ancient` | 嬗变时→无色稀有；「超越」走 `ITranscendenceCard` |
+
+- **局外收益牌**（修行 / 治疗术 / 永恒回响这类"战斗中不该被生成"的）必须
+  `public override bool CanBeGeneratedInCombat => false;`（§3.4）。
+
+### 2.9 文案规范（zhs / eng）
+
+- 键：`WIZARD-<CLASS_SNAKE_UPPER>.title` / `.description`，蛇形大写在 `NamingUtil` 里统一生成。
+- **有升级值写成 `8（10）` 这种自动括号**：用占位符 `{Damage:diff()}`，不要手写"（10）"。
+- 换行用 `\n`；关键词/专有名词 `[gold]`；雷电/寒冰伤害 `[blue]`；负面状态 `[purple]`（少量）。
+- 卡名里的数字/费用：费用由引擎显示，文案里**不写**费用。
+- **只改 `zhs` 和 `eng`**；`zht` / `jpn` 是本地化团队的范围（§3.7）。
+
+### 2.10 新卡 checklist（提交前逐条过）
+
+- [ ] 类上有 `[Pool(...)]`，继承 `WizardCardModel` / `WizardSpellCard`
+- [ ] `CanonicalVars` 声明了所有会变的数值；`OnPlay` 读 `BaseValue`
+- [ ] `OnUpgrade()` 覆盖了设计稿里所有升级变化（含"升级给词条"）
+- [ ] `ExtraHoverTips` 覆盖文案里提到的**所有**关键词/机制（同名 buff 除外）
+- [ ] 卡图存在（`images/cards/<类名>.png`）
+- [ ] `zhs` + `eng` 两张文案齐全（含 `.title`），无缺失键
+- [ ] 需要时实现 `CanBeGeneratedInCombat` / `IsTransformable` 语义
+- [ ] 生成类牌走 `AddGeneratedCardsToCombat`；永久移除走 `DeckVersion`
+- [ ] `dotnet build` 无 error；`build.ps1` 部署成功；启动日志无异常
+- [ ] 更新 `docs/CONTEXT.md`（新 §）+ 需要时 `design.md` 由用户维护
+
+---
+
+## 3. 已定死的规范
+
+> 以下每条都有踩坑来源，详见 `CONTEXT.md` 括号里的章节。**改之前先读那一节。**
+
+### 3.1 内容与文案
+
+1. **`docs/design.md` 是唯一事实来源**：卡面文案、数值、效果、稀有度、费用以它为准。
+   用户明确要求「卡牌效果和文案请不要随意修改！」—— 发现不一致时**先问**，不要"顺手修正"。
+2. 升级值用 `1（2）` 形式（design.md 里就是这么写的）。
+3. `[blue]` **只用于「雷电伤害 / 寒冰伤害」**；其他颜色（红/紫/金）各有语义，别乱加（§10.5）。
+4. 中文标点用全角 `，。：；`；英文用半角；中英之间留空格。
+5. 卡名与本地化键必须和类名对应，改类名要同步改键与卡图。
+
+### 3.2 悬停（HoverTip）
+
+1. **卡面文案里提到的每个关键词/机制都要能悬停解释** —— 包括「消耗」（2026-11-13 beta 起引擎不再自动给）。
+2. **例外**：与卡牌**同名**的 buff 不挂（避免"伟大法袍"悬停自己）。
+3. 卡面提到「格挡」但卡本身不获得格挡时，手动挂 `HoverTipFactory.Static(StaticHoverTip.Block)`。
+4. 能量图标悬停用 `base.EnergyHoverTip`；能力用 `HoverTipFactory.FromPower<T>()`；关键词 `FromKeyword`。
+5. 自定义机制（嬗变 / 跳过 / 即毁）用自定义 HoverTip + 自己的本地化表键。
+
+### 3.3 数值实现
+
+1. **能力给的格挡必须 `ValueProp.Unpowered`** —— 只有 `Move && !Unpowered` 的格挡才会被敏捷/脆弱/快速/紧绷修正（`ValuePropExtensions.IsPoweredCardOrMonsterMoveBlock()`）。
+2. 伤害默认带 `ValueProp.Move`；"不该吃力量"的伤害用 `Unpowered`。
+3. X 费卡：`HasEnergyCostX` + `ResolveEnergyXValue()`（§6.25）。
+4. 「攻击/格挡加成」类能力改数值时，用 `AfterPowerAmountChanged` / `ModifyDamage` 等**现成钩子**，不要手改 `Amount`。
+5. 玩家自己身上的原版减益会"多留一回合"，这是引擎行为（§6.30），别去修。
+
+### 3.4 生成 / 牌堆 / 移除
+
+1. **"生成一张牌"必须走 `CardPileCmd.AddGeneratedCardsToCombat`**：它会写 `CombatHistory.CardGenerated` 并发 `AfterCardGeneratedForCombat`，「催化」「孔雀之尾」「结晶」都靠这个。
+   - 例外：**嬗变**用 `CardCmd.Transform`（引擎历史不同），所以 `Transmutation` 手动补了这两件事（`Utils/Transmutation.cs`）。
+2. 「抽到即复制」类效果（如「梦魇」诅咒）**必须防连锁**：生成物直接进弃牌堆，或用 `_pendingCopies` 之类标记，否则抽 5 张会复制出 5 张（CONTEXT §40.8）。
+3. **永久移除**：`CardPileCmd.RemoveFromDeck(card.DeckVersion)`，且要求 `card.Pile.Type == PileType.Deck`；战斗中打出的牌要拿 `DeckVersion`（§6.43 / `Utils/CardObliteration.cs`）。
+4. 战斗内加牌牢记"牌是克隆"：`DeckVersion` 才是本体；临时费用/临时词条不写回本体。
+
+### 3.5 附魔
+
+1. 自定义附魔：`Scripts/Enchantments/<Name>.cs : CustomEnchantmentModel`，图标 `images/enchantments/<snake>.png`（64×64 透明底），文案在 `enchantments.json`。
+2. 战斗中的牌是**深克隆**，附魔实例独立；要写回必须 `DeckVersion`。
+3. `OnEnchant()` 在读档（`FromSerializable`）时**会重跑**，所以词条移除/修改必须可重复执行（幂等）。
+4. 异种附魔覆盖会抛异常；同种附魔才叠层。
+5. 结算顺序与"重放/复奏"类效果用 `EnchantPlayCount` 扩展（见 `Reprise.cs`）。
+
+### 3.6 模型注册（不做就崩）
+
+1. **每个自定义模型（卡/遗物/药水/能力/附魔/事件/怪物）都必须带 `[Pool(...)]`** —— 漏了启动直接崩：
+   `Model ... must be marked with a PoolAttribute to determine which pool to add it to.`
+2. 能力图标必须**成对**：`CustomPackedIconPath`（64×64）+ `CustomBigIconPath`（128×128）。
+3. 遗物图标要进**图集 `.tres`**（`relic_atlas.sprites/<name>.tres` 与 `_outline.tres`，85×85），不能只放 PNG。
+4. 事件 / 怪物 / 先古对话各有固定文件与接口，见 `docs/EVENT-INTERFACE.md`。
+
+### 3.7 协作边界（**别越界**）
+
+| 范围 | 负责人 | 说明 |
+|---|---|---|
+| `docs/design.md` | **用户** | 卡面文案/数值的唯一来源，改动必须用户确认 |
+| `src/Wizard/localization/zhs` + `eng` | **我（agent）** | 新增/修改文案 |
+| `src/Wizard/localization/zht` + `jpn` | **本地化团队** | 不要碰；只在他们要求时提供英文/中文原文 |
+| `docs/local/**` | **本地化团队** | 术语表、风格指南、进度 |
+| 美术（`art_alt/`、卡图、立绘） | 用户 / 美术 | 我只做占位与接线 |
+
+### 3.8 Git / 发布纪律
+
+1. **`git add` 只加自己改的文件**；仓库里常有用户未提交的美术/动画工作，`git add -A` 会把它们卷进我的提交（已发生过一次，见 CONTEXT §47）。
+2. 仓库级 `core.autocrlf=false` 是**刻意的**，别改。
+3. 推送：SSH 偶尔被网络阻断（`Connection closed by ... port 22`），改用 HTTPS 推送：
+   `git push https://github.com/Traumere7/sts2mod-wizard.git HEAD:main`。
+4. 发布流程：改 `src/Wizard.json` 版本 → `build.ps1` → 复制 dll/pck/json 到上传器 workspace `content\` →
+   `ModUploader.exe upload -w .\WizardWorkspace`（在 `D:\Downloads\ModUploader-win-x64` 下跑）→
+   Steam Web API 核对 file_size/更新时间/简介 → zip（**只含 dll/json/pck**）→ `gh release create`。
+5. 工坊简介上限 **8000 字节**（不是字符）；超了从「新增卡牌」最旧条目删。
+6. 发布前 `docs/releases/v<ver>.md` 必须写好；`changeNote` 同步更新。
+
+---
+
+## 4. Bug 调试手册
+
+### 4.1 标准调试循环
+
+```
+复现（用户描述 / 日志） → 抓日志 → 反编译查证引擎行为 → 最小修复 → 构建部署 → 启动自检 → 写 CONTEXT
+```
+
+**不要**跳过"反编译查证"直接猜 —— 这个项目 80% 的坑都在引擎/BaseLib 的时序与语义里。
+
+### 4.2 日志怎么读
+
+```powershell
+$log = "$env:APPDATA\SlayTheSpire2\logs\godot.log"
+# 启动异常 / 补丁数 / 文案缺失
+Select-String -Path $log -Pattern '补丁已应用|Exception|Missing localization|must be marked'
+# 只看自己 mod 的行
+Select-String -Path $log -Pattern '\[Wizard\]|\[BaseLib\]' | Select-Object -Last 30
+```
+
+常见日志信号：
+
+| 日志 | 含义 |
+|---|---|
+| `[Wizard] 补丁已应用：XxxPatch -> N 个方法` | Harmony 补丁生效；**补丁数突然变少 = 目标方法被游戏更新改了** |
+| `Model ... must be marked with a PoolAttribute` | 漏 `[Pool]`，启动崩溃（§3.6） |
+| `Missing localization key` | 文案键缺失（只在用到时警告，不崩） |
+| `Unknown character ID / Unknown card ID` | 存档里有未安装 mod 的 id（只警告，可忽略） |
+| `Deleting ... because it does not exist on remote` | **Steam 云同步在删本地存档**，立刻关游戏 + 关云同步（这不是 bug，是引擎行为） |
+
+### 4.3 反编译查证（最常用的手段）
+
+- 反编译树：`reference/decompiled/game/`（2026-11-13 快照，3,888 个 .cs）与 `reference/decompiled/BaseLib/`。
+- 旧快照：`reference/decompiled/game-2026-09-19/`、`BaseLib-2026-09-19/`（用于对比游戏更新前后的签名变化）。
+- 查具体 API：直接 `Select-String -Path reference\decompiled\game\**\*.cs -Pattern 'class CardCmd'`，
+  或按类型名 `rglob("<Type>.cs")`。
+- 验证"修复真的编译进去了"：对部署后的 dll 用 `ilspycmd`/`ildasm` 看方法体（CONTEXT §2.2c）。
+
+### 4.4 运行时诊断注入（临时 patch，用完删）
+
+怀疑"某个值/钩子没按预期走"时，加一个临时 Harmony postfix 打印：
+
+```csharp
+[HarmonyPatch(typeof(ModelDb), nameof(ModelDb.Init))]
+internal static class TempHoverDumpPatch
+{
+    [HarmonyPostfix]
+    static void Postfix()
+    {
+        Entry.Logger.Info("=== TEMP DUMP ===");
+        foreach (var card in ModelDb.AllCards)
+            Entry.Logger.Info($"{card.Id.Entry} | tips={string.Join(",", card.HoverTips.Select(t => t.Title))}");
+    }
+}
+```
+跑一次游戏、抓日志、**删掉补丁**。这类诊断补丁绝不能留在发布包里。
+
+### 4.5 离线验证技巧（不用启动游戏）
+
+1. **pck 字节检索**：确认文案/资源进了包（§1.3）。
+2. **离屏渲染成 PNG**：`Godot --headless` 加载场景截图，用于验证 UI/立绘（CONTEXT §22.3）。
+3. **资源可加载性**：用 Godot 离屏 `ResourceLoader.load` 检查 `.tres`/贴图路径（曾用它发现美术包 id 被改写）。
+4. **JSON 校验**：本地化文件、`Wizard.json` 改动后先 `json.load` 一遍。
+
+### 4.6 症状 → 根因 → 修法 速查表
+
+| 症状 | 常见根因 | 修法 |
+|---|---|---|
+| 游戏启动崩，日志 `must be marked with a PoolAttribute` | 新模型漏 `[Pool]` | 加 `[Pool(typeof(...))]` |
+| 卡图/能力图标不显示 | 路径拼错 / 图标不成对 | 对齐 `CustomPortraitPath`、`CustomPackedIconPath` + `CustomBigIconPath` |
+| 卡面数字不随升级变 | 用了常量而非 `BaseValue`，或漏 `UpgradeValueBy` | 改 `DynamicVars` |
+| 卡面显示 `{X:diff()}` 原文 | 键名和 `CanonicalVars` 里的名字不一致 | 对齐 var 名 |
+| 升级后没有「固有/保留」 | 升级只写数值、忘了 `AddKeyword` | `OnUpgrade` 补词条 |
+| 能力层数不叠加 / 显示错 | `StackType` 与 `Amount` 脱节 | 见 CONTEXT §6.24 |
+| 打出的能力牌不进弃牌堆 | 能力牌默认 `PileType.None` | `ModifyCardPlayResultLocation` 映射到 `Discard`（`Immortal.cs` 先例） |
+| 生成的牌不触发「催化/孔雀之尾」 | 没用 `AddGeneratedCardsToCombat`（或嬗变没补钩子） | §3.4 |
+| 抽到即复制 → 无限连锁 | 生成物进了抽牌堆/手牌 | 改弃牌堆 + 防重入标记 |
+| 格挡被敏捷/脆弱加成 | 用了 `ValueProp.Move` 而非 `Unpowered` | §3.3 |
+| 一次性伤害变成"法术伤害"多扣血 | 附魔自伤带了 `SpellProps` | 非攻击伤害不要带法术 props（§27） |
+| 悬停缺关键词 | 文案提到但没挂 `ExtraHoverTips` | §3.2 |
+| 战斗外 UI（商店/火堆）崩溃 | 把非 `NCreature` 当战斗对象处理 | CONTEXT §6.38–6.40 |
+| 多人模式效果串到队友 | 漏了 `ShouldSkip` / 没按 `Owner` 过滤 | 参考 CONTEXT §15.1 |
+| mod 更新后编译失败 | 游戏 beta 删/改了 API | 刷反编译树，按新签名改（§6） |
+| 改了代码但游戏没变化 | 部署目录不对 / pck 没重打 | §1.2 |
+| 存档/角色进度异常 | Steam 云同步删除本地文件 | 关云同步 + 备份（§4.2） |
+
+### 4.7 经典案例复盘（每个都值得记住）
+
+**① 「本回合免费」串到别人身上（§15.1）**
+- 现象：多人模式里"本回合打出的下一张牌免费"对队友也生效。
+- 根因：补丁/能力没有按 `Owner` 过滤，且漏了 `ShouldSkip` 的第一条。
+- 教训：**所有"本回合/本场"效果都必须按玩家隔离**；写多人相关逻辑前先看 `ShouldSkip`。
+
+**② 能力"不可叠层"但层数乱跳（§6.24）**
+- 根因：`StackType`（不叠）与 `Amount` 语义脱节 —— 每次 `Apply` 都改 `Amount`，但显示/结算按另一套走。
+- 教训：让 `Amount` 成为**唯一真相**，UI 读同一个值；不要另开 `DisplayAmount` 之类影子字段去"补"。
+
+**③ 生成牌计数口径不一致（§6.27 / §6.34）**
+- 同一个"每当施加 X"在"实际生效"和"施加动作"两种口径下结果不同（人工制品会抵消但动作发生）。
+- 教训：先想清楚需求是"动作"还是"实际生效"，再选 `CombatHistory` 还是累加器；统一收口（一个入口函数）。
+
+**④ 「梦魇」抽 5 张变成 5 张复制（§40.8）**
+- 根因：生成物进了手牌/抽牌堆 → 再次触发"抽到即复制"。
+- 修法：生成物直接进**弃牌堆**，并在生成时打标记；借鉴 `AfterShuffle` 时序处理洗牌。
+- 教训：任何"复制/生成"都要问一句"它会不会再次进入触发源"。
+
+**⑤ 能力牌不进弃牌堆 / 「不朽」附魔失效（§40）**
+- 根因：能力牌默认 `PileType.None`（打出后不留在任何牌堆）。
+- 修法：`ModifyCardPlayResultLocation` 里把 `Power + None` 映射到 `Discard`；并在 `CanEnchant` 里明确允许条件。
+- 教训：附魔的生命周期跟**牌**走，但牌的"落点"是 `CardCmd` 的职责，两者要分别验证。
+
+**⑥ 能力给的格挡被敏捷加成（§44）**
+- 根因：`ValueProp.Move` 才会被 `DexterityPower/FrailPower` 修正；能力给的格挡必须是 `Unpowered`。
+- 教训：任何"非卡牌直接给的格挡"一律 `Unpowered`，并在卡面挂 `StaticHoverTip.Block`。
+
+**⑦ 附魔自伤被算成法术伤害（§27）**
+- 根因：附魔触发的一次性伤害沿用了卡的 `SpellProps`，导致「法术增益」多扣血。
+- 修法：非攻击性/非施法伤害一律不带法术 props。
+- 教训：**伤害来源分类**（攻击/法术/能力）决定吃哪些加成，传递 props 时要显式区分。
+
+**⑧ mod 更新后 API 删除（beta 兼容）**
+- 例：`GetBaseValueForIConvertible` 被移除、`PullNextRelicFromFront` 换签名、`vfx_rock_shards` 资源被删。
+- 流程：刷反编译树 → `dotnet build` 看报错 → 按新签名改 → 启动自检。**不要**为了修编译错误去改卡牌设计。
+
+### 4.8 别急着"修"的原版行为
+
+- 荆棘反伤 0 点：原版行为（§26）。
+- 人工制品抵消减益，但"施加动作"仍发生（§6.37/§6.41）。
+- 给玩家自己上原版减益会多留一回合（§6.30）。
+- 能力牌默认不留在牌堆（§40）。
+
+---
+
+## 5. 工程结构与关键文件
+
+```
+src/
+├── Wizard.json                 # 清单：版本 / 依赖 / pck+dll 标记
+├── Wizard.csproj               # 引用 sts2.dll + BaseLib.dll
+├── Scripts/
+│   ├── Entry.cs                # 入口：初始化、日志、AltArt 挂载
+│   ├── WizardKeywords.cs       # 自定义关键词注册（BaseLib CustomEnum）
+│   ├── Cards/                  # 82 个文件 = 80 张卡 + WizardCardModel + WizardSpellCard
+│   ├── Powers/                 # 39 个文件 = 36 个能力 + 基类/变体/注册表
+│   ├── Relics/                 # 11 = 10 遗物 + ArcaneRelicModel
+│   ├── Potions/                # 3
+│   ├── Events/                 # 4
+│   ├── Enchantments/           # 2（复奏 Reprise / 不朽 Immortal）
+│   ├── Monsters/               # 1（火山巨兽三件套）
+│   ├── Spells/                 # SpellSchool / SpellProps / ISpellCard
+│   ├── Utils/
+│   │   ├── CardObliteration.cs # 「即毁」：从牌组永久移除
+│   │   ├── Transmutation.cs    # 「嬗变」：自选候选池的 transform（2026-11-22）
+│   │   ├── RandomDebuff.cs     # 随机减益（统一排除燃烧等）
+│   │   └── WizardVfx.cs        # 演出/音效常量
+│   ├── Patches/                # 11 个 Harmony 补丁（死亡立绘、商人生成、动画等）
+│   ├── Character/              # 角色定义（WizardCharacter）
+│   └── Pools/                  # WizardCardPool / WizardRelicPool / WizardPotionPool
+└── Wizard/
+    ├── localization/{zhs,eng,zht,jpn}/*.json   # 14 张表
+    ├── images/…                # 卡图 / 能力图标 / 遗物图集 / 附魔 / 事件 / 角色
+    └── scenes/…                # 角色场景（含骨骼动画版）
+```
+
+**关键文件说明**：
+
+| 文件 | 作用 |
+|---|---|
+| `Cards/WizardCardModel.cs` | 卡牌基类：统一卡图路径 `res://Wizard/images/cards/{类名}.png` |
+| `Cards/WizardSpellCard.cs` | 法术牌基类：`ISpellCard` + `School` |
+| `Utils/Transmutation.cs` | 嬗变：自选候选 → `new CardTransformation(original, replacement)` → `CardCmd.Transform`，再补生成钩子 |
+| `Utils/CardObliteration.cs` | 即毁（`Obliterate` 关键词）：`RemoveFromDeck(DeckVersion)` |
+| `Powers/CaudaPavonisPowerBase.cs` | 孔雀之尾：基础版/升级版共享逻辑的范例 |
+| `Patches/WizardDeathSprite.cs` | 死亡立绘（限定只改巫师自己的节点） |
+| `docs/EVENT-INTERFACE.md` | 事件/怪物/先古对话的接口与文件约定 |
+
+**文档地图**：
+
+| 文档 | 内容 |
+|---|---|
+| `docs/design.md` | 卡牌/遗物/事件设计稿（**用户维护，唯一事实来源**） |
+| `docs/CONTEXT.md` | 逐日工程日志与踩坑（**最长、最全，遇事不决先搜这里**） |
+| `docs/HANDOVER.md` | 本文档：写卡实践 / 调试 / 规范 |
+| `docs/EVENT-INTERFACE.md` | 事件系统接口 |
+| `docs/BETA_2026-11-13_COMPAT.md` | beta 兼容性改动清单 |
+| `docs/releases/v*.md` | 每个版本的发布说明 |
+| `docs/local/**` | 本地化团队文档（zht/jpn） |
+| `docs/CARD_EXPORT.md` / `CARD_POOL_REVIEW*.md` / `card_pool_audit_v3/**` | 卡池审计与平衡分析（历史资料） |
+
+---
+
+## 6. 交接清单 / 下次游戏更新后
+
+### 6.1 每次游戏更新后
+
+1. 刷新反编译树（`reference/decompiled/game-<date>`），保留旧快照。
+2. `dotnet build` 看有没有 API 删除/签名变化 → 修编译。
+3. 跑 `build.ps1` → 启动自检（补丁数、异常、缺失文案）。
+4. 重点回归：**自定义关键词、`CardCmd.Transform`、生成钩子、附魔生命周期、角色场景**（这几处最容易受引擎改动影响）。
+5. 更新 `docs/BETA_<date>_COMPAT.md` 与 CONTEXT。
+
+### 6.2 当前待验证 / 已知风险
+
+- 嬗变（§45）实机验证清单见 CONTEXT §45.5。
+- Steam 云同步有"删本地档"的危险行为：**演示/测试前先备份**（`D:\Backups\STS2\backup-sts2-saves.ps1`）。
+- `BetterSaves`（若启用）会把 modded ↔ vanilla 互同步，可能覆盖手动编辑的存档。
+- 工坊简介余量很小（约 86 B），下次加内容需先删「新增卡牌」旧条目。
+- SSH 推送不稳定，必要时走 HTTPS。
+
+### 6.3 交接第一周建议顺序
+
+1. 读 `docs/design.md` 的卡牌列表 → 随机挑 3 张卡对照代码读（推荐：`CalmMind` / `Fireball` / `MagusRobe`）。
+2. 跑一次完整构建 + 启动自检，确认环境无问题。
+3. 读本档 §3（规范）与 §4.6（速查表）。
+4. 接一个小的平衡调整（改数值 + 文案）走完整流程：build → deploy → 自检 → 写 CONTEXT。
+
+---
+
+## 7. 命令速查
+
+```powershell
+# ── 构建 / 部署 ──
+.\build.ps1 -SkipAltArt -NoCommit          # 日常迭代
+.\build.ps1                                 # 完整（含 B 版美术）
+dotnet build .\src\Wizard.csproj -c Debug -v minimal --no-incremental
+
+# ── 日志 ──
+Get-Content "$env:APPDATA\SlayTheSpire2\logs\godot.log" -Tail 80
+Select-String -Path "$env:APPDATA\SlayTheSpire2\logs\godot.log" -Pattern '补丁已应用|Exception|Missing localization'
+
+# ── 启动（先告知用户！）──
+Start-Process 'steam://rungameid/2868840'
+
+# ── 反编译查证 ──
+Get-ChildItem reference\decompiled\game -Recurse -Filter 'CardCmd.cs'
+Select-String -Path 'reference\decompiled\game\**\*.cs' -Pattern 'class CardCmd'
+
+# ── 本地化键检查（两语言必须一致）──
+python -c "import json,glob; ks=[set(json.load(open(f,encoding='utf-8'))) for f in glob.glob('src/Wizard/localization/eng/*.json')+glob.glob('src/Wizard/localization/zhs/*.json')]; print('键数:', [len(k) for k in ks])"
+
+# ── 存档备份 ──
+powershell -NoProfile -ExecutionPolicy Bypass -File 'D:\Backups\STS2\backup-sts2-saves.ps1'
+
+# ── 发布（详见 §3.8）──
+cd D:\Downloads\ModUploader-win-x64
+.\ModUploader.exe upload -w .\WizardWorkspace
+gh release create v<ver> <zip> --title <ver> --notes-file docs/releases/v<ver>.md
+```
+
+---
+
+*本文档由 2026-11-26 的交接整理产生；日常遇到新坑请继续写进 `docs/CONTEXT.md`，不要只改代码不写文档。*

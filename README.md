@@ -7,9 +7,9 @@
 | | |
 |---|---|
 | **创意工坊** | [巫师 / Wizard（id 3807136195）](https://steamcommunity.com/sharedfiles/filedetails/?id=3807136195) |
-| **当前版本** | `0.3.6` |
-| **游戏版本** | 0.111.0（`min_game_version` 0.107.1） |
-| **依赖** | BaseLib **≥ 3.4.7** |
+| **当前版本** | `0.6.0` |
+| **游戏版本** | 0.113.1（`min_game_version` 0.107.1） |
+| **依赖** | BaseLib **≥ 3.4.8** |
 | **语言** | 简体中文 / English |
 
 ---
@@ -18,11 +18,12 @@
 
 | 项 | 数量 |
 |---|---|
-| 卡牌 | **60** 张（含初始「打击」「防御」、衍生牌与状态牌） |
-| 能力 | 26 个 |
-| 遗物 | 9 个 |
+| 卡牌 | **80** 张（含初始「打击」「防御」、衍生牌与状态牌） |
+| 能力 | **36** 个 |
+| 遗物 | **10** 个 |
 | 药水 | 3 瓶 |
-| 专属事件 | 1 个（「尖塔规则怪谈」） |
+| 附魔 | **2** 种（「复奏」「不朽」） |
+| 专属事件 | **4** 个（含 1 场事件限定战斗） |
 | 先古之民对话 | 全部 **9 位**，每位 3 套 + 可重复兜底 |
 
 **三系法术**：火焰（9 张）、雷电（6 张）、寒冰（2 张），共 17 张法术牌。
@@ -75,8 +76,8 @@ Slay the Spire 2\mods\Wizard\
 
 | 项 | 路径 / 版本 |
 |---|---|
-| 游戏 | `D:\SteamLibrary\steamapps\common\Slay the Spire 2`（v0.111.0） |
-| BaseLib | 创意工坊 `3737335127`，**≥ 3.4.7**（放到游戏 `mods\BaseLib\`） |
+| 游戏 | `D:\SteamLibrary\steamapps\common\Slay the Spire 2`（v0.113.1） |
+| BaseLib | 创意工坊 `3737335127`，**≥ 3.4.8**（放到游戏 `mods\BaseLib\`） |
 | .NET SDK | 10.x（工程 target `net9.0`） |
 | Godot | `D:\Godot\Godot_v4.5.1-stable_mono_win64\`（4.5.1 stable mono） |
 | GDRE Tools | `D:\Godot\GDRE_tools-v2.6.0-windows\gdre_tools.exe` |
@@ -107,8 +108,8 @@ Slay the Spire 2\mods\Wizard\
     ├── icon.svg
     ├── Scripts/              C# 源码
     │   ├── Entry.cs          mod 入口（[ModInitializer]）
-    │   ├── Cards/            60 张卡牌
-    │   ├── Powers/           26 个能力
+    │   ├── Cards/            80 张卡牌
+    │   ├── Powers/           36 个能力
     │   ├── Relics/ Potions/ 遗物与药水
     │   ├── Events/           事件
     │   ├── Spells/           法术流派与伤害结算
@@ -162,9 +163,10 @@ BaseLib 把 `{命名空间 UPPER_SNAKE 前缀}-{类名 UPPER_SNAKE}` 作为 `Mod
 
 ## 未完成 / 已知缺口
 
-- 角色本体美术仍是**占位**（`PlaceholderCharacterModel`，未替换的资源回退到原版铁甲战士）
-- 遗物 `PurifySin` 的图仍是占位
-- 部分能力图标是占位图
+- 角色类仍继承 `PlaceholderCharacterModel`（借用原版铁甲战士的**音频/基础资源**）；
+  立绘、选人图、地图标记、战斗场景与骨骼动画均已替换为巫师自己的资源
+- `zht` / `jpn` 本地化由团队维护，部分新卡文案可能滞后（`zhs` / `eng` 始终完整）
+- 工坊简介接近 8000 字节上限，新增内容前需要先删旧条目
 
 ---
 
