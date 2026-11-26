@@ -6109,3 +6109,40 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 
 修法：**去掉 `PreviewCardPileAdd`**，只保留 `CardPileCmd.Add`。
 （没有用 `CardPreviewStyle.None` 是更干净：连"进堆预览"这一步都不进，直接从抽牌堆/弃牌堆回到手牌。）
+
+---
+
+## 53. 2026-11-26 发布 v0.6.1（5 张新卡 + 平衡 + B 版美术进工坊）
+
+### 53.1 产物
+
+| 项 | 值 |
+|---|---|
+| 版本 | `src/Wizard.json` → `0.6.1` |
+| `Wizard.dll` | MD5 `A517D3D4`（374,784 B） |
+| `Wizard.pck` | MD5 `76C87ECF`（171,778,532 B） |
+| `Wizard.json` | MD5 `A4D7AC22` |
+| `WizardAlt.pck` | MD5 `0E2B7376`（137,304,004 B）—— **首次随工坊条目上传** |
+| 工坊 | item 3807136195，19:35 更新，file_size **309,457,771 B**（≈295 MB，已含 B 包） |
+| 简介 | **6,450 B** / 8000 |
+| GitHub Release | v0.6.1（zip 仅 dll/json/pck，**不含 B 包**） |
+
+### 53.2 简介改动（按用户要求）
+
+- 「新增卡牌」与「平衡性调整」**旧内容全删**，重写为：
+  - 新增卡牌：白夜 / 电弧 / 薪柴 / 流火 / 灵光（zhs + eng）。
+  - 平衡性调整：屏蔽 / 火刑 / 书签 / 炽焰术 / 天火浩荡。
+- 卡牌总数 **79 → 84**（沿用原口径；实际卡牌类 85 张、WizardCardPool 80 张）。
+- `changeNote` → `v0.6.1 — 新增 5 张卡牌；平衡性调整。`
+- 备份：`WizardWorkspace/workshop.json.v061`
+
+### 53.3 B 版美术纳入工坊条目（2026-11-26 决定）
+
+- 工坊条目目录是平铺结构（`Wizard.dll` / `Wizard.json` / `Wizard.pck` + 现在多一个 `WizardAlt.pck`），
+  上传器把 `WizardWorkspace\content\` 里所有文件原样上传。
+- 加载顺序（`Entry.MountAltArtPack`）：① **DLL 同目录** → ② `%APPDATA%\SlayTheSpire2\WizardAlt.pck`。
+  工坊订阅者的 DLL 就在条目目录里 ⇒ B 包自动被找到。
+- 游戏 `ModManager` 只挂 `modId + ".pck"`，多余的 `WizardAlt.pck` **不会**被自动挂载；
+  玩家需在 mod 设置里勾「使用替换美术」并**重启**。
+- ⚠️ 每次更新都必须把 `WizardAlt.pck` 放进 `content\` 再上传（Steam 会用新内容替换条目文件清单）。
+- B 版目前**不含**白夜/电弧/薪柴/流火/灵光的 B 版卡图（`art_alt` 未放），使用 B 版时这 5 张回退 A 版。
