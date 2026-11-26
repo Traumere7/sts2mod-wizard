@@ -6247,3 +6247,22 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 - `dotnet build` 0 错误；`build.ps1` 部署成功（pck `729D6C4C` / dll `80CF7C61`）。
 - 启动自检：**20/20 补丁**（新增 `ExhaustSelectionGlowPatch -> 1 个方法`），无异常。
 - 待实机验证：消耗选择界面里尾注/心流是否金边亮起；永恒回响 2 费/升级 1 费、无「保留」。
+
+---
+
+## 56. 2026-11-27（三）燃烧能力文案改为"无来源火焰伤害"（四语言）
+
+按用户要求，**四种语言全部**更新 `WIZARD-BURN_POWER.description` / `.smartDescription`：
+
+| 语言 | description | smartDescription |
+|---|---|---|
+| zhs | 在其回合开始时，受到等同于其层数的**无来源**`[orange]火焰伤害`。不可叠加… | …受到 `[blue]{Amount}[/blue]` 点**无来源**火焰伤害。不可叠加… |
+| eng | At the start of its turn, takes `[orange]Fire damage` **with no source** equal to this amount. Does not stack… | …takes `[blue]{Amount}[/blue]` `[orange]Fire damage` **with no source**. Does not stack… |
+| zht | 在其回合開始時，受到等同於其層數的**無來源**火焰傷害。不可疊加… | …受到 `{Amount}` 點**無來源**火焰傷害。不可疊加… |
+| jpn | ターン開始時、付与された値に等しい**発生源のない**炎属性ダメージを受ける。重複しない… | …`{Amount}`の**発生源のない**炎属性ダメージを受ける。重複しない… |
+
+- 保留原有的"不可叠加 / 取高值 / 不衰减"后半句与原有的回合开始时点。
+- 「火焰伤害」按既有格式上 `[orange]`；`{Amount}` 保留 `[blue]`。
+- ⚠️ `zht` / `jpn` 属本地化团队维护范围，本次是**应要求直接改**的；
+  用词（"無來源" / "発生源のない"）如需按团队术语表微调，以团队为准。
+- 构建：pck `A9510221`；pck 字节核验四语言新文案均在包内、旧文案已消失。
