@@ -267,7 +267,9 @@ public static CardKeyword Obliterate;
 
 ### 2.9 文案规范（zhs / eng）
 
-- 键：`WIZARD-<CLASS_SNAKE_UPPER>.title` / `.description`，蛇形大写在 `NamingUtil` 里统一生成。
+- 键：`WIZARD-<CLASS_SNAKE_UPPER>.title` / `.description`。
+  规则是 BaseLib 的「模型前缀 + Entry 全大写」（类名 → 蛇形大写，如 `CalmMind` → `CALM_MIND`），
+  前缀来自 `[Pool]`/模型注册，最终形如 `WIZARD-CALM_MIND`；自定义关键词同理（`WIZARD-OBLITERATE`，见 `WizardKeywords.cs` 注释）。
 - **有升级值写成 `8（10）` 这种自动括号**：用占位符 `{Damage:diff()}`，不要手写"（10）"。
 - 换行用 `\n`；关键词/专有名词 `[gold]`；雷电/寒冰伤害 `[blue]`；负面状态 `[purple]`（少量）。
 - 卡名里的数字/费用：费用由引擎显示，文案里**不写**费用。
@@ -514,7 +516,8 @@ src/
 │   ├── Events/                 # 4
 │   ├── Enchantments/           # 2（复奏 Reprise / 不朽 Immortal）
 │   ├── Monsters/               # 1（火山巨兽三件套）
-│   ├── Spells/                 # SpellSchool / SpellProps / ISpellCard
+│   ├── Spells/                 # 法术体系：ISpellCard / SpellSchool / SpellProps / SpellCmd / SpellUtil /
+│   │                           #   WizardEvents / WizardTips / DebuffUtil / BurnTally / FieldState
 │   ├── Utils/
 │   │   ├── CardObliteration.cs # 「即毁」：从牌组永久移除
 │   │   ├── Transmutation.cs    # 「嬗变」：自选候选池的 transform（2026-11-22）
