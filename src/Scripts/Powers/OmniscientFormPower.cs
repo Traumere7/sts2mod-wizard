@@ -1,12 +1,19 @@
 using BaseLib.Abstracts;
+using Godot;
+using MegaCrit.Sts2.Core.Assets;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.Helpers;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Nodes.Combat;
+using MegaCrit.Sts2.Core.Nodes.GodotExtensions;
+using MegaCrit.Sts2.Core.Nodes.Rooms;
+using MegaCrit.Sts2.Core.Nodes.Vfx.Forms;
 using Wizard.Scripts.Cards;
 using Wizard.Scripts.Spells;
 
@@ -77,8 +84,34 @@ public class OmniscientFormPower : CustomPowerModel
     /// <summary>本回合已经"给予过"的负面效果种类（按 ModelId 去重）。</summary>
     private readonly HashSet<ModelId> _appliedThisTurn = [];
 
+    private static readonly string SerpentFormScenePath =
+        SceneHelper.GetScenePath("vfx/forms/serpent/vfx_serpent_form_idle_vfx");
+
     /// <summary>
-    /// 存档读取 / 克隆后清空"本回合"记录。
+    /// 形态主特效：直接复用原版收割者形态（NReaperFormVfx，自带暗紫幽光与涌动雾气），
+    /// 并从原版蛇形态（vfx_serpent_form_idle_vfx）拆出扩散式脉动光环组件染成奥术紫叠加其上。
+    /// </summary>
+    private NReaperFormVfx? _vfx;
+
+    /// <summary>从蛇形态拆出的单次触发扩散光环（已染成亮奥术紫，随全知形态触发同步爆发）。</summary>
+    private GpuParticles2D? _purplePulseBurstRing;
+
+    private NReaperFormVfx? Vfx
+    {
+        get
+        {
+            if (_vfx == null)
+            {
+                return null;
+            }
+
+            return _vfx.IsValid() ? _vfx : null;
+        }
+        set => _vfx = value;
+    }
+
+    /// <summary>
+    /// 存档读取 / 克隆后清空"本回合"记录与运行时节点引用。
     ///
     /// <para>
     /// 字段是 <c>readonly</c>，所以只能 <c>Clear()</c> 不能重新赋值。
@@ -89,6 +122,8 @@ public class OmniscientFormPower : CustomPowerModel
     {
         base.AfterCloned();
         _appliedThisTurn.Clear();
+        _vfx = null;
+        _purplePulseBurstRing = null;
     }
 
     /// <summary>是否已订阅燃烧事件（退订时的幂等保护）。</summary>
@@ -100,13 +135,158 @@ public class OmniscientFormPower : CustomPowerModel
         WizardEvents.BurnApplied -= OnBurnApplied;
         WizardEvents.BurnApplied += OnBurnApplied;
         _subscribed = true;
+
+        AttachFormVfx();
         return Task.CompletedTask;
     }
 
     public override Task AfterRemoved(Creature oldOwner)
     {
         Unsubscribe();
+        DetachFormVfx(oldOwner);
         return Task.CompletedTask;
+    }
+
+    private void AttachFormVfx()
+    {
+        try
+        {
+            if (Vfx != null)
+            {
+                // 叠层再次打出时触发一次脉动爆发即可，无需重复重建节点
+                TriggerFormPulse();
+                return;
+            }
+
+            NCreature? creatureNode = NCombatRoom.Instance?.GetCreatureNode(Owner);
+            if (creatureNode?.Visuals?.FormVfxHolder == null)
+            {
+                return;
+            }
+
+            NReaperFormVfx? vfx = NReaperFormVfx.Create(Owner);
+            if (vfx == null)
+            {
+                return;
+            }
+
+            Node2D? reaperPivot = vfx.GetNodeOrNull<Node2D>("center_pivot");
+
+            // 非 Spine 角色（巫师 A 版骨骼与 B 版静态立绘）不走 Spine 骨骼跟随，
+            // 将 center_pivot 精准居中对齐到角色胸口位置（原场景默认 (0, -209) 偏高）。
+            if (!creatureNode.Visuals.HasSpineAnimation && reaperPivot != null)
+            {
+                reaperPivot.Position = creatureNode.Visuals.VfxSpawnPosition.Position + new Vector2(8f, -12f);
+            }
+
+            // 尝试从原版 serpent_form 拆出扩散式脉动光环组件、染紫并叠加到 reaper_form 上；
+            // 若未来原版节点结构变动，静默降级为纯 reaper_form，不影响主特效。
+            if (reaperPivot != null)
+            {
+                TryAttachPurpleSerpentRings(reaperPivot);
+            }
+
+            Vfx = vfx;
+            TriggerFormPulse();
+        }
+        catch (System.Exception e)
+        {
+            Entry.Logger.Warn($"[Wizard] 全知形态挂载 ReaperForm 特效失败：{e.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 从原版 <c>vfx_serpent_form_idle_vfx.tscn</c> 中拆分出：
+    /// 1) 常驻慢速扩散脉动光环（<c>center_pivot/vfx_scream_ring_polar</c>）；
+    /// 2) 触发瞬间爆发扩散光环（<c>center_pivot/effect_triggered_vfx/vfx_scream_ring_polar</c>）；
+    /// 染成奥术紫后直接挂到 <paramref name="reaperPivot"/> 下，其余蛇影节点立即释放。
+    /// </summary>
+    private void TryAttachPurpleSerpentRings(Node2D reaperPivot)
+    {
+        Node? serpentTemp = null;
+        try
+        {
+            PackedScene? serpentScene = PreloadManager.Cache.GetScene(SerpentFormScenePath);
+            if (serpentScene == null)
+            {
+                return;
+            }
+
+            serpentTemp = serpentScene.Instantiate(PackedScene.GenEditState.Disabled);
+            Node? serpentPivot = serpentTemp.GetNodeOrNull("center_pivot");
+            if (serpentPivot == null)
+            {
+                return;
+            }
+
+            // ① 常驻扩散式脉动光环（原色为翠绿 (0, 0.39, 0.18, 1) → 染为奥术紫）
+            if (serpentPivot.GetNodeOrNull<GpuParticles2D>("vfx_scream_ring_polar") is { } idleRing)
+            {
+                serpentPivot.RemoveChild(idleRing);
+                idleRing.Name = "wizard_omniscient_pulse_ring_idle";
+                idleRing.Position = Vector2.Zero;
+                idleRing.SelfModulate = new Color(0.58f, 0.16f, 0.94f, 1.0f);
+                idleRing.Emitting = true;
+                reaperPivot.AddChild(idleRing);
+            }
+
+            // ② 效果触发时的瞬间爆发扩散光环（原色为亮绿 (0, 1, 0.45, 1) → 染为亮紫罗兰）
+            if (serpentPivot.GetNodeOrNull<GpuParticles2D>("effect_triggered_vfx/vfx_scream_ring_polar") is { } burstRing)
+            {
+                burstRing.GetParent()?.RemoveChild(burstRing);
+                burstRing.Name = "wizard_omniscient_pulse_ring_burst";
+                burstRing.Position = Vector2.Zero;
+                burstRing.SelfModulate = new Color(0.76f, 0.28f, 1.0f, 1.0f);
+                reaperPivot.AddChild(burstRing);
+                _purplePulseBurstRing = burstRing;
+            }
+        }
+        catch (System.Exception e)
+        {
+            Entry.Logger.Warn($"[Wizard] 拆分叠加蛇形态紫色脉动光环失败，已自动降级为纯 ReaperForm：{e.Message}");
+        }
+        finally
+        {
+            if (serpentTemp != null && GodotObject.IsInstanceValid(serpentTemp))
+            {
+                serpentTemp.Free();
+            }
+        }
+    }
+
+    private void TriggerFormPulse()
+    {
+        Vfx?.OnEffectTriggered();
+        if (_purplePulseBurstRing != null && GodotObject.IsInstanceValid(_purplePulseBurstRing))
+        {
+            _purplePulseBurstRing.Restart();
+        }
+    }
+
+    private void DetachFormVfx(Creature oldOwner)
+    {
+        try
+        {
+            NReaperFormVfx? vfx = Vfx;
+            Vfx = null;
+            _purplePulseBurstRing = null;
+            if (vfx == null)
+            {
+                return;
+            }
+
+            vfx.SetActive(isActive: false);
+            NCreature? creatureNode = NCombatRoom.Instance?.GetCreatureNode(oldOwner);
+            if (creatureNode?.Visuals?.FormVfxHolder is { } holder
+                && vfx.GetParent() == holder)
+            {
+                creatureNode.Visuals.RemoveFormVfx();
+            }
+        }
+        catch (System.Exception e)
+        {
+            Entry.Logger.Warn($"[Wizard] 全知形态卸载 ReaperForm 特效失败：{e.Message}");
+        }
     }
 
     /// <summary>
@@ -346,6 +526,7 @@ public class OmniscientFormPower : CustomPowerModel
         }
 
         Flash();
+        TriggerFormPulse();
 
         await PlayerCmd.GainEnergy(1m, player);
 

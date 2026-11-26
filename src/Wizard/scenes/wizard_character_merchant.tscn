@@ -1,94 +1,1201 @@
-[gd_scene load_steps=5 format=3 uid="uid://bwiz0merchant1"]
+[gd_scene load_steps=19 format=3 uid="uid://bwiz0merchant1"]
 
 [ext_resource type="Script" path="res://src/Core/Nodes/Screens/Shops/NMerchantCharacter.cs" id="1_wizmc"]
-[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_shop.png" id="2_wizmerchant"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_die.png" id="2_wizdie"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/legs_boots.png" id="3_legs_boots"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/left_sleeve.png" id="4_left_sleeve"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/robe_lower.png" id="5_robe_lower"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/torso.png" id="6_torso"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/head.png" id="7_head"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/hat.png" id="8_hat"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/spellbook.png" id="9_spellbook"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/right_hand.png" id="10_right_hand"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/right_sleeve.png" id="11_right_sleeve"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/staff.png" id="12_staff"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/left_forearm_hand.png" id="13_left_forearm_hand"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/rig_a/gem.png" id="14_gem"]
 
 ; ══════════════════════════════════════════════════════════════════
-; ⚠️⚠️ 底部那个 AnimationPlayer + 名字叫 "die" 的动画 **不是装饰，是必需的**
-;      （2026-10-13 定位，修「商店点放弃游戏卡死」）
+; A 版默认巫师：商店骨骼待机场景（由 rig_wizard_a_merchant_scene.py 生成）
 ; ══════════════════════════════════════════════════════════════════
-;
-; 【症状】商店里点「放弃游戏」→ 立绘变成战败图，但游戏卡死。
-;         正常逛商店完全没问题 —— 因为出问题的不是进入商店，是**结束游戏**。
-;
-; 【崩溃栈】实测日志：
-;     ERROR: InvalidOperationException: Expected BoundObject to be a SpineSprite,
-;            but it is a Sprite2D!
-;        at NMerchantCharacter.PlayAnimation_Patch1(NMerchantCharacter this, String anim, ...)
-;        at NGameOverScreen.MoveCreaturesToDifferentLayerAndDisableUi()
-;        at NGameOverScreen.AfterOverlayOpened()
-;        at NRun.ShowGameOverScreen(SerializableRun)
-;
-; 【根因】`NGameOverScreen` 在弹出结算界面时，会对商店里的角色播 `die`：
-;     NMerchantCharacter.PlayAnimation("die")
-;   而原版 `PlayAnimation` 内部是
-;     new MegaSprite(GetChild(0)).GetAnimationState().SetAnimation(...)
-;   —— **无条件**把第 0 个子节点当 SpineSprite 用。
-;   我们的第 0 个子节点是 Sprite2D（`Icon`），于是抛异常，
-;   结算流程中断 ⇒ 表现就是"卡死"。
-;
-; 【为什么 BaseLib 的守卫没救我们】`MerchantCharacterAnimPatch` 有两道守卫：
-;     ① if (!NodeFactory.CreatedFromFactory(__instance)) return true;
-;     ② if (CustomAnimation.HasCustomAnimation(__instance)) return false;
-;   —— 注意 ② 只保证"**有一个**动画播放器"，它**不保证播放器里有那个动画**！
-;   两道都放行后，`PlayAlternateAnimation` 还会再试一次：
-;         if (CustomAnimation.PlayCustomAnimation(__instance, "Die", "die")) return false;
-;   如果播放器里**没有**叫 "die" 的动画，这一句返回 false，
-;   于是**原始 PlayAnimation 照样执行** ⇒ 崩。
-;
-;   ⚠️ 所以一开始只放一个"空的" AnimationPlayer 是**不够的** ——
-;      空库下 `HasAnimation("die")` 为 false，等于没修。
-;      必须真的有一个**名为 "die" 的动画**，让 PlayCustomAnimation 返回 true
-;      （那条分支返回 false 表示"已处理，别跑原始方法"），
-;      原始 PlayAnimation 才会被**跳过**，spine 那条路根本不会被碰到。
-;
-; 【为什么动画可以是空的】`UseAnimationPlayer` 的委托只做
-;   `HasAnimation(name) → Play(name)`，播一个没有轨道的动画是无害的
-;   （我们的商人就是个静态立绘）。它存在**只为满足名字检查**。
-;   同时给 "relaxed_loop" 也占个位，满足引擎进店时想播的待机动画。
-;
-; 【为什么必须是根节点的直接子级】`CustomAnimation.FindNode<T>` 只看
-;   `root.GetChildren()`，**不做递归**（`CustomAnimation.cs`）。
-;
-; 【尺度备注】人物高 = 563 * 0.875 = 493 单位。
-;   位置以**脚部**为基准（脚固定在世界 y = 0）：
-;     包围盒中心相对贴图中心偏移 SC = (8, 5)；脚在贴图内 y = 670，贴图中心 y = 384
-;       position.y = -(670 - 384) * 0.875 = -250.25
-;       position.x = -8 * 0.875 = -7.0
-;     实算人物范围：x -134..+134，y -493..0
-;
-; 【图独立】商店立绘用 wizard_shop.png（**不再复用** wizard_battle.png）：
-;   A 版 = 战斗图的副本；B 版（替换美术包）里是单独的商店图。
-;   两张图都是 512x768、人物包围盒接近，所以下面的 scale/position 两边通用。
-;
-; 【节点名 Icon 不要改】`NMerchantCharacter._Ready` 用 `GetChild(0)` 取它；
-;   我们的战败立绘补丁也按 `Icon` 这个名字找它。
+; · 复用 rig_a 12 分件，位置 (-7, -250.3) 缩放 0.875 与原静态商店立绘完全一致
+; · relaxed_loop (3.40s, autoplay)：约 60% 战斗幅度的沉稳商店呼吸待机
+; · die (1.10s)：放弃游戏结算时平滑倒地并精准对齐地面线
+
+[sub_resource type="Animation" id="Anim_merchant_RESET"]
+resource_name = "RESET"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Skeleton2D/BoneRoot/BonePelvis:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.0, -266.0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Skeleton2D/BoneRoot/BonePelvis:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneRobeLower:rotation")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneRobeLower:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.0, 1.0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso:position")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.0, -4.0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(6.0, -140.0)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead:rotation")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:position")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.0, -54.0)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:rotation")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:scale")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.0, 1.0)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneSpellbook:rotation")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm:rotation")
+tracks/12/interp = 1
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm/BoneRightHand:rotation")
+tracks/13/interp = 1
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm:rotation")
+tracks/14/interp = 1
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/15/type = "value"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm:rotation")
+tracks/15/interp = 1
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff:position")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(60.0, -30.0)]
+}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff:rotation")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff/BoneGem:rotation")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/19/type = "value"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("Parts:visible")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("Parts:modulate")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1.0, 1.0, 1.0, 1.0)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("DeathSprite:visible")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("DeathSprite:position")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.0, 72.0)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("DeathSprite:rotation")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/24/type = "value"
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/path = NodePath("DeathSprite:scale")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.0, 1.0)]
+}
+tracks/25/type = "value"
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/path = NodePath("DeathSprite:modulate")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1.0, 1.0, 1.0, 1.0)]
+}
+
+[sub_resource type="Animation" id="Anim_merchant_relaxed_loop"]
+resource_name = "relaxed_loop"
+length = 3.4
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Skeleton2D/BoneRoot/BonePelvis:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0.85167, -266.0), Vector2(1.21792, -267.01823), Vector2(1.45651, -267.44), Vector2(1.42768, -267.01823), Vector2(1.14833, -266.0), Vector2(0.78208, -264.98177), Vector2(0.54349, -264.56), Vector2(0.57232, -264.98177), Vector2(0.85167, -266.0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Skeleton2D/BoneRoot/BonePelvis:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.00282, 0.00075, 0.00388, 0.00474, 0.00282, -0.00075, -0.00388, -0.00474, -0.00282]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneRobeLower:rotation")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.00507, -0.00131, 0.00321, 0.00586, 0.00507, 0.00131, -0.00321, -0.00586, -0.00507]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneRobeLower:scale")
+tracks/3/interp = 2
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1.0, 1.0), Vector2(1.00255, 1.00594), Vector2(1.0036, 1.0084), Vector2(1.00255, 1.00594), Vector2(1.0, 1.0), Vector2(0.99745, 0.99406), Vector2(0.9964, 0.9916), Vector2(0.99745, 0.99406), Vector2(1.0, 1.0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso:position")
+tracks/4/interp = 2
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0.0, -4.0), Vector2(0.0, -5.52735), Vector2(0.0, -6.16), Vector2(0.0, -5.52735), Vector2(0.0, -4.0), Vector2(0.0, -2.47265), Vector2(0.0, -1.84), Vector2(0.0, -2.47265), Vector2(0.0, -4.0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso:rotation")
+tracks/5/interp = 2
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.00225, -0.00675, -0.01179, -0.00992, -0.00225, 0.00675, 0.01179, 0.00992, 0.00225]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead:position")
+tracks/6/interp = 2
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(6.0, -139.65314), Vector2(6.0, -140.20087), Vector2(6.0, -140.63094), Vector2(6.0, -140.69141), Vector2(6.0, -140.34686), Vector2(6.0, -139.79913), Vector2(6.0, -139.36906), Vector2(6.0, -139.30859), Vector2(6.0, -139.65314)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead:rotation")
+tracks/7/interp = 2
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.01396, 0.00064, 0.01487, 0.02039, 0.01396, -0.00064, -0.01487, -0.02039, -0.01396]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:position")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.0, -54.0)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:rotation")
+tracks/9/interp = 2
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.01598, -0.00763, 0.00519, 0.01497, 0.01598, 0.00763, -0.00519, -0.01497, -0.01598]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:scale")
+tracks/10/interp = 2
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1.00326, 0.99186), Vector2(1.00122, 0.99695), Vector2(0.99847, 1.00383), Vector2(0.99661, 1.00847), Vector2(0.99674, 1.00814), Vector2(0.99878, 1.00305), Vector2(1.00153, 0.99617), Vector2(1.00339, 0.99153), Vector2(1.00326, 0.99186)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneSpellbook:rotation")
+tracks/11/interp = 2
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0233, 0.00451, -0.01693, -0.02845, -0.0233, -0.00451, 0.01693, 0.02845, 0.0233]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm:rotation")
+tracks/12/interp = 2
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.01301, 0.00753, 0.02366, 0.02593, 0.01301, -0.00753, -0.02366, -0.02593, -0.01301]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm/BoneRightHand:rotation")
+tracks/13/interp = 2
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.04243, -0.02428, 0.00809, 0.03573, 0.04243, 0.02428, -0.00809, -0.03573, -0.04243]
+}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm:rotation")
+tracks/14/interp = 2
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.00202, -0.00607, -0.01061, -0.00893, -0.00202, 0.00607, 0.01061, 0.00893, 0.00202]
+}
+tracks/15/type = "value"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm:rotation")
+tracks/15/interp = 2
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.00271, 0.02857, 0.04311, 0.0324, 0.00271, -0.02857, -0.04311, -0.0324, -0.00271]
+}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff:position")
+tracks/16/interp = 2
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(60.0, -30.05274), Vector2(60.0, -29.4445), Vector2(60.0, -29.16166), Vector2(60.0, -29.36991), Vector2(60.0, -29.94726), Vector2(60.0, -30.5555), Vector2(60.0, -30.83834), Vector2(60.0, -30.63009), Vector2(60.0, -30.05274)]
+}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff:rotation")
+tracks/17/interp = 2
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.00391, -0.01912, -0.03095, -0.02465, -0.00391, 0.01912, 0.03095, 0.02465, 0.00391]
+}
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff/BoneGem:rotation")
+tracks/18/interp = 2
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"times": PackedFloat32Array(0.0, 0.425, 0.85, 1.275, 1.7, 2.125, 2.55, 2.975, 3.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [-0.06587, -0.04365, 0.00414, 0.04951, 0.06587, 0.04365, -0.00414, -0.04951, -0.06587]
+}
+tracks/19/type = "value"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("Parts:visible")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("Parts:modulate")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1.0, 1.0, 1.0, 1.0)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("DeathSprite:visible")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("DeathSprite:position")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.0, 72.0)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("DeathSprite:rotation")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.0]
+}
+tracks/24/type = "value"
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/path = NodePath("DeathSprite:scale")
+tracks/24/interp = 1
+tracks/24/loop_wrap = true
+tracks/24/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.0, 1.0)]
+}
+tracks/25/type = "value"
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/path = NodePath("DeathSprite:modulate")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1.0, 1.0, 1.0, 1.0)]
+}
 
 [sub_resource type="Animation" id="Anim_merchant_die"]
 resource_name = "die"
-length = 0.1
-loop_mode = 0
-
-[sub_resource type="Animation" id="Anim_merchant_idle"]
-resource_name = "relaxed_loop"
-length = 0.1
-loop_mode = 1
+length = 1.1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Skeleton2D/BoneRoot/BonePelvis:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1.0, -266.0), Vector2(-11.0, -254.0), Vector2(-23.0, -214.0), Vector2(-33.0, -178.0), Vector2(-33.0, -178.0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Skeleton2D/BoneRoot/BonePelvis:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -0.13963, -0.27925, -0.38397, -0.38397]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneRobeLower:rotation")
+tracks/2/interp = 2
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.13963, 0.24435, 0.31416, 0.31416]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneRobeLower:scale")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.0, 1.0)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso:position")
+tracks/4/interp = 2
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0.0, -4.0), Vector2(-4.0, 2.0), Vector2(-8.0, 12.0), Vector2(-10.0, 18.0), Vector2(-10.0, 18.0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso:rotation")
+tracks/5/interp = 2
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -0.17453, -0.24435, -0.31416, -0.31416]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(6.0, -140.0)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead:rotation")
+tracks/7/interp = 2
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -0.17453, 0.10472, 0.24435, 0.24435]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:position")
+tracks/8/interp = 2
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0.0, -54.0), Vector2(-2.0, -56.0), Vector2(-3.0, -54.0), Vector2(-3.0, -52.0), Vector2(-3.0, -52.0)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:rotation")
+tracks/9/interp = 2
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -0.17453, -0.13963, -0.10472, -0.10472]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat:scale")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1.0, 1.0)]
+}
+tracks/11/type = "value"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneSpellbook:rotation")
+tracks/11/interp = 2
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.27925, 0.41888, 0.48869, 0.48869]
+}
+tracks/12/type = "value"
+tracks/12/imported = false
+tracks/12/enabled = true
+tracks/12/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm:rotation")
+tracks/12/interp = 2
+tracks/12/loop_wrap = true
+tracks/12/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.24435, 0.27925, 0.27925, 0.27925]
+}
+tracks/13/type = "value"
+tracks/13/imported = false
+tracks/13/enabled = true
+tracks/13/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm/BoneRightHand:rotation")
+tracks/13/interp = 2
+tracks/13/loop_wrap = true
+tracks/13/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.34907, 0.45379, 0.5236, 0.5236]
+}
+tracks/14/type = "value"
+tracks/14/imported = false
+tracks/14/enabled = true
+tracks/14/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm:rotation")
+tracks/14/interp = 2
+tracks/14/loop_wrap = true
+tracks/14/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.17453, 0.31416, 0.41888, 0.41888]
+}
+tracks/15/type = "value"
+tracks/15/imported = false
+tracks/15/enabled = true
+tracks/15/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm:rotation")
+tracks/15/interp = 2
+tracks/15/loop_wrap = true
+tracks/15/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.13963, 0.31416, 0.45379, 0.45379]
+}
+tracks/16/type = "value"
+tracks/16/imported = false
+tracks/16/enabled = true
+tracks/16/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff:position")
+tracks/16/interp = 1
+tracks/16/loop_wrap = true
+tracks/16/keys = {
+"times": PackedFloat32Array(0.0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(60.0, -30.0)]
+}
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff:rotation")
+tracks/17/interp = 2
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 0.17453, 0.38397, 0.5236, 0.5236]
+}
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath("Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff/BoneGem:rotation")
+tracks/18/interp = 2
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"times": PackedFloat32Array(0.0, 0.1, 0.25, 0.4, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, -0.31416, -0.34907, -0.34907, -0.34907]
+}
+tracks/19/type = "value"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("Parts:visible")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"times": PackedFloat32Array(0.0, 0.39),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("Parts:modulate")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0.0, 0.06, 0.2, 0.38, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Color(1.42, 0.72, 0.72, 1.0), Color(1.0, 0.94, 0.94, 1.0), Color(0.95, 0.92, 0.96, 1.0), Color(0.9, 0.88, 0.92, 0.0), Color(0.9, 0.88, 0.92, 0.0)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("DeathSprite:visible")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0.0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("DeathSprite:position")
+tracks/22/interp = 2
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0.2, 0.42, 0.5, 0.6, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(-10.0, 46.0), Vector2(0.0, 76.0), Vector2(0.0, 70.0), Vector2(0.0, 72.0), Vector2(0.0, 72.0)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("DeathSprite:rotation")
+tracks/23/interp = 2
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0.2, 0.42, 0.56, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [-0.12217, 0.02094, 0.0, 0.0]
+}
+tracks/24/type = "value"
+tracks/24/imported = false
+tracks/24/enabled = true
+tracks/24/path = NodePath("DeathSprite:scale")
+tracks/24/interp = 2
+tracks/24/loop_wrap = true
+tracks/24/keys = {
+"times": PackedFloat32Array(0.2, 0.42, 0.5, 0.62, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(0.96, 1.04), Vector2(1.04, 0.94), Vector2(0.99, 1.01), Vector2(1.0, 1.0), Vector2(1.0, 1.0)]
+}
+tracks/25/type = "value"
+tracks/25/imported = false
+tracks/25/enabled = true
+tracks/25/path = NodePath("DeathSprite:modulate")
+tracks/25/interp = 1
+tracks/25/loop_wrap = true
+tracks/25/keys = {
+"times": PackedFloat32Array(0.0, 0.2, 0.38, 1.1),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Color(1.0, 1.0, 1.0, 0.0), Color(1.0, 1.0, 1.0, 0.0), Color(1.0, 1.0, 1.0, 1.0), Color(1.0, 1.0, 1.0, 1.0)]
+}
 
 [sub_resource type="AnimationLibrary" id="AnimLib_merchant"]
 _data = {
-&"die": SubResource("Anim_merchant_die"),
-&"relaxed_loop": SubResource("Anim_merchant_idle")
+&"RESET": SubResource("Anim_merchant_RESET"),
+&"relaxed_loop": SubResource("Anim_merchant_relaxed_loop"),
+&"die": SubResource("Anim_merchant_die")
 }
 
 [node name="WizardMerchant" type="Node2D"]
 script = ExtResource("1_wizmc")
 
-[node name="Icon" type="Sprite2D" parent="."]
-position = Vector2(-7, -250.3)
+[node name="Visuals" type="Node2D" parent="."]
+position = Vector2(-7.0, -250.3)
 scale = Vector2(0.875, 0.875)
-texture = ExtResource("2_wizmerchant")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+[node name="Parts" type="Node2D" parent="Visuals"]
+
+[node name="LegsBoots" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-21.0, 278.0)
+texture = ExtResource("3_legs_boots")
+centered = false
+offset = Vector2(-87.0, -128.0)
+
+[node name="LeftSleeve" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(30.0, -98.0)
+texture = ExtResource("4_left_sleeve")
+centered = false
+offset = Vector2(-20.0, -16.0)
+
+[node name="RobeLower" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-20.0, 12.0)
+texture = ExtResource("5_robe_lower")
+centered = false
+offset = Vector2(-88.0, -26.0)
+
+[node name="Torso" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-20.0, 8.0)
+texture = ExtResource("6_torso")
+centered = false
+offset = Vector2(-74.0, -162.0)
+
+[node name="Head" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-14.0, -132.0)
+texture = ExtResource("7_head")
+centered = false
+offset = Vector2(-48.0, -71.0)
+
+[node name="Hat" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-14.0, -186.0)
+texture = ExtResource("8_hat")
+centered = false
+offset = Vector2(-95.0, -92.0)
+
+[node name="Spellbook" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-48.0, -16.0)
+texture = ExtResource("9_spellbook")
+centered = false
+offset = Vector2(-27.0, -8.0)
+
+[node name="RightHand" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-108.0, 68.0)
+texture = ExtResource("10_right_hand")
+centered = false
+offset = Vector2(-27.0, -22.0)
+
+[node name="RightSleeve" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(-78.0, -98.0)
+texture = ExtResource("11_right_sleeve")
+centered = false
+offset = Vector2(-69.0, -21.0)
+
+[node name="Staff" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(106.0, -44.0)
+texture = ExtResource("12_staff")
+centered = false
+offset = Vector2(-36.0, -187.0)
+
+[node name="LeftForearmHand" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(46.0, -14.0)
+texture = ExtResource("13_left_forearm_hand")
+centered = false
+offset = Vector2(-9.0, -55.0)
+
+[node name="Gem" type="Sprite2D" parent="Visuals/Parts"]
+position = Vector2(126.0, -215.0)
+texture = ExtResource("14_gem")
+centered = false
+offset = Vector2(-14.0, -4.0)
+
+[node name="Skeleton2D" type="Skeleton2D" parent="Visuals"]
+
+[node name="BoneRoot" type="Bone2D" parent="Visuals/Skeleton2D"]
+position = Vector2(-21.0, 278.0)
+rest = Transform2D(1, 0, 0, 1, -21.0, 278.0)
+auto_calculate_length_and_angle = false
+length = 60.0
+bone_angle = 0.0
+
+[node name="RemoteLegsBoots" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot"]
+remote_path = NodePath("../../../Parts/LegsBoots")
+
+[node name="BonePelvis" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot"]
+position = Vector2(1.0, -266.0)
+rest = Transform2D(1, 0, 0, 1, 1.0, -266.0)
+auto_calculate_length_and_angle = false
+length = 35.0
+bone_angle = 0.0
+
+[node name="BoneRobeLower" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis"]
+position = Vector2(0.0, 0.0)
+rest = Transform2D(1, 0, 0, 1, 0.0, 0.0)
+auto_calculate_length_and_angle = false
+length = 160.0
+bone_angle = 0.0
+
+[node name="RemoteRobeLower" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneRobeLower"]
+remote_path = NodePath("../../../../../Parts/RobeLower")
+
+[node name="BoneTorso" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis"]
+position = Vector2(0.0, -4.0)
+rest = Transform2D(1, 0, 0, 1, 0.0, -4.0)
+auto_calculate_length_and_angle = false
+length = 120.0
+bone_angle = 0.0
+
+[node name="RemoteTorso" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso"]
+remote_path = NodePath("../../../../../Parts/Torso")
+
+[node name="BoneSpellbook" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso"]
+position = Vector2(-28.0, -24.0)
+rest = Transform2D(1, 0, 0, 1, -28.0, -24.0)
+auto_calculate_length_and_angle = false
+length = 45.0
+bone_angle = 0.0
+
+[node name="RemoteSpellbook" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneSpellbook"]
+remote_path = NodePath("../../../../../../Parts/Spellbook")
+
+[node name="BoneHead" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso"]
+position = Vector2(6.0, -140.0)
+rest = Transform2D(1, 0, 0, 1, 6.0, -140.0)
+auto_calculate_length_and_angle = false
+length = 55.0
+bone_angle = 0.0
+
+[node name="RemoteHead" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead"]
+remote_path = NodePath("../../../../../../Parts/Head")
+
+[node name="BoneHat" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead"]
+position = Vector2(0.0, -54.0)
+rest = Transform2D(1, 0, 0, 1, 0.0, -54.0)
+auto_calculate_length_and_angle = false
+length = 70.0
+bone_angle = 0.0
+
+[node name="RemoteHat" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneHead/BoneHat"]
+remote_path = NodePath("../../../../../../../Parts/Hat")
+
+[node name="BoneRightArm" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso"]
+position = Vector2(-58.0, -106.0)
+rest = Transform2D(1, 0, 0, 1, -58.0, -106.0)
+auto_calculate_length_and_angle = false
+length = 160.0
+bone_angle = 0.0
+
+[node name="RemoteRightSleeve" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm"]
+remote_path = NodePath("../../../../../../Parts/RightSleeve")
+
+[node name="BoneRightHand" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm"]
+position = Vector2(-30.0, 166.0)
+rest = Transform2D(1, 0, 0, 1, -30.0, 166.0)
+auto_calculate_length_and_angle = false
+length = 40.0
+bone_angle = 0.0
+
+[node name="RemoteRightHand" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneRightArm/BoneRightHand"]
+remote_path = NodePath("../../../../../../../Parts/RightHand")
+
+[node name="BoneLeftArm" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso"]
+position = Vector2(50.0, -106.0)
+rest = Transform2D(1, 0, 0, 1, 50.0, -106.0)
+auto_calculate_length_and_angle = false
+length = 85.0
+bone_angle = 0.0
+
+[node name="RemoteLeftSleeve" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm"]
+remote_path = NodePath("../../../../../../Parts/LeftSleeve")
+
+[node name="BoneLeftForearm" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm"]
+position = Vector2(16.0, 84.0)
+rest = Transform2D(1, 0, 0, 1, 16.0, 84.0)
+auto_calculate_length_and_angle = false
+length = 65.0
+bone_angle = 0.0
+
+[node name="RemoteLeftForearmHand" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm"]
+remote_path = NodePath("../../../../../../../Parts/LeftForearmHand")
+
+[node name="BoneStaff" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm"]
+position = Vector2(60.0, -30.0)
+rest = Transform2D(1, 0, 0, 1, 60.0, -30.0)
+auto_calculate_length_and_angle = false
+length = 170.0
+bone_angle = 0.0
+
+[node name="RemoteStaff" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff"]
+remote_path = NodePath("../../../../../../../../Parts/Staff")
+
+[node name="BoneGem" type="Bone2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff"]
+position = Vector2(20.0, -171.0)
+rest = Transform2D(1, 0, 0, 1, 20.0, -171.0)
+auto_calculate_length_and_angle = false
+length = 55.0
+bone_angle = 0.0
+
+[node name="RemoteGem" type="RemoteTransform2D" parent="Visuals/Skeleton2D/BoneRoot/BonePelvis/BoneTorso/BoneLeftArm/BoneLeftForearm/BoneStaff/BoneGem"]
+remote_path = NodePath("../../../../../../../../../Parts/Gem")
+
+[node name="DeathSprite" type="Sprite2D" parent="Visuals"]
+visible = false
+position = Vector2(0.0, 72.0)
+texture = ExtResource("2_wizdie")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visuals"]
+root_node = NodePath("..")
 libraries = {
 &"": SubResource("AnimLib_merchant")
 }
+autoplay = &"relaxed_loop"

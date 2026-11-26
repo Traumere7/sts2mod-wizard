@@ -96,11 +96,21 @@ internal static class WizardMerchantPlayAnimationPatch
 
             if (anim is "die" or "Die")
             {
-                // 结算界面要播的死亡动画 → 用战败贴图代替。
+                // 结算界面要播的死亡动画：骨骼版播完整 die 倒地动画，静态版换战败贴图。
                 WizardDeathSprite.SwapAll(__instance);
             }
+            else if (WizardAnimController.TryGetRiggedAnimPlayer(__instance, out AnimationPlayer rigAnim)
+                     && rigAnim.HasAnimation("relaxed_loop"))
+            {
+                // 骨骼版商店待机：确保 relaxed_loop 正在循环播放（进店时已 autoplay，此处幂等保底）。
+                WizardAnimController.EnsureInitialized(rigAnim);
+                if (rigAnim.CurrentAnimation != "relaxed_loop" || !rigAnim.IsPlaying())
+                {
+                    rigAnim.Play("relaxed_loop");
+                }
+            }
 
-            // 其余动画（relaxed_loop 等）忽略：静态立绘没有可播的东西。
+            // 其余动画忽略（绝不放行到原始 Spine 路径）。
             return false;
         }
         catch (Exception e)
@@ -250,7 +260,13 @@ internal static class WizardMerchantGuard
             }
         }
 
-        // 证据 ②：立绘节点名 + 贴图来自本 mod
+        // 证据 ②：骨骼版商店场景（Visuals 下含 Parts + Skeleton2D + AnimationPlayer）
+        if (WizardAnimController.TryGetRiggedAnimPlayer(node, out _))
+        {
+            return true;
+        }
+
+        // 证据 ③：静态版立绘节点名 + 贴图来自本 mod（B 版回退场景）
         //   ⚠️ 用 GetNodeOrNull（不是递归查找）：我们的场景里 Icon 是直接子级。
         if (node.GetNodeOrNull<Sprite2D>(MerchantSpriteName) is { } sprite)
         {

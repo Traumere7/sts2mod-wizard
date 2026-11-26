@@ -79,25 +79,45 @@ public class WizardCharacter : PlaceholderCharacterModel
 
     /// <summary>
     /// 战斗人物场景。
-    /// A 版（默认）使用 Godot 原生 2D 骨骼动画场景；
-    /// 若已挂载 B 版替换美术包且 B 版尚未制作独立骨骼场景，则回退到静态立绘场景（吃 B 版 wizard_battle.png）。
+    /// A 版（默认）使用 A 版 Godot 原生 2D 骨骼动画场景；
+    /// 若已挂载 B 版替换美术包：优先加载 B 版独立骨骼场景（wizard_character_alt_rig.tscn），
+    /// 若缺失则安全回退到静态立绘场景（wizard_character_static.tscn，吃 B 版 wizard_battle.png）。
     /// </summary>
     public override string CustomVisualPath =>
-        Entry.AltArtMounted && !ResourceLoader.Exists("res://Wizard/scenes/wizard_character_alt_rig.tscn")
-            ? "res://Wizard/scenes/wizard_character_static.tscn"
+        Entry.AltArtMounted
+            ? (ResourceLoader.Exists("res://Wizard/scenes/wizard_character_alt_rig.tscn")
+                ? "res://Wizard/scenes/wizard_character_alt_rig.tscn"
+                : "res://Wizard/scenes/wizard_character_static.tscn")
             : "res://Wizard/scenes/wizard_character.tscn";
 
     /// <summary>能量表盘场景。</summary>
     public override string CustomEnergyCounterPath => "res://Wizard/scenes/wizard_energy_counter.tscn";
 
-    /// <summary>商店人物场景。</summary>
-    public override string CustomMerchantAnimPath => "res://Wizard/scenes/wizard_character_merchant.tscn";
+    /// <summary>
+    /// 商店人物场景。
+    /// A 版（默认）使用 A 版 Godot 原生 2D 骨骼待机场景；
+    /// 若已挂载 B 版替换美术包：优先加载 B 版独立商店骨骼场景（wizard_character_merchant_alt_rig.tscn），
+    /// 若缺失则安全回退到静态立绘场景（wizard_character_merchant_static.tscn，吃 B 版 wizard_shop.png）。
+    /// </summary>
+    public override string CustomMerchantAnimPath =>
+        Entry.AltArtMounted
+            ? (ResourceLoader.Exists("res://Wizard/scenes/wizard_character_merchant_alt_rig.tscn")
+                ? "res://Wizard/scenes/wizard_character_merchant_alt_rig.tscn"
+                : "res://Wizard/scenes/wizard_character_merchant_static.tscn")
+            : "res://Wizard/scenes/wizard_character_merchant.tscn";
 
     /// <summary>篝火休息场景。</summary>
     public override string CustomRestSiteAnimPath => "res://Wizard/scenes/wizard_character_rest_site.tscn";
 
-    /// <summary>角色选择背景。</summary>
-    public override string CustomCharacterSelectBg => "res://Wizard/scenes/wizard_bg.tscn";
+    /// <summary>
+    /// 角色选择背景。
+    /// A 版维持紫色奥术微粒（wizard_bg.tscn）；
+    /// B 版若挂载了独立选人背景场景（wizard_bg_alt.tscn），改用淡紫色呼吸光晕与上浮柔光粒子。
+    /// </summary>
+    public override string CustomCharacterSelectBg =>
+        Entry.AltArtMounted && ResourceLoader.Exists("res://Wizard/scenes/wizard_bg_alt.tscn")
+            ? "res://Wizard/scenes/wizard_bg_alt.tscn"
+            : "res://Wizard/scenes/wizard_bg.tscn";
 
     /// <summary>游戏左上角头像 / 角色统计页头像 / 每日挑战头像。</summary>
     public override string CustomIconPath => "res://Wizard/scenes/wizard_icon.tscn";
@@ -113,6 +133,19 @@ public class WizardCharacter : PlaceholderCharacterModel
 
     /// <summary>地图上的角色标记图标、表情轮盘头像。</summary>
     public override string? CustomMapMarkerPath => "res://Wizard/images/ui/map_marker_wizard.png";
+
+    // ── 宝箱房 / 多人抢遗物伸出的手（422x1200 RGBA） ──
+    /// <summary>宝箱房指向遗物的手（单指指物）。</summary>
+    public override string CustomArmPointingTexturePath => "res://Wizard/images/ui/hands/multiplayer_hand_wizard_point.png";
+
+    /// <summary>多人抢遗物猜拳：石头。</summary>
+    public override string CustomArmRockTexturePath => "res://Wizard/images/ui/hands/multiplayer_hand_wizard_rock.png";
+
+    /// <summary>多人抢遗物猜拳：布。</summary>
+    public override string CustomArmPaperTexturePath => "res://Wizard/images/ui/hands/multiplayer_hand_wizard_paper.png";
+
+    /// <summary>多人抢遗物猜拳：剪刀。</summary>
+    public override string CustomArmScissorsTexturePath => "res://Wizard/images/ui/hands/multiplayer_hand_wizard_scissors.png";
 
     // ── 三卡池 ──
     public override CardPoolModel CardPool => ModelDb.CardPool<WizardCardPool>();

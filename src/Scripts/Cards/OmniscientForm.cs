@@ -54,16 +54,9 @@ public class OmniscientForm : WizardCardModel
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)
     {
         await CreatureCmd.TriggerAnim(Owner.Creature, "PowerUp", Owner.Character.PowerUpAnimDelay);
-        // 演出（G04）：「形态展开」——
-        // 原版形态牌（恶魔/回响/虚空/收割者/蛇）用的是 NFormVfx 光环，
-        // 但它按**原版角色的 spine 骨骼名**绑定（NFormVfx.Initialize 里要求
-        // NCreatureVisuals.HasSpineAnimation），巫师是自绘 Sprite2D 立绘，绑不上。
-        // 所以退而求其次：用原版「噩梦」的整屏紫烟暗角 + 「大风车」的扫掠线做一次登场演出。
-        WizardVfx.SmokyVignette(
-            new Color(0.45f, 0.22f, 0.8f, 0.55f),
-            new Color(0.08f, 0f, 0.35f, 0.32f));
-        WizardVfx.HorizontalLines(WizardVfx.ArcaneTint, 1.2);
 
+        // 持续形态光环由 OmniscientFormPower.AfterApplied 挂载原版 NReaperFormVfx（主体）
+        // 并叠加拆分染紫的 serpent_form 扩散脉动光环，每次触发回费抽牌时同步脉动爆发。
         await PowerCmd.Apply<OmniscientFormPower>(
             choiceContext,
             Owner.Creature,

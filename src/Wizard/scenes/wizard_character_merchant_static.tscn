@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3 uid="uid://bwiz0merchant2"]
+
+[ext_resource type="Script" path="res://src/Core/Nodes/Screens/Shops/NMerchantCharacter.cs" id="1_wizmc"]
+[ext_resource type="Texture2D" path="res://Wizard/images/characters/wizard_shop.png" id="2_wizmerchant"]
+
+; 静态商店立绘回退场景：
+; 当启用替换美术包（B 版）且尚未制作 B 版商店骨骼动画时，由 WizardCharacter.CustomMerchantAnimPath 使用，
+; 确保 B 版伊蕾娜商店立绘（wizard_shop.png）不受 A 版骨骼改造影响。
+
+[sub_resource type="Animation" id="Anim_merchant_die"]
+resource_name = "die"
+length = 0.1
+loop_mode = 0
+
+[sub_resource type="Animation" id="Anim_merchant_idle"]
+resource_name = "relaxed_loop"
+length = 0.1
+loop_mode = 1
+
+[sub_resource type="AnimationLibrary" id="AnimLib_merchant"]
+_data = {
+&"die": SubResource("Anim_merchant_die"),
+&"relaxed_loop": SubResource("Anim_merchant_idle")
+}
+
+[node name="WizardMerchant" type="Node2D"]
+script = ExtResource("1_wizmc")
+
+[node name="Icon" type="Sprite2D" parent="."]
+position = Vector2(-7, -250.3)
+scale = Vector2(0.875, 0.875)
+texture = ExtResource("2_wizmerchant")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimLib_merchant")
+}

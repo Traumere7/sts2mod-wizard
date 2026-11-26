@@ -4956,6 +4956,12 @@ _data = {
 [node name="WizardCharacter" type="Node2D"]
 script = ExtResource("1_wizncv")
 
+[node name="FormVfx" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+
 [node name="Visuals" type="Node2D" parent="."]
 unique_name_in_owner = true
 position = Vector2(42.2, -173)
