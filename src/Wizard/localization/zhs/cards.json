@@ -71,7 +71,7 @@
   "WIZARD-FLAME_SPARK.title": "火苗",
   "WIZARD-FLASHBURST.description": "造成{Damage:diff()}点[orange]火焰伤害[/orange]。\n给予{BurnPower:diff()}层[gold]燃烧[/gold]。",
   "WIZARD-FLASHBURST.title": "闪爆",
-  "WIZARD-FLICKER.description": "造成{Damage:diff()}点[blue]雷电伤害[/blue]。\n你每生成2张卡牌，就把这张牌从你的[gold]抽牌堆[/gold]或[gold]弃牌堆[/gold]放入你的[gold]手牌[/gold]。",
+  "WIZARD-FLICKER.description": "造成{Damage:diff()}点[blue]雷电伤害[/blue]。\n你每生成2张卡牌，就把这张牌放入你的[gold]手牌[/gold]。",
   "WIZARD-FLICKER.title": "灵光",
   "WIZARD-FORGET_ME_NOT.description": "从你的[gold]消耗牌堆[/gold]选最多{Cards:diff()}张牌加入你的[gold]手牌[/gold]。\n将1张[gold]失忆[/gold]加入你的[gold]弃牌堆[/gold]。",
   "WIZARD-FORGET_ME_NOT.selectionScreenPrompt": "选择最多{Amount}张牌加入你的[gold]手牌[/gold]。",
