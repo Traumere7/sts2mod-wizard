@@ -54,6 +54,12 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class Endnote : WizardCardModel
 {
+    /// <summary>
+    /// 被消耗时有额外收益 ⇒ 在「选择消耗的卡牌」界面里金边亮起
+    /// （仿原版「奇巧」在丢弃选择时亮起）。
+    /// </summary>
+    public override bool GlowsOnExhaustSelection => true;
+
     private const int Cost = 1;
 
     /// <summary>打出时抽的牌数（固定，不随升级变化）。</summary>

@@ -14,8 +14,8 @@ using Wizard.Scripts.Utils;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 永恒回响 - 1 费 - 能力 - 稀有
-/// 选择你的 1 张手牌附魔：复奏（重放 2）。即毁。升级后获得「保留」。
+/// 永恒回响 - 2(1) 费 - 能力 - 稀有
+/// 选择你的 1 张手牌附魔：复奏（重放 2）。即毁。升级：2 费 → 1 费（不再获得「保留」）。
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
@@ -58,7 +58,7 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class EternalEcho : WizardCardModel
 {
-    private const int Cost = 1;
+    private const int Cost = 2;
 
     /// <summary>「即毁」是引擎级自定义词条（见 <see cref="WizardKeywords.Obliterate"/>）。</summary>
     public override IEnumerable<CardKeyword> CanonicalKeywords =>
@@ -180,11 +180,10 @@ public class EternalEcho : WizardCardModel
     }
 
     /// <summary>
-    /// 升级：获得「保留」（与「镜像」「燃烧之魂」同样处理 —— 升级不加数值，只给词条）。
-    /// ⚠️ 词条由引擎渲染，**不写进文案**。
+    /// 升级：**费用 2 → 1**（2026-11-27 用户改版：不再给予「保留」）。
     /// </summary>
     protected override void OnUpgrade()
     {
-        AddKeyword(CardKeyword.Retain);
+        EnergyCost.UpgradeBy(-1);
     }
 }

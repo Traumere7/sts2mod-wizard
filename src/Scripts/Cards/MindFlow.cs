@@ -74,6 +74,12 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class MindFlow : WizardCardModel
 {
+    /// <summary>
+    /// 被消耗时有额外收益 ⇒ 在「选择消耗的卡牌」界面里金边亮起
+    /// （仿原版「奇巧」在丢弃选择时亮起）。
+    /// </summary>
+    public override bool GlowsOnExhaustSelection => true;
+
     /// <summary>X 费卡：baseCost 传 0，真实费用在打出时由 X 决定。</summary>
     private const int Cost = 0;
 

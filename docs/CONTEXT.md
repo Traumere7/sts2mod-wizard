@@ -6202,3 +6202,48 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 - `dotnet build` 0 错误；`build.ps1` 部署成功（pck `C965278B` / dll `9F9A04BF`）。
 - 启动自检：**19/19 补丁**、无异常、无缺失文案。
 - 未实机验证：燃烧吃易伤/寒冷后的实际数值、血条预测段长度、实时刷新时机（需战斗内测试）。
+
+---
+
+## 55. 2026-11-27（二）永恒回响改费 + 「消耗选择」时尾注/心流亮起
+
+### 55.1 永恒回响 `EternalEcho`
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 基础费用 | 1 | **2** |
+| 升级 | 获得「保留」 | **费用 2 → 1**（不再给「保留」） |
+
+- `Cost = 2`；`OnUpgrade` 从 `AddKeyword(Retain)` 改为 `EnergyCost.UpgradeBy(-1)`。
+- 文案不变（费用由引擎渲染，且原文案本来就没写「保留」）。
+
+### 55.2 「选择消耗的卡牌」时「尾注」「心流」金边亮起
+
+**目标**：仿原版「奇巧」<c>Sly</c> 在"选择丢弃的卡牌"时边缘亮起 ——
+本次让"被消耗有额外收益"的牌在 **`TO_EXHAUST`** 选牌界面亮起。
+
+**原版机制**：
+- 手牌金边由 `NHandCardHolder.ShouldGlowGold` 决定：
+  ① `NPlayerHand.SelectModeGoldGlowOverride` 非空 ⇒ 用它；
+  ② 否则退回 `CardModel.ShouldGlowGold`。
+- `SelectModeGoldGlowOverride` 就是 `NPlayerHand._prefs.ShouldGlowGold`（`NPlayerHand.cs:518`）。
+- 原版只在"丢弃"等少数选择里设置该谓词，**没有任何地方为 `TO_EXHAUST` 设置它**。
+
+**实现**（`Patches/ExhaustSelectionGlowPatch.cs`）：
+- 新增 `WizardCardModel.GlowsOnExhaustSelection`（默认 false），
+  「尾注」`Endnote`、「心流」`MindFlow` 覆盖为 `true`。
+- Harmony **Postfix** 挂在 `NPlayerHand.SelectModeGoldGlowOverride` 的 **getter** 上：
+  原有谓词非空 → 不动；否则读私有字段 `_prefs`（`AccessTools.FieldRefAccess`），
+  若 `Prompt` 是 `card_selection / TO_EXHAUST` ⇒ 返回
+  `card is WizardCardModel w && w.GlowsOnExhaustSelection`。
+- ⚠️ **没有**用 `CardSelectCmd.FromHand` + `ref` 前缀：那是 async 方法，
+  ref 修改 struct 参数依赖状态机回写、行为不确定；
+  改同步 getter 后读到的正是选牌时真正生效的 `_prefs`。
+- 覆盖面：本 mod 的「占卜」「顿悟」「沉思」「真理派对」，以及原版「烙印」「燃契」
+  「真言」「拾荒」等所有消耗选择。
+
+### 55.3 自检
+
+- `dotnet build` 0 错误；`build.ps1` 部署成功（pck `729D6C4C` / dll `80CF7C61`）。
+- 启动自检：**20/20 补丁**（新增 `ExhaustSelectionGlowPatch -> 1 个方法`），无异常。
+- 待实机验证：消耗选择界面里尾注/心流是否金边亮起；永恒回响 2 费/升级 1 费、无「保留」。
