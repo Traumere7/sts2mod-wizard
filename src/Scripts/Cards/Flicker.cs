@@ -95,10 +95,9 @@ public class Flicker : WizardSpellCard
 
         _generatedSinceReturn -= GeneratedPerReturn;
 
-        CardPileAddResult result = await CardPileCmd.Add(this, PileType.Hand);
-
-        // ★ 飞牌演出 + 手牌/牌堆计数即时刷新（与「梦魇」同款）。
-        CardCmd.PreviewCardPileAdd(result);
+        // ⚠️ 不加 CardCmd.PreviewCardPileAdd —— 那会在屏幕中央生成一张"特写"卡牌再飞向手牌；
+        // 用户 2026-11-26 明确：灵光回手不需要这个特写，直接从抽牌堆/弃牌堆进手牌即可。
+        await CardPileCmd.Add(this, PileType.Hand);
     }
 
     protected override async Task OnPlay(PlayerChoiceContext choiceContext, CardPlay cardPlay)

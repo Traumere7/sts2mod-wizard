@@ -6095,3 +6095,17 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 - `dotnet build` 0 错误；`build.ps1` 部署成功（pck `E08945C5` / dll `9FF3EC31`）。
 - pck 字节核验：两张卡的新文案均在包内。
 - 本次没有新增模型/能力，未再启动游戏做启动自检（签名由编译保证）。
+
+---
+
+## 52. 2026-11-26（三）灵光：回手时移除卡牌特写
+
+问题（用户报告）：灵光 `Flicker` 被效果放入手牌时，会播放一次屏幕中央的卡牌**特写/飞牌**演出，没必要。
+
+根因：回手用的是
+<code>CardPileCmd.Add(this, PileType.Hand)</code> +
+<code>CardCmd.PreviewCardPileAdd(result)</code>（照「梦魇」抄的），
+后者会 `PreviewInternal(..., isAddingCardsToPile: true)` 在屏幕中央生成一张缩放卡再飞向牌堆。
+
+修法：**去掉 `PreviewCardPileAdd`**，只保留 `CardPileCmd.Add`。
+（没有用 `CardPreviewStyle.None` 是更干净：连"进堆预览"这一步都不进，直接从抽牌堆/弃牌堆回到手牌。）
