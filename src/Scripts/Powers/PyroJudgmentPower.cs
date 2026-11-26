@@ -25,7 +25,7 @@ namespace Wizard.Scripts.Powers;
 ///   </item>
 ///   <item>
 ///     <term><b>燃烧量</b></term>
-///     <description><see cref="BurnRateKey"/> 变量。卡牌施加时写入初值（3，升级 4），
+///     <description><see cref="BurnRateKey"/> 变量。卡牌施加时写入初值（4，升级 5），
 ///       之后每回合 +成长值。</description>
 ///   </item>
 /// </list>
@@ -34,7 +34,7 @@ namespace Wizard.Scripts.Powers;
 /// <b>为什么让 <c>Amount</c> 当成长值，而不是"<c>Amount</c>=燃烧量、另存成长"：</b>
 /// <c>PowerStackType.Counter</c> 已经把"每张 +1"这个语义免费给出来了 ——
 /// 一张 = 成长 1、两张 = 成长 2。
-/// 反过来若把燃烧量放 <c>Amount</c>，第二张会让燃烧量翻倍（3→6），与设计不符；
+/// 反过来若把燃烧量放 <c>Amount</c>，第二张会让燃烧量翻倍（4→8），与设计不符；
 /// 而且还得从 <c>Amount</c> 反推施加次数，那个除法在升级后会算错。
 /// <b>早期实现就是那样，实测反馈"两个都加、很混乱"。</b>
 /// </para>
@@ -42,9 +42,9 @@ namespace Wizard.Scripts.Powers;
 /// <para>
 /// <b>期望数值</b>：
 /// <list type="bullet">
-///   <item>单张：每回合给 3 层燃烧；燃烧量每回合 +1</item>
-///   <item>两张：每回合给 3 层燃烧；燃烧量每回合 +2</item>
-///   <item>升级：只提高初始燃烧量（3 → 4），不影响成长</item>
+///   <item>单张：每回合给 4 层燃烧；燃烧量每回合 +1</item>
+///   <item>两张：每回合给 4 层燃烧；燃烧量每回合 +2</item>
+///   <item>升级：只提高初始燃烧量（4 → 5），不影响成长</item>
 /// </list>
 /// </para>
 ///
@@ -80,7 +80,7 @@ public class PyroJudgmentPower : CustomPowerModel
     public const int GrowthPerApplication = 1;
 
     /// <summary>未升级「火刑」写入的初始燃烧量。</summary>
-    public const int InitialBurnRate = 3;
+    public const int InitialBurnRate = 4;
 
     public override PowerType Type => PowerType.Buff;
 
@@ -96,7 +96,7 @@ public class PyroJudgmentPower : CustomPowerModel
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
         // 每回合施加的燃烧层数。初值 = 未升级卡牌的初始燃烧量，
-        // 卡牌施加时会把真实初值写进来（升级后是 4）。
+        // 卡牌施加时会把真实初值写进来（升级后是 5）。
         new DynamicVar(BurnRateKey, InitialBurnRate),
     ];
 

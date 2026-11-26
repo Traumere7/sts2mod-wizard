@@ -5991,3 +5991,57 @@ System.Exception: Model Wizard.Scripts.Relics.AquaHeart
 - 新踩的坑继续写 **CONTEXT.md**（这是长期日志）；
 - 若某类坑反复出现，再提炼进 **HANDOVER.md** 的速查表；
 - `docs/README.md` 只做索引，不写内容。
+
+---
+
+## 49. 2026-11-26 平衡同步 + 五张新卡（白夜 / 电弧 / 薪柴 / 流火 / 灵光）
+
+### 49.1 design.md 同步：两张只改文档，代码不动
+
+design.md 这轮有两处是**把文档同步到现状**，不是新改动：
+
+| 卡 | 文档新文案 | 代码现状 |
+|---|---|---|
+| 魔力爆发 `ManaBurst` | `2（1）` 费、无「消耗」 | 已是：`Cost = 2`、`OnUpgrade` 里 `EnergyCost.UpgradeBy(-1)`、无 `Exhaust` |
+| 降雷 `LightningFall` | 无「虚无」 | 已是：2026-10-17 起就去掉了 `Ethereal`（类注释里留了记录） |
+
+⇒ 这两张**没有改代码**，仅确认一致。
+
+### 49.2 数值调整（4 张）
+
+| 卡 | 项 | 旧 → 新 | 代码落点 |
+|---|---|---|---|
+| 火刑 `PyroJudgment` | 每回合初始燃烧 | 3(4) → **4(5)** | `PyroJudgmentPower.InitialBurnRate = 4`（升级 +1 不变） |
+| 天火浩荡 `SkyfireRampage` | 费用 | 4 → **3** | `Cost = 3` |
+| 天火浩荡 | 增加燃烧 | 10(12) → **7(9)** | `BurnToAdd = 7`（`UpgradeAdd = 2` 不变） |
+| 天火浩荡 | 立刻结算 | 1 次 → **2 次** | 新增 `TriggerTimes = 2`，第二趟改成外层循环两次（燃烧 `Trigger` 不消耗层数，且每段重读 `GetPower` 并查存活） |
+| 屏蔽 `Screen` | 格挡 | 5(7) → **7(10)** | `BlockVar(7m)`、升级 `+3m` |
+| 书签 `Bookmark` | 格挡 | 7(9) → **9(11)** | `BaseBlock = 9m`（升级 +2 不变） |
+
+### 49.3 五张新卡
+
+| 卡 | 费 / 稀有 / 类型 | 实现要点 |
+|---|---|---|
+| 白夜 `WhiteNight` | 1 / 罕见 / 攻击（寒冰） | 两段**独立** `DamageCmd`：第一段必打；出牌瞬间记录 `target.GetPowerAmount<BurnPower>() > 0`，有燃烧且目标仍存活才打第二段并 `Apply<ChillPower>(2→3)`。升级：伤害 11→13、寒冷 2→3 |
+| 电弧 `ElectricArc` | 1 / 罕见 / 攻击（雷电） | **先** `Apply<CurrentOverflowPower>(3→4)`，**再**打 7→9 雷伤 —— 这一发能吃到刚挂上的电流外溢 |
+| 薪柴 `Kindling` | 1 / 稀有 / 能力 | `KindlingPower`（1→2）：`AfterDamageGiven` 里筛 `dealer == Owner`、`SpellProps.HasSchool(..., Fire)`、`result.TotalDamage > 0`、目标已有燃烧；加层用**天火浩荡同款** `BurnPower.ApplyAbsolute(现值 + Amount)` + 手动 `WizardEvents.RaiseBurnApplied`（用户 2026-11-26 明确要求"和天火浩荡同类型的增加燃烧方法"） |
+| 流火 `Wildfire` | 3 / 罕见 / 攻击（火焰） | 群体 3 段（`TargetingAllOpponents` + `WithHitCount(3)`）。动态费用：覆写 `TryModifyEnergyCostInCombatLate`，用 `History.Entries.OfType<CardExhaustedEntry>().Count(Actor == Owner.Creature)` 现算，不缓存状态（同名牌/克隆/中途生成的副本天然一致）。升级：每段 6→7 |
+| 灵光 `Flicker` | 0 / 普通 / 攻击（雷电） | 覆写 `AfterCardGeneratedForCombat`：`creator == Owner`、非自己、**且当前在抽牌堆或弃牌堆**（消耗堆不拉回，用户 2026-11-26 明确）；每 2 张 → `CardPileCmd.Add(this, Hand)` + `PreviewCardPileAdd`。计数在 `AfterCreated()` 归零（防克隆继承）。升级：5→7 |
+
+**薪柴的递归安全**：燃烧结算伤害是 `Unblockable | Unpowered`、**不带** `SpellProps.Fire`，所以不会自己喂自己；`WizardEvents.BurnApplied` 的订阅者（纵火狂给活力、伟大法袍给格挡、诅咒石板、全知形态）都不产生火焰伤害。
+
+### 49.4 美术 / 文案
+
+- 卡图：用户已放好（`images/cards/{WhiteNight,ElectricArc,Kindling,Wildfire,Flicker}.png`）。
+- 薪柴能力图标缺失，已用与其它能力图标一致的风格生成：
+  `images/powers/kindling_power.png`(64) + `kindling_power_big.png`(128)
+  （生成脚本 `reference/tools/make_kindling_power_icon.py`，不入库）。
+- `zhs` / `eng` 各 +10 个卡牌键、+3 个能力键；天火浩荡文案「一次」→「两次」。
+
+### 49.5 自检
+
+- `dotnet build` 0 错误；`build.ps1` 部署成功（pck `7DAF0BF0` / dll `03D6585E`）。
+- pck 字节核验：5 张卡图、薪柴能力图标、新文案均在包内。
+- 启动自检：**19/19 补丁**、无 `Missing localization`、无异常。
+  ⚠️ 当时用户的 `settings.save` 里所有 mod 都被禁用（`mod_settings.mod_list` 全 false），
+  自检时**临时**把 `BaseLib` 条目置 true、跑完启动后**原样恢复**（`settings.save` 内容未留改动）。

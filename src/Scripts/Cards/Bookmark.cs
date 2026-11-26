@@ -13,7 +13,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 书签 / Bookmark - 1 费 - 技能 - 罕见
-/// 获得 7(9) 点格挡。给手牌中的 1(2) 张牌添加[gold]保留[/gold]。
+/// 获得 9(11) 点格挡。给手牌中的 1(2) 张牌添加[gold]保留[/gold]。
 ///
 /// <para>
 /// <b>「添加保留」照抄原版「响指」<c>Snap</c>：</b>
@@ -60,8 +60,8 @@ public class Bookmark : WizardCardModel
 {
     private const int Cost = 1;
 
-    /// <summary>基础格挡（升级 +2 → 9）。</summary>
-    private const decimal BaseBlock = 7m;
+    /// <summary>基础格挡（升级 +2 → 11）。</summary>
+    private const decimal BaseBlock = 9m;
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
     [
@@ -111,7 +111,7 @@ public class Bookmark : WizardCardModel
 
     protected override void OnUpgrade()
     {
-        // 7 → 9；张数 1 → 2
+        // 9 → 11；张数 1 → 2
         DynamicVars.Block.UpgradeValueBy(2m);
         DynamicVars.Cards.UpgradeValueBy(1m);
     }

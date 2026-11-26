@@ -15,8 +15,8 @@ using Wizard.Scripts.Utils;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 天火浩荡 - 4 费 - 技能 - 稀有
-/// 将所有敌人的燃烧<b>增加</b> 10（12）层。立刻触发一次燃烧结算。消耗。
+/// 天火浩荡 - 3 费 - 技能 - 稀有
+/// 将所有敌人的燃烧<b>增加</b> 7（9）层。立刻触发两次燃烧结算。消耗。
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
@@ -24,12 +24,12 @@ namespace Wizard.Scripts.Cards;
 /// ══════════════════════════════════════════════════════════════════
 /// 本 mod 的燃烧是"<b>取高值、不叠加</b>"的（见 <see cref="BurnPower"/>）：
 /// <c>ApplyBurn</c> 的语义是"把层数<b>设为</b> max(现值, 请求值)"。
-/// 若这里调它，则目标已有 15 层燃烧时施加 10 层 ⇒ 仍是 15 层 ⇒ <b>根本没"增加"</b>，
-/// 与设计文案「增加 10 层」直接冲突。
+/// 若这里调它，则目标已有 15 层燃烧时施加 7 层 ⇒ 仍是 15 层 ⇒ <b>根本没"增加"</b>，
+/// 与设计文案「增加 7 层」直接冲突。
 ///
 /// 所以本牌走 <c>ApplyAbsolute(现值 + 增量)</c> —— 把"加算"在调用方算好，
 /// 再交给那个"取高值"的收口。因为 <c>现值 + 增量 &gt; 现值</c> 恒成立，
-/// 取高值的结果<b>必然</b>是"真的加了 10 层"。
+/// 取高值的结果<b>必然</b>是"真的加了 7 层"。
 /// </para>
 ///
 /// <para>
@@ -45,8 +45,8 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
-/// ⚠️ <b>本牌会触发「纵火狂」等"每当给予燃烧时"的效果 10 次吗？</b>
-/// 不会 —— 只触发 <b>1 次</b>。因为这里是<b>一次</b> <c>ApplyAbsolute(现值+10)</c>，
+/// ⚠️ <b>本牌会触发「纵火狂」等"每当给予燃烧时"的效果 7 次吗？</b>
+/// 不会 —— 只触发 <b>1 次</b>。因为这里是<b>一次</b> <c>ApplyAbsolute(现值+7)</c>，
 /// 而 <c>SpellCmd.ApplyBurn</c> 才负责在施加后发<b>一次</b>
 /// <c>WizardEvents.BurnApplied</c>。本牌自己发事件（见 <see cref="OnPlay"/>），
 /// 所以口径与"用一张牌给敌人上燃烧"完全一致：<b>一个目标一次</b>。
@@ -54,7 +54,7 @@ namespace Wizard.Scripts.Cards;
 ///
 /// <para>
 /// ══════════════════════════════════════════════════════════════════
-/// 「立刻触发一次燃烧结算」照抄原版「毒性爆发」<c>Outbreak</c>
+/// 「立刻触发两次燃烧结算」照抄原版「毒性爆发」<c>Outbreak</c>
 /// ══════════════════════════════════════════════════════════════════
 /// 原版实现（<c>Outbreak.cs</c>，3 费稀有技能，效果是"给全体上毒 + 立刻触发一次中毒"）：
 /// <code>
@@ -76,7 +76,7 @@ namespace Wizard.Scripts.Cards;
 ///
 /// <para>
 /// ⚠️ <b>结算发生在层数增加<b>之后</b></b>：所以这次立刻结算烧的是
-/// "加完 10 层后"的层数 —— 设计文案「增加 10 层。立刻触发一次」的语序就是这个意思。
+/// "加完 7 层后"的层数 —— 设计文案「增加 7 层。立刻触发两次」的语序就是这个意思。
 /// </para>
 ///
 /// <para>
@@ -88,14 +88,17 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class SkyfireRampage : WizardSpellCard
 {
-    /// <summary>4 费。</summary>
-    private const int Cost = 4;
+    /// <summary>3 费。</summary>
+    private const int Cost = 3;
 
     /// <summary>基础增加层数（升级前）。</summary>
-    private const int BurnToAdd = 10;
+    private const int BurnToAdd = 7;
 
-    /// <summary>升级后额外增加（10 → 12）。</summary>
+    /// <summary>升级后额外增加（7 → 9）。</summary>
     private const int UpgradeAdd = 2;
+
+    /// <summary>打出后立刻结算几次燃烧（design：两次）。</summary>
+    private const int TriggerTimes = 2;
 
     /// <summary>
     /// 变量名用 <c>nameof(BurnPower)</c>（= "BurnPower"），
@@ -177,13 +180,23 @@ public class SkyfireRampage : WizardSpellCard
             }
         }
 
-        // ── 第二趟：再逐个立刻结算一次（照抄 Outbreak 的两趟结构）──
-        foreach (Creature enemy in targets)
+        // ── 第二趟：再逐个立刻结算两次（design：立刻触发两次燃烧结算）──
+        // 燃烧的 Trigger 不消耗层数，所以两次就是双倍结算；
+        // 每次都要重读 <c>GetPower</c> 并检查存活 —— 第一段可能已经打死目标。
+        for (int i = 0; i < TriggerTimes; i++)
         {
-            BurnPower? burn = enemy.GetPower<BurnPower>();
-            if (burn != null)
+            foreach (Creature enemy in targets)
             {
-                await burn.Trigger();
+                if (!enemy.IsAlive)
+                {
+                    continue;
+                }
+
+                BurnPower? burn = enemy.GetPower<BurnPower>();
+                if (burn != null)
+                {
+                    await burn.Trigger();
+                }
             }
         }
     }

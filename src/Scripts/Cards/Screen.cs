@@ -14,7 +14,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 屏蔽 - 1 费 - 技能 - 普通
-/// 获得 5(7) 点格挡。给予所有敌人 1(2) 层电流外溢。
+/// 获得 7(10) 点格挡。给予所有敌人 1(2) 层电流外溢。
 ///
 /// <para>
 /// <b>电流外溢挂在"被打的敌人"身上</b>（对照本 mod 的「雷光」<see cref="LightningBolt"/>：
@@ -34,7 +34,7 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
-/// <b>升级只涨格挡与层数</b>：5 → 7 格挡、1 → 2 层电流外溢（按设计文档）。
+/// <b>升级只涨格挡与层数</b>：7 → 10 格挡、1 → 2 层电流外溢（按设计文档）。
 /// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
@@ -46,7 +46,7 @@ public class Screen : WizardCardModel
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new BlockVar(5m, ValueProp.Move),
+        new BlockVar(7m, ValueProp.Move),
         new PowerVar<CurrentOverflowPower>(1m),
     ];
 
@@ -93,8 +93,8 @@ public class Screen : WizardCardModel
 
     protected override void OnUpgrade()
     {
-        // 5 → 7 格挡；1 → 2 层电流外溢
-        DynamicVars.Block.UpgradeValueBy(2m);
+        // 7 → 10 格挡；1 → 2 层电流外溢
+        DynamicVars.Block.UpgradeValueBy(3m);
         DynamicVars[OverflowKey].UpgradeValueBy(1m);
     }
 }
