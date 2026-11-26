@@ -9,7 +9,7 @@ using Wizard.Scripts.Powers;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 修行 - 2(1) 费 - 能力 - 稀有
+/// 修行 - 1 费 - 能力 - 稀有（带「虚无」）
 /// 本次战斗结束时额外获得 1 组卡牌奖励。
 ///
 /// <para>
@@ -21,14 +21,14 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
-/// <b>升级只降费（2 → 1）</b>，所以 <c>CanonicalVars</c> 为空。
+/// <b>基础费用 1、带「虚无」</b>（2026-11-27 design 改版）；升级<b>移除「虚无」</b>。
 /// 这也和狩猎不同（狩猎升级加伤害）。
 /// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
 public class Asceticism : WizardCardModel
 {
-    private const int Cost = 2;
+    private const int Cost = 1;
 
     /// <summary>
     /// ⚠️ <b>不能被战斗内生成</b>（<c>CardModel.cs:643</c> 的虚属性，默认 <c>true</c>）。
@@ -56,6 +56,12 @@ public class Asceticism : WizardCardModel
     /// </summary>
     public override bool CanBeGeneratedInCombat => false;
 
+    /// <summary>「虚无」：回合结束时若还在手里就消耗（升级移除）。</summary>
+    public override IEnumerable<CardKeyword> CanonicalKeywords =>
+    [
+        CardKeyword.Ethereal,
+    ];
+
     public Asceticism()
         : base(Cost, CardType.Power, CardRarity.Rare, TargetType.Self)
     {
@@ -78,8 +84,9 @@ public class Asceticism : WizardCardModel
                  $"含 AsceticismPower={Owner.Creature.HasPower<AsceticismPower>()}");
     }
 
+    /// <summary>升级：移除「虚无」。</summary>
     protected override void OnUpgrade()
     {
-        EnergyCost.UpgradeBy(-1);
+        RemoveKeyword(CardKeyword.Ethereal);
     }
 }

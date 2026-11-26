@@ -13,7 +13,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 纵火狂 - 2 费 - 能力 - 罕见
-/// **免疫燃烧。每当你给予燃烧时，获得 4(6) 点活力。**
+/// **免疫燃烧。每当你给予燃烧时，获得 6(8) 点活力。**
 ///
 /// <para>
 /// 本牌给**两个**效果：
@@ -49,8 +49,8 @@ public class Pyromaniac : WizardCardModel
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        // 每次给予燃烧时获得的活力点数。两张纵火狂 = 引擎层数累加 → 8。
-        new PowerVar<PyromaniacPower>(4m),
+        // 每次给予燃烧时获得的活力点数。两张纵火狂 = 引擎层数累加 → 12。
+        new PowerVar<PyromaniacPower>(6m),
     ];
 
     public Pyromaniac()

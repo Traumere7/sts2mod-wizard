@@ -443,3 +443,32 @@ RefreshHealthBar:
 
 > 与 `FrozenIntentPatch.cs:95` 的
 > `__instance.Creature.GetCreatureNode()?.RefreshIntents()` 是同一套写法。
+
+---
+
+## 8. ✅ 2026-11-27 燃烧改版后的预测口径（实际伤害）
+
+design.md 第 8 行改为"燃烧造成**无来源火焰伤害**，会受目标易伤/寒冷等加成影响"，
+所以预测段不能再直接用层数，必须跑一遍引擎的修正链：
+
+```csharp
+// BurnPower.PredictTriggerDamage(target)
+decimal modified = Hook.ModifyDamage(runState, combatState, target, null, layers,
+    BurnPower.BurnDamageProps, null, null,
+    ModifyDamageHookType.All, CardPreviewMode.None, out _);
+
+decimal hpLoss = Hook.ModifyHpLost(runState, combatState, target, modified,
+    BurnPower.BurnDamageProps, null, null, HpLossHookPhase.All, out _);
+
+return Math.Max(0, (int)hpLoss);   // 与 Creature.LoseHpInternal 的 (int) 截断一致
+```
+
+- 伤害属性 `BurnDamageProps = Unblockable | Move | SpellProps.For(Fire)`：
+  * `Move && !Unpowered` ⇒ 吃「易伤」（Vulnerable 的 `IsPoweredAttack()` 判据）；
+  * 火焰标记 ⇒ 吃本 mod「寒冷」；
+  * `dealer = null` ⇒ 不加力量、不触发"你造成伤害"类效果；
+  * `Unblockable` ⇒ 格挡不参与（保留旧口径）。
+- **实时刷新**：除"层数变化"（`ApplyAbsolute` 里手动 `RefreshHealthBar`）外，
+  新增 `BurnPower.AfterPowerAmountChanged` —— 该生物身上**任何能力层数变化**
+  （易伤、寒冷、无实体…）都会重绘血条，预测段立刻跟随。
+- 异常一律退回"层数即伤害"，不影响战斗逻辑。

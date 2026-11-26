@@ -6146,3 +6146,59 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
   玩家需在 mod 设置里勾「使用替换美术」并**重启**。
 - ⚠️ 每次更新都必须把 `WizardAlt.pck` 放进 `content\` 再上传（Steam 会用新内容替换条目文件清单）。
 - B 版目前**不含**白夜/电弧/薪柴/流火/灵光的 B 版卡图（`art_alt` 未放），使用 B 版时这 5 张回退 A 版。
+
+---
+
+## 54. 2026-11-27 燃烧机制重做（无来源火焰伤害 + 实时血条预测）+ 5 张卡数值/稀有度
+
+### 54.1 燃烧：固定伤害 → 无来源火焰伤害（design.md 第 8 行）
+
+**旧**：`CreatureCmd.Damage(..., Amount, Unblockable | Unpowered, dealer: null, cardSource: null)` ——
+不吃任何加成（力量/易伤/寒冷/法术增益全不生效）。
+
+**新**：新增 `BurnPower.BurnDamageProps = Unblockable | Move | SpellProps.For(SpellSchool.Fire)`，
+`Trigger()` 用它结算；`dealer` / `cardSource` 仍为 **null**：
+
+| 维度 | 效果 |
+|---|---|
+| `Move && !Unpowered` | 吃目标侧 `IsPoweredAttack()` 类加成（原版「易伤」×1.5） |
+| `SpellProps.Fire` | 吃本 mod「寒冷」等按学派判定的倍率 |
+| `dealer = null` | 不加力量；「燃烧之魂」「薪柴」「三原素」等只认 dealer 的效果不会被自己触发 |
+| `Unblockable` | 仍然无视格挡（设计未要求改成可格挡，保留旧口径） |
+
+已知副作用：原版"受到攻击伤害时"的效果大多检查 `dealer != null`（荆棘、火焰屏障、蜷缩…），
+无来源燃烧不会触发它们；只按 `IsPoweredAttack()` / HP 损失判定的修正（硬化外壳、缓冲、无实体）会照常生效。
+
+### 54.2 血条预测：改为"实际会掉的血"
+
+`BurnPower.GetHealthBarForecastSegments` 不再取层数，改调 `PredictTriggerDamage`：
+
+1. `Hook.ModifyDamage(..., ModifyDamageHookType.All, CardPreviewMode.None)` —— 完整修正链；
+2. `Hook.ModifyHpLost(..., HpLossHookPhase.All)` —— 引擎注释明确说"伤害预览可用 All"；
+3. 按 `Creature.LoseHpInternal` 的 `(int)` 截断取整。
+
+**实时刷新**：新增 `BurnPower.AfterPowerAmountChanged` ——
+该生物身上任何能力层数变化（上易伤/寒冷、掉层）都会 `RefreshHealthBar`。
+（层数变化原本就在 `ApplyAbsolute` 里刷；这次补的是"层数没变、倍率变了"的情况。）
+预测失败一律回退"层数即伤害"，不影响战斗。
+
+### 54.3 五张卡的数值 / 稀有度
+
+| 卡 | 改动 | 落点 |
+|---|---|---|
+| 纵火狂 `Pyromaniac` | 每次给予燃烧的活力 **4(6) → 6(8)** | `PowerVar<PyromaniacPower>(6m)`（升级 +2 不变） |
+| 交流电 `AlternatingCurrent` | 稀有度 **稀有 → 罕见** | `CardRarity.Uncommon` |
+| 回忆 `Recollection` | 费用 **1(0) → 0**；弹回张数 **固定 2 → 1(2)**（升级加张数） | `Cost = 0`、`CardsBack = 1`、`OnUpgrade` 改为 `PowerVar` +1 |
+| 修行 `Asceticism` | 费用 **2(1) → 1**；**新增「虚无」**；升级改为**移除「虚无」** | `Cost = 1`、`CanonicalKeywords [Ethereal]`、`OnUpgrade → RemoveKeyword(Ethereal)` |
+| 伟大法袍 `MagusRobe` | 稀有度 **罕见 → 稀有** | `CardRarity.Rare` |
+
+> ⚠️ **修行升级口径是推断**：design 只写"1 费、（虚无。）本次战斗结束时额外获得 1 组卡牌奖励"，
+> 没有写升级效果；按"带虚无的牌升级移除虚无"的通行做法实现，待用户确认。
+>
+> 文案无需改：费用/稀有度/词条都由引擎渲染，纵火狂与回忆的数值走 `{...:diff()}` 占位符。
+
+### 54.4 自检
+
+- `dotnet build` 0 错误；`build.ps1` 部署成功（pck `C965278B` / dll `9F9A04BF`）。
+- 启动自检：**19/19 补丁**、无异常、无缺失文案。
+- 未实机验证：燃烧吃易伤/寒冷后的实际数值、血条预测段长度、实时刷新时机（需战斗内测试）。

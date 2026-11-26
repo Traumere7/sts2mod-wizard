@@ -1,15 +1,18 @@
 using BaseLib.Abstracts;
 using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
+using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.Entities.Creatures;
 using MegaCrit.Sts2.Core.Entities.Powers;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
+using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Spells;
 using MegaCrit.Sts2.Core.Models.Powers;
+using MegaCrit.Sts2.Core.Runs;
 using BaseLib.Hooks;
 using Godot;
 using MegaCrit.Sts2.Core.Nodes.Combat;
@@ -28,14 +31,29 @@ namespace Wizard.Scripts.Powers;
 /// 因此 <c>PowerCmd.Apply</c> 的默认加法叠加会被纠正为"取高值"。
 /// 这样任何调用方（包括其它 mod）走标准 API 都能得到正确行为。
 ///
-/// 伤害**不受任何加成影响**（力量、易伤、法术增益、寒冷都不生效）：
-/// 用 <c>Unblockable | Unpowered</c> 让所有以 <c>IsPoweredAttack()</c> 为条件的加成都失效，
-/// 且 dealer 传 null，因此不触发吸血、击杀回能等需要伤害来源的效果。
-/// 这与原版毒的写法一致（<c>PoisonPower.Trigger</c>）。
+/// <para>
+/// ══════════════════════════════════════════════════════════════════
+/// 伤害口径（2026-11-27 改版）：**无来源火焰伤害**
+/// ══════════════════════════════════════════════════════════════════
+/// 每次结算造成等同于层数的伤害，属性为
+/// <c>Unblockable | Move | SpellProps.For(SpellSchool.Fire)</c>，
+/// 且 <b>dealer / cardSource 都是 null</b>：
+/// <list type="bullet">
+///   <item><b>无来源</b> ⇒ 不加力量、不触发"你造成伤害时"的效果
+///         （「燃烧之魂」「薪柴」「三原素」都只认 dealer，不会被自己喂自己）；</item>
+///   <item><b>火焰伤害</b> ⇒ 吃目标侧的火焰/雷电加成（本 mod 的「寒冷」）；</item>
+///   <item><b>Move 且非 Unpowered</b> ⇒ 吃目标侧的 <c>IsPoweredAttack()</c> 类加成
+///         （原版「易伤」×1.5）；</item>
+///   <item><b>Unblockable</b> ⇒ 仍然无视格挡（保留旧口径，设计未要求改为可格挡）。</item>
+/// </list>
+/// ⇒ 设计口径（design.md 第 8 行）："因为是火焰伤害，所以会受到目标具有的易伤、寒冷等加成的影响"。
+/// </para>
 ///
-/// ⚠️ 已知例外：原版的 <c>IntangiblePower</c> / <c>HardToKillPower</c>（伤害上限）
-/// 与 <c>HardenedShellPower</c>（HP 损失修正）不看 <c>ValueProp</c>，仍会削减燃烧伤害。
-/// 它们只会压低、不会放大。
+/// <para>
+/// ⚠️ 已知副作用：原版那些"受到攻击伤害时"的效果（「荆棘」「火焰屏障」等）
+/// 会检查 <c>dealer != null</c>，因此不会被无来源的燃烧触发；而只看
+/// <c>IsPoweredAttack()</c> 的 HP 损失修正（「硬化外壳」「缓冲」等）会照常生效。
+/// </para>
 /// </summary>
 /// <summary>
 /// <c>ApplyAbsolute</c> 的结果。
@@ -66,6 +84,128 @@ public class BurnPower : CustomPowerModel
     public override string? CustomPackedIconPath => "res://Wizard/images/powers/burn_power.png";
 
     public override string? CustomBigIconPath => "res://Wizard/images/powers/burn_power_big.png";
+
+    /// <summary>
+    /// 燃烧结算使用的伤害属性（2026-11-27 改版）：
+    /// <c>Unblockable | Move | SpellProps.For(SpellSchool.Fire)</c>。
+    ///
+    /// <para>
+    /// 「无来源」（dealer = cardSource = null）+ 火焰标记 + powered：
+    /// 不加力量、不触发"你造成伤害"类效果，但会吃目标侧的「易伤」「寒冷」等倍率。
+    /// 详见类注释的"伤害口径"一节。
+    /// </para>
+    /// </summary>
+    public static readonly ValueProp BurnDamageProps =
+        ValueProp.Unblockable | ValueProp.Move | SpellProps.For(SpellSchool.Fire);
+
+    /// <summary>
+    /// 预测该生物**下一次燃烧结算实际会掉多少血**（四舍五入前的截断口径与引擎一致：
+    /// <c>Creature.LoseHpInternal</c> 是 <c>(int)</c> 截断）。
+    ///
+    /// <para>
+    /// 口径与真正结算完全一致：
+    /// <list type="number">
+    ///   <item><see cref="Hook.ModifyDamage"/>（<c>ModifyDamageHookType.All</c>：加法/乘法/上限
+    ///         全部跑一遍 —— 易伤 ×1.5、寒冷 ×(1+X)、无实体上限等都在这里）；</item>
+    ///   <item><see cref="Hook.ModifyHpLost"/>（<c>HpLossHookPhase.All</c>：
+    ///         引擎注释明确说"伤害预览可以用 All 一次跑完两个阶段"）；</item>
+    ///   <item>按 <c>LoseHpInternal</c> 的 <c>(int)</c> 截断成整数。</item>
+    /// </list>
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠️ 全程 try/catch：血条预测是表现层，任何异常都退回"层数即伤害"的旧口径，
+    /// 绝不能因为预测失败而影响战斗逻辑。
+    /// </para>
+    /// </summary>
+    public static int PredictTriggerDamage(Creature target)
+    {
+        int layers = target.GetPowerAmount<BurnPower>();
+        if (layers <= 0)
+        {
+            return 0;
+        }
+
+        try
+        {
+            ICombatState? combatState = target.CombatState;
+            if (combatState == null)
+            {
+                return layers;
+            }
+
+            IRunState runState = IRunState.GetFrom([target]);
+
+            decimal modified = Hook.ModifyDamage(
+                runState,
+                combatState,
+                target,
+                dealer: null,
+                layers,
+                BurnDamageProps,
+                cardSource: null,
+                cardPlay: null,
+                ModifyDamageHookType.All,
+                CardPreviewMode.None,
+                out _);
+
+            decimal hpLoss = Hook.ModifyHpLost(
+                runState,
+                combatState,
+                target,
+                modified,
+                BurnDamageProps,
+                dealer: null,
+                cardSource: null,
+                HpLossHookPhase.All,
+                out _);
+
+            int predicted = (int)hpLoss;
+            return Math.Max(0, predicted);
+        }
+        catch (Exception e)
+        {
+            Log.Warn($"[Wizard/BurnForecast] 预测伤害失败，退回层数口径：{e.Message}");
+            return layers;
+        }
+    }
+
+    /// <summary>
+    /// 影响燃烧结算**伤害**的能力发生变化时（易伤、寒冷、无实体……）立刻重绘血条，
+    /// 让预测段实时跟随。
+    ///
+    /// <para>
+    /// 为什么挂在这里：`HealthBarForecastPatch` 只在 <c>NHealthBar.RefreshValues()</c> 时
+    /// 重算色段，而"能力层数变化"不会调它（<c>NCreature.OnPowerIncreased</c> 只播 VFX）。
+    /// 层数变化那条路径已经在 <see cref="ApplyAbsolute"/> 里手动刷了；
+    /// 这里补的是"层数没变、但倍率变了"的情况（例如给敌人上「易伤」）。
+    /// </para>
+    /// </summary>
+    public override Task AfterPowerAmountChanged(
+        PlayerChoiceContext choiceContext,
+        PowerModel power,
+        decimal amount,
+        Creature? applier,
+        CardModel? cardSource)
+    {
+        try
+        {
+            Creature? self = Owner;
+            if (self != null
+                && self.HasPower<BurnPower>()
+                && power != null
+                && ReferenceEquals(power.Owner, self))
+            {
+                RefreshHealthBar(self);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Warn($"[Wizard/BurnForecast] 能力变化后重绘血条失败：{e.Message}");
+        }
+
+        return Task.CompletedTask;
+    }
 
     // ══════════════════════════════════════════════════════════════════
     // 血条预测覆盖层：把"下次结算将要烧掉的血"染成橙黄色一段
@@ -130,27 +270,26 @@ public class BurnPower : CustomPowerModel
     /// 血条预测段：在右侧把"下次结算将要被烧掉的血量"染成橙黄色。
     ///
     /// <para>
-    /// 层数即伤害 —— 燃烧每次结算造成等同于当前层数的伤害
-    /// （见 <see cref="Trigger"/>），所以 <c>Amount</c> 直接取层数。
-    /// 且该伤害是 <c>Unblockable | Unpowered</c>，格挡拦不住，
-    /// 所以"预测掉血量"就是层数本身，不需要任何扣减。
+    /// 段长 = 下一次结算**实际会掉的血**（见 <see cref="PredictTriggerDamage"/>）：
+    /// 基础值是层数，再跑一遍引擎的伤害修正链（易伤、寒冷、上限……），
+    /// 最后按 <c>LoseHpInternal</c> 的口径截断成整数。
+    /// 伤害仍然 <c>Unblockable</c>，格挡不参与扣减。
     /// </para>
     /// </summary>
     public override IEnumerable<HealthBarForecastSegment> GetHealthBarForecastSegments(
         HealthBarForecastContext context)
     {
-        int amount = context.Creature.GetPowerAmount<BurnPower>();
+        // 2026-11-27 改版：段长 = **实际会掉的血**（吃了易伤/寒冷等倍率后的值），
+        // 不再是裸层数。计算口径见 PredictTriggerDamage。
+        int predicted = PredictTriggerDamage(context.Creature);
 
-        // Amount <= 0 时给空列表。
-        // （BaseLib 侧还会再滤一次 Amount > 0，见 Registry.cs 的 Where；
-        //   这里早退只是省掉一次构造。）
-        if (amount <= 0)
+        if (predicted <= 0)
         {
             return [];
         }
 
         return HealthBarForecasts.Single(
-            amount,
+            predicted,
             BurnForecastColor,
             HealthBarForecastDirection.FromRight);
     }
@@ -519,8 +658,8 @@ public class BurnPower : CustomPowerModel
     /// 就是循环调它来"立刻触发"）：
     /// <list type="bullet">
     ///   <item>层数 <b>不</b>因此减少（燃烧与毒的关键区别：毒结算后 <c>Decrement</c>）；</item>
-    ///   <item>伤害是 <c>Unblockable | Unpowered</c> —— 无视格挡、不吃任何加成
-    ///         （与回合开始那次结算完全一致）。</item>
+    ///   <item>伤害是 <see cref="BurnDamageProps"/>（<c>Unblockable | Move | 火焰</c>）——
+    ///         无视格挡，但会吃目标侧的易伤/寒冷等倍率（与回合开始那次结算完全一致）。</item>
     /// </list>
     /// </para>
     ///
@@ -536,11 +675,13 @@ public class BurnPower : CustomPowerModel
             return;
         }
 
+        // 2026-11-27 改版：**无来源火焰伤害**（属性见 BurnDamageProps）——
+        // 不再是不吃任何加成的固定伤害，而是会吃目标侧的「易伤」「寒冷」等倍率。
         await CreatureCmd.Damage(
             new ThrowingPlayerChoiceContext(),
             Owner,
             Amount,
-            ValueProp.Unblockable | ValueProp.Unpowered,
+            BurnDamageProps,
             null,
             null);
     }

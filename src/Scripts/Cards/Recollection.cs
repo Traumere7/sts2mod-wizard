@@ -10,22 +10,19 @@ using MegaCrit.Sts2.Core.HoverTips;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 回忆 / Recollection - 1(0) 费 - 能力 - 稀有
-/// 在你的回合开始时，将你上个回合打出的最后 2 张非[gold]消耗[/gold]的牌加入你的手牌。
+/// 回忆 / Recollection - 0 费 - 能力 - 稀有
+/// 在你的回合开始时，将你上个回合打出的最后 1(2) 张非[gold]消耗[/gold]的牌加入你的手牌。
 ///
 /// <para>
-/// ⚠️⚠️ <b>2026-10-10 口径修改：弹回张数固定为 2，升级改为降费。</b>
+/// ⚠️⚠️ <b>2026-11-27 design 改版：费用 1 → 0，张数改为 1(2)（升级加张数）。</b>
 ///
 /// <list type="bullet">
-///   <item><b>旧</b>：卡面 <c>最后1（2）张</c>，升级把能力层数 1 → 2
-///         （张数随层数变）</item>
-///   <item><b>新</b>：卡面 <c>最后2张</c>，<b>升级与不升级都是 2 张</b>；
-///         升级改为<b>耗能 1 → 0</b></item>
+///   <item><b>旧</b>：0 费 + 张数随层数 1(2)（2026-10-10 曾改成 1(0) 费 + 固定 2 张）</item>
+///   <item><b>新</b>：<b>0 费</b>；施加 1 层的 <see cref="RecollectionPower"/>，
+///         升级把层数 1 → 2（卡面 <c>最后1（2）张</c>）</item>
 /// </list>
 ///
-/// 所以本卡现在是"施加**固定 2 层**的 <see cref="RecollectionPower"/>，
-/// 升级只降费"。层数不再承担升级语义 ——
-/// 它只是"弹回几张"这个固定数值的载体。
+/// 层数重新承担"弹回几张"的升级语义。
 /// </para>
 ///
 /// <para>
@@ -36,18 +33,18 @@ namespace Wizard.Scripts.Cards;
 [Pool(typeof(WizardCardPool))]
 public class Recollection : WizardCardModel
 {
-    private const int Cost = 1;
+    private const int Cost = 0;
 
     /// <summary>
-    /// 弹回张数 —— **固定 2**，不随升级变化（升级只降费）。
+    /// 弹回张数的基础值 —— **1**，升级 +1 → 2。
     ///
     /// <para>
     /// 用 <c>PowerVar</c> 而不是裸常量，是为了让卡面文案能用
-    /// <c>{RecollectionPower:diff()}</c> 占位（显示"2张"），
+    /// <c>{RecollectionPower:diff()}</c> 占位（显示"1(2) 张"），
     /// 且能力图标上的数字与实际行为一致。
     /// </para>
     /// </summary>
-    private const int CardsBack = 2;
+    private const int CardsBack = 1;
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
@@ -88,6 +85,6 @@ public class Recollection : WizardCardModel
     /// </summary>
     protected override void OnUpgrade()
     {
-        EnergyCost.UpgradeBy(-1);
+        DynamicVars[nameof(RecollectionPower)].UpgradeValueBy(1m);
     }
 }

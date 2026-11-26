@@ -9,7 +9,7 @@ using Wizard.Scripts.Powers;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 交流电 - 1 费 - 能力 - 稀有
+/// 交流电 - 1 费 - 能力 - 罕见
 /// 你的每次雷电伤害额外给予 1 层电流外溢。**升级后获得「固有」。**
 ///
 /// <para>
@@ -42,7 +42,7 @@ public class AlternatingCurrent : WizardCardModel
     ];
 
     public AlternatingCurrent()
-        : base(Cost, CardType.Power, CardRarity.Rare, TargetType.Self)
+        : base(Cost, CardType.Power, CardRarity.Uncommon, TargetType.Self)
     {
     }
 

@@ -60,7 +60,7 @@ public class MagusRobe : WizardCardModel
     ];
 
     public MagusRobe()
-        : base(Cost, CardType.Power, CardRarity.Uncommon, TargetType.Self)
+        : base(Cost, CardType.Power, CardRarity.Rare, TargetType.Self)
     {
     }
 
