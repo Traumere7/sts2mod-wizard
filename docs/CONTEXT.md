@@ -6058,3 +6058,40 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 
 > 流火/白夜文案都用占位符（`{Damage:diff()}`），**未改本地化文件**。
 > 白夜亮起只影响手牌表现，不改变收益判定（出牌瞬间仍按 `target.GetPowerAmount<BurnPower>() > 0` 决定第二段）。
+
+---
+
+## 51. 2026-11-26（二）design 改版：白夜改为上虚弱 / 流火改为"下次打出前减费"
+
+### 51.1 白夜 `WhiteNight`
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 伤害 | 11(13) | **11(14)**（升级 +3） |
+| 有燃烧时 | 再造成一次伤害 + 寒冷 2(3) | **给予 2(3) 层虚弱 + 2(3) 层寒冷**（不再追加伤害） |
+
+- 变量：`DamageVar(11m, Move|Ice)`、`PowerVar<WeakPower>(2m)`、`PowerVar<ChillPower>(2m)`。
+- 升级：伤害 +3、虚弱 +1、寒冷 +1。
+- 「有燃烧」条件仍在**出牌瞬间**读 `GetPowerAmount<BurnPower>() > 0`；目标被这一发打死则不再挂负面。
+- 金边亮起逻辑保留（任一可命中敌人有燃烧即亮）。
+- 文案（zhs/eng）：改为"如果敌人有燃烧，则给予 X 层虚弱和 Y 层寒冷"。
+
+### 51.2 流火 `Wildfire`
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 减费 | 本场战斗中每消耗 1 张牌永久 −1（直查 CombatHistory） | **每消耗 1 张牌 −1，直到这张牌被打出**（打出后恢复原价，需重新攒） |
+
+- 实现照抄原版「火箭飞拳」`RocketPunch`：在 `AfterCardExhausted` 里
+  `EnergyCost.AddUntilPlayed(-1)`（`LocalCostModifierExpiration.UntilPlayed`）。
+- 每张副本各自累计（钩子对每张在战力牌堆里的牌都会触发，与火箭飞拳一致）。
+- 删掉了上一版基于 `CombatHistory` 的 `TryModifyEnergyCostInCombatLate` 覆写。
+- 注意：这是"局部费用修正"，和上一版的"整场持续减费"是**两种不同的语义**，
+  `UntilPlayed` 的清理由引擎的 `AfterCardPlayedCleanup` 完成。
+- 文案（zhs/eng）：改为"每当你消耗 1 张牌，此牌的耗能在下次打出前减少 1 费"。
+
+### 51.3 自检
+
+- `dotnet build` 0 错误；`build.ps1` 部署成功（pck `E08945C5` / dll `9FF3EC31`）。
+- pck 字节核验：两张卡的新文案均在包内。
+- 本次没有新增模型/能力，未再启动游戏做启动自检（签名由编译保证）。
