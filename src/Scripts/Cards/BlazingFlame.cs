@@ -15,7 +15,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 炽焰术 - 2 费 - 攻击 - 罕见
-/// 造成 6(7) 点火焰伤害 3 次，给予 3(5) 层燃烧。
+/// 造成 7(8) 点火焰伤害 3 次，给予 3(5) 层燃烧。
 ///
 /// 多段伤害用 <c>DamageCmd.Attack(...).WithHitCount(3)</c> 一次结算，
 /// 而不是循环调用 3 次 —— 前者走引擎的"多段攻击"通道，
@@ -39,7 +39,7 @@ public class BlazingFlame : WizardSpellCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new DamageVar(6m, ValueProp.Move | SpellProps.For(School)),
+        new DamageVar(7m, ValueProp.Move | SpellProps.For(School)),
         new PowerVar<BurnPower>(3m),
     ];
 
