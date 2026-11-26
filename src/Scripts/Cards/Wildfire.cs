@@ -17,7 +17,7 @@ namespace Wizard.Scripts.Cards;
 
 /// <summary>
 /// 流火 / Wildfire - 3 费 - 罕见 - 攻击
-/// 对所有敌人造成 6(7) 点火焰伤害 3 次。
+/// 对所有敌人造成 5(7) 点火焰伤害 3 次。
 /// 本场战斗中你每消耗 1 张牌，这张牌的耗能就减 1。
 ///
 /// <para>
@@ -44,7 +44,7 @@ public class Wildfire : WizardSpellCard
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
-        new DamageVar(6m, ValueProp.Move | SpellProps.For(School)),
+        new DamageVar(5m, ValueProp.Move | SpellProps.For(School)),
     ];
 
     protected override IEnumerable<IHoverTip> ExtraHoverTips =>
@@ -107,9 +107,9 @@ public class Wildfire : WizardSpellCard
             .Execute(choiceContext);
     }
 
-    /// <summary>升级：每段伤害 6 → 7（段数与动态减费不变）。</summary>
+    /// <summary>升级：每段伤害 5 → 7（+2；段数与动态减费不变）。</summary>
     protected override void OnUpgrade()
     {
-        DynamicVars.Damage.UpgradeValueBy(1m);
+        DynamicVars.Damage.UpgradeValueBy(2m);
     }
 }

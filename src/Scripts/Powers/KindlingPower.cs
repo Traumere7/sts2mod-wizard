@@ -35,7 +35,7 @@ namespace Wizard.Scripts.Powers;
 ///         <c>SpellProps.For(School)</c> 打上；燃烧自身的结算伤害**没有**这个标记，
 ///         所以不会自己喂自己）。</item>
 ///   <item>必须真的造成伤害（<c>result.TotalDamage &gt; 0</c>）。</item>
-///   <item>目标必须**已有**燃烧（层数 &gt; 0）—— 「将燃烧层数增加」的前提是它本来就有。</item>
+///   <item>目标**没有**燃烧也算（视作 0 层，本次直接加 <c>Amount</c> 层）。</item>
 /// </list>
 /// </para>
 /// </summary>
@@ -81,12 +81,9 @@ public class KindlingPower : CustomPowerModel
             return;
         }
 
-        // ④ 目标必须已有燃烧 —— "增加层数"，不是"施加燃烧"。
+        // ④ 目标没有燃烧也照算 —— 视作"已有 0 层燃烧"，本次直接加上 Amount 层
+        //    （用户 2026-11-26 明确：打两段火伤应上 2 层）。
         int current = target.GetPowerAmount<BurnPower>();
-        if (current <= 0)
-        {
-            return;
-        }
 
         int add = (int)Amount;
         if (add <= 0)

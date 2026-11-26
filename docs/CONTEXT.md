@@ -6045,3 +6045,16 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 - 启动自检：**19/19 补丁**、无 `Missing localization`、无异常。
   ⚠️ 当时用户的 `settings.save` 里所有 mod 都被禁用（`mod_settings.mod_list` 全 false），
   自检时**临时**把 `BaseLib` 条目置 true、跑完启动后**原样恢复**（`settings.save` 内容未留改动）。
+
+---
+
+## 50. 2026-11-26 微调：流火数值 / 白夜亮起 / 薪柴从 0 层起算
+
+| # | 卡 | 改动 | 代码落点 |
+|---|---|---|---|
+| 1 | 流火 `Wildfire` | 每段 6(7) → **5(7)**（升级 +2，不再是 +1） | `DamageVar(5m)`、`UpgradeValueBy(2m)` |
+| 2 | 白夜 `WhiteNight` | **只要有敌人身上有燃烧，手里的这张牌就金边亮起**（仿「冰矢」「引燃」） | 新增 `ShouldGlowGoldInternal => CombatState?.HittableEnemies.Any(e => e.GetPowerAmount<BurnPower>() > 0) ?? false` |
+| 3 | 薪柴 `KindlingPower` | 目标**没有燃烧也生效**：视作已有 0 层，本次直接 +`Amount` 层（打两段火伤 ⇒ 2 层） | 删掉 `current <= 0` 的提前返回；`ApplyAbsolute(current + add)` 在 0 层时会新建燃烧（已确认实现） |
+
+> 流火/白夜文案都用占位符（`{Damage:diff()}`），**未改本地化文件**。
+> 白夜亮起只影响手牌表现，不改变收益判定（出牌瞬间仍按 `target.GetPowerAmount<BurnPower>() > 0` 决定第二段）。

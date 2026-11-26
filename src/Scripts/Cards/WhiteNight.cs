@@ -34,6 +34,13 @@ public class WhiteNight : WizardSpellCard
     /// <summary>寒冰法术的命中演出（与「冰矢」IceShard 同款）。</summary>
     private const string HitFx = "vfx/vfx_starry_impact";
 
+    /// <summary>
+    /// 金边亮起条件（与「冰矢」「引燃」同一套写法）：
+    /// <b>只要有敌人身上有燃烧</b>，手里的这张牌就亮 —— 提示"现在打出去能触发额外一段 + 寒冷"。
+    /// </summary>
+    protected override bool ShouldGlowGoldInternal
+        => CombatState?.HittableEnemies.Any(e => e.GetPowerAmount<BurnPower>() > 0) ?? false;
+
     public override SpellSchool School => SpellSchool.Ice;
 
     protected override IEnumerable<DynamicVar> CanonicalVars =>
