@@ -178,6 +178,6 @@
   "WIZARD-WATCH_FIRE.title": "Watch Fire",
   "WIZARD-WHITE_NIGHT.description": "Deal {Damage:diff()} [blue]Ice damage[/blue].\nIf the enemy has [gold]Burn[/gold], apply {WeakPower:diff()} [gold]Weak[/gold] and {ChillPower:diff()} [gold]Chill[/gold].",
   "WIZARD-WHITE_NIGHT.title": "White Night",
-  "WIZARD-WILDFIRE.description": "Deal {Damage:diff()} [orange]Fire damage[/orange] to ALL enemies 3 times.\nWhenever you [gold]Exhaust[/gold] a card, this card costs 1 less until played.",
+  "WIZARD-WILDFIRE.description": "Deal {Damage:diff()} [orange]Fire damage[/orange] to ALL enemies 3 times.\nWhenever you [gold]Exhaust[/gold] a card, reduce this card's cost by 1 {energyPrefix:energyIcons(1)} until played.",
   "WIZARD-WILDFIRE.title": "Wildfire"
 }
