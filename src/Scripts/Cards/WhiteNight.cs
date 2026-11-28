@@ -94,7 +94,10 @@ public class WhiteNight : WizardSpellCard
             Owner.Creature,
             this);
 
-        await PowerCmd.Apply<ChillPower>(
+        // ⚠️ 寒冷必须走统一收口 SpellCmd.ApplyChill：它会发 WizardEvents.ChillApplied，
+        // 「弹射」DoubleRicochet 等"每当施加寒冷时"的效果都订阅这个事件；
+        // 裸 PowerCmd.Apply 不发事件 ⇒ 弹射不会从弃牌堆弹回（2026-11-28 用户报告）。
+        await SpellCmd.ApplyChill(
             choiceContext,
             cardPlay.Target,
             DynamicVars[ChillKey].BaseValue,

@@ -6480,3 +6480,24 @@ await Hook.AfterCardGeneratedForCombat(cardAdded.CombatState, cardAdded, cardAdd
 - 新卡 5 张（点灯/煅烧/烟花/火花/不灭）+ 火苗改名 Ember；
 - 置换改版（一半格挡、3(2) 兑换）；
 - 不灭卡面实时计数行、嬗变"生成"双倍计数修复、烟花去特写、点灯/烟花挂火花悬停。
+
+---
+
+## 62. 2026-11-28（四）修复：白夜施加寒冷不走统一收口，导致「弹射」不弹回
+
+**现象**（用户报告）：白夜满足"敌人有燃烧"条件、打出并给予寒冷后，
+弃牌堆里的「弹射」`DoubleRicochet` 没有返回手牌。
+
+**根因**：`WhiteNight.OnPlay` 里寒冷用的是裸 `PowerCmd.Apply<ChillPower>(...)`，
+而本 mod 的"每当施加寒冷时"统一依赖
+<see cref="WizardEvents.ChillApplied"/> —— 该事件只由
+`SpellCmd.ApplyChill` / `ApplyChillToAll`（以及 `RandomDebuff`）触发。
+裸 `PowerCmd.Apply` 不会发事件 ⇒ 「弹射」的 `OnChillApplied` 收不到。
+
+**修复**：白夜改为 `SpellCmd.ApplyChill(choiceContext, target, amount, Owner.Creature, this)`。
+
+**同类排查**：全仓库已无其它裸 `PowerCmd.Apply<ChillPower>`；
+冰矢/冰霰/禁书目录/寒波/冰墙/随机负面都早已走统一收口。
+
+自检：0 编译错误；部署成功；启动补丁数不变、无异常。
+待实机验证：白夜给寒冷后，弃牌堆里的弹射应返回手牌（每回合仍限 1 次）。
