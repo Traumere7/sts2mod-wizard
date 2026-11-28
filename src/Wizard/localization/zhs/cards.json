@@ -104,7 +104,7 @@
   "WIZARD-LIGHTNING_BOLT.title": "雷光",
   "WIZARD-LIGHTNING_FALL.description": "对所有敌人造成{Damage:diff()}点[blue]雷电伤害[/blue]。所有敌人具有的[gold]负面效果[/gold]每有1种类，就再结算1次。{InCombat:\n（额外结算{CalculatedHits:diff()}次）|}",
   "WIZARD-LIGHTNING_FALL.title": "降雷",
-  "WIZARD-LIGHT_THE_LAMP.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n将一张[gold]手牌[/gold]变化为[gold]火花[/gold]。",
+  "WIZARD-LIGHT_THE_LAMP.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n选择1张[gold]手牌[/gold]变化为[gold]火花[/gold]。",
   "WIZARD-LIGHT_THE_LAMP.title": "点灯",
   "WIZARD-MAGICAL_INDEX.description": "给予{VulnerablePower:diff()}层[gold]易伤[/gold]、{BurnPower:diff()}层[gold]燃烧[/gold]、{ParalysisPower:diff()}层[gold]麻痹[/gold]、{ChillPower:diff()}层[gold]寒冷[/gold]。",
   "WIZARD-MAGICAL_INDEX.title": "禁书目录",
