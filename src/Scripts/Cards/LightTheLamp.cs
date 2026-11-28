@@ -4,6 +4,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
@@ -47,6 +48,14 @@ public class LightTheLamp : WizardCardModel
     protected override IEnumerable<DynamicVar> CanonicalVars =>
     [
         new BlockVar(6m, ValueProp.Move),
+    ];
+
+    /// <summary>
+    /// 文案里写了「火花」，挂上它的悬停（照「第四元素」<c>HoverTipFactory.FromCard&lt;AetherArrow&gt;()</c> 的写法）。
+    /// </summary>
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromCard<Spark>(),
     ];
 
     public LightTheLamp()

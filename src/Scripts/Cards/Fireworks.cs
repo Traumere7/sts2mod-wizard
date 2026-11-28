@@ -3,6 +3,7 @@ using MegaCrit.Sts2.Core.Combat;
 using MegaCrit.Sts2.Core.Commands;
 using MegaCrit.Sts2.Core.Entities.Cards;
 using MegaCrit.Sts2.Core.GameActions.Multiplayer;
+using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
 using Wizard.Scripts.Pools;
@@ -32,6 +33,14 @@ public class Fireworks : WizardCardModel
         new CardsVar(SparkCount),
     ];
 
+    /// <summary>
+    /// 文案里写了「火花」，挂上它的悬停（照「第四元素」<c>HoverTipFactory.FromCard&lt;AetherArrow&gt;()</c> 的写法）。
+    /// </summary>
+    protected override IEnumerable<IHoverTip> ExtraHoverTips =>
+    [
+        HoverTipFactory.FromCard<Spark>(),
+    ];
+
     public Fireworks()
         : base(Cost, CardType.Skill, CardRarity.Uncommon, TargetType.Self)
     {
@@ -59,13 +68,12 @@ public class Fireworks : WizardCardModel
             sparks.Add(combatState.CreateCard<Spark>(Owner));
         }
 
-        IReadOnlyList<CardPileAddResult> results = await CardPileCmd.AddGeneratedCardsToCombat(
+        // ⚠️ 不加 CardCmd.PreviewCardPileAdd —— 那会在屏幕中央生成"特写"卡牌再飞向手牌；
+        // 用户 2026-11-28 明确：烟花生成火花时不需要这个特写，直接进手牌即可。
+        await CardPileCmd.AddGeneratedCardsToCombat(
             sparks,
             PileType.Hand,
             Owner);
-
-        // ★ 飞牌演出 + 手牌计数即时刷新（与「梦魇」同款；这里是一次多张，用列表重载）。
-        CardCmd.PreviewCardPileAdd(results);
     }
 
     /// <summary>升级：火花数 3 → 4。</summary>
