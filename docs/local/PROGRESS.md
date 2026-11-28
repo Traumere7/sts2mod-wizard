@@ -5,8 +5,8 @@
 | 文件 | 状态 | 备注 |
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
-| powers.json | ✅ 完成 | 114 条；38 个能力 |
-| cards.json | ✅ 完成 | 181 条；87 张卡 |
+| powers.json | ✅ 完成 | 117 条；39 个能力 |
+| cards.json | ✅ 完成 | 191 条；92 张卡 |
 | card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
 | enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
 | card_selection.json | ✅ 完成 | 1 条 |
@@ -24,8 +24,8 @@
 | 文件 | 状态 | 备注 |
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
-| powers.json | ✅ 完成 | 114 条；38 个能力 |
-| cards.json | ✅ 完成 | 181 条；87 张卡 |
+| powers.json | ✅ 完成 | 117 条；39 个能力 |
+| cards.json | ✅ 完成 | 191 条；92 张卡 |
 | card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
 | enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
 | card_selection.json | ✅ 完成 | 1 条 |
@@ -49,6 +49,7 @@
 - [x] Unknown Sea / Nightmare / Aqua Heart / Immortal 已补 zht/jpn（含 card_keywords、enchantments 新文件）
 - [x] Transmute（嬗變 / 変成）机制及 Animism / Quickening / Transmogrify 已同步
 - [x] Electric Arc / Flicker / Kindling / White Night / Wildfire 及 Kindling 能力已补；Skyfire Rampage 改为触发 2 次
+- [x] Calcination / Fireworks / Light the Lamp / Spark / Undying 及 Undying 能力已补；Displacement 改为移除一半格挡
 - [ ] zht / jpn 全量自动 JSON 解析 / 标签逐 key diff（建议在 CI 或本地脚本跑）
 - [ ] zht / jpn 术语一致性抽查
 - [ ] 确认 `Burn` 能力改名「焚燒」后的文本一致性（zht）
@@ -81,3 +82,5 @@
 - `Magnum Opus`（杰作）：当前 eng/zhs 效果文本与 zht/jpn 一致，未发现可见文本 diff；本次未改其文案。
 - 新增 5 卡：Electric Arc（電弧）、Flicker（靈光 / 明滅）、Kindling（薪柴 / 焚き付け）、White Night（白夜）、Wildfire（流火 / 野火）；新增 `KINDLING_POWER`（薪柴 / 焚き付け）。
 - `SKYFIRE_RAMPAGE`（天火浩蕩 / 天火暴走）：立刻触发 1 次 → **2 次**，zht/jpn 已同步。
+- 新增 5 卡：Calcination（煅燒 / 煆焼）、Fireworks（煙花 / 花火）、Light the Lamp（點燈 / 点灯）、Spark（火花）、Undying（不滅）；新增 `UNDYING_POWER`（不滅）。
+- `DISPLACEMENT`（置換）：移除所有格擋 → **移除一半格擋**，zht/jpn 已同步。

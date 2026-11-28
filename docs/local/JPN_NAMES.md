@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：招式/专名用片假名，概念/状态用汉字；与原版撞名一律改名。
 
-## 卡牌（87）
+## 卡牌（92）
 
 | 英文 | jpn | 备注 |
 |---|---|---|
@@ -18,6 +18,7 @@
 | Bookmark | しおり | — |
 | Burning Soul | 燃える魂 | — |
 | Burn To Ashes | 灰燼と化す | — |
+| Calcination | 煆焼 | — |
 | Calm Mind | 精神統一 | — |
 | Catalyzation | 触媒 | 避让「促進剤」 |
 | Cauda Pavonis | カウダ・パボーニス | — |
@@ -39,6 +40,7 @@
 | Epiphany | 悟り | — |
 | Eternal Echo | エターナルエコー | — |
 | Fireball | ファイアボール | — |
+| Fireworks | 花火 | — |
 | Flame Spark | 火の粉 | — |
 | Flashburst | 閃光爆発 | — |
 | Flicker | 明滅 | — |
@@ -55,6 +57,7 @@
 | Kindling | 焚き付け | — |
 | Lightning Bolt | ライトニングボルト | — |
 | Lightning Fall | 落雷 | — |
+| Light the Lamp | 点灯 | — |
 | Magical Index | 禁書目録 | — |
 | Magnum Opus | マグヌム・オプス | — |
 | Magus Robe | マグス・ローブ | — |
@@ -78,6 +81,7 @@
 | Recollection | 追憶 | — |
 | Screen | 遮蔽 | 避让 BARRICADE「バリケード」 |
 | Skyfire Rampage | 天火暴走 | — |
+| Spark | 火花 | — |
 | Speed Read | 速読 | — |
 | Static Charge | 静電気 | — |
 | Sterilize by Fire | 焼却消毒 | — |
@@ -90,11 +94,12 @@
 | Tidy Up | 片付け | — |
 | Transmogrify | 変質 | 避让 METAMORPHOSIS「羽化」 |
 | Truth Party | 真実の宴 | — |
+| Undying | 不滅 | — |
 | Watch Fire | 見張り火 | 避让 PYRE「かがり火」 |
 | White Night | 白夜 | — |
 | Wildfire | 野火 | — |
 
-## 能力（38）
+## 能力（39）
 
 | 英文 | jpn |
 |---|---|
@@ -135,6 +140,7 @@
 | Temperance | 節制 |
 | Quick Chant | クイックチャント |
 | The Fourth Element | 第四元素 |
+| Undying | 不滅 |
 
 ## 遗物（10）
 

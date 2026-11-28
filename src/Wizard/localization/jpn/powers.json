@@ -112,5 +112,8 @@
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "クイックチャント",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "ターン開始時、[gold]エーテルアロー[/gold]を1枚手札に加える。",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "ターン開始時、[blue]{Amount}[/blue]枚の[gold]エーテルアロー[/gold]を[gold]手札[/gold]に加える。",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "第四元素"
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "第四元素",
+  "WIZARD-UNDYING_POWER.description": "次のターンの開始時、このターンに作成したカードの枚数に等しいエナジーを得る。",
+  "WIZARD-UNDYING_POWER.smartDescription": "次のターンの開始時、[blue]{Generated}[/blue][gold]エナジー[/gold]を[blue]{Amount}[/blue]回得る。",
+  "WIZARD-UNDYING_POWER.title": "不滅"
 }

@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：2–4 字为主；法术牌可用「術」；与原版撞名一律改名。
 
-## 卡牌（87）
+## 卡牌（92）
 
 | 英文 | zht | 备注 |
 |---|---|---|
@@ -18,6 +18,7 @@
 | Bookmark | 書籤 | — |
 | Burning Soul | 燃燒之魂 | — |
 | Burn To Ashes | 焚盡 | — |
+| Calcination | 煅燒 | — |
 | Calm Mind | 靜心 | — |
 | Catalyzation | 觸媒 | 避让「催化劑」 |
 | Cauda Pavonis | 孔雀之尾 | — |
@@ -39,6 +40,7 @@
 | Epiphany | 頓悟 | — |
 | Eternal Echo | 永恆回響 | — |
 | Fireball | 火球術 | — |
+| Fireworks | 煙花 | — |
 | Flame Spark | 火苗 | — |
 | Flashburst | 閃爆 | — |
 | Flicker | 靈光 | — |
@@ -55,6 +57,7 @@
 | Kindling | 薪柴 | — |
 | Lightning Bolt | 雷光 | — |
 | Lightning Fall | 降雷 | — |
+| Light the Lamp | 點燈 | — |
 | Magical Index | 禁書目錄 | — |
 | Magnum Opus | 畢生之作 | — |
 | Magus Robe | 偉大法袍 | — |
@@ -78,6 +81,7 @@
 | Recollection | 回憶 | — |
 | Screen | 屏蔽 | — |
 | Skyfire Rampage | 天火浩蕩 | — |
+| Spark | 火花 | — |
 | Speed Read | 速讀 | — |
 | Static Charge | 靜電 | — |
 | Sterilize by Fire | 高溫消毒 | — |
@@ -90,11 +94,12 @@
 | Tidy Up | 整理 | — |
 | Transmogrify | 幻化 | — |
 | Truth Party | 真理派對 | — |
+| Undying | 不滅 | — |
 | Watch Fire | 觀火 | — |
 | White Night | 白夜 | — |
 | Wildfire | 流火 | — |
 
-## 能力（38）
+## 能力（39）
 
 | 英文 | zht |
 |---|---|
@@ -135,6 +140,7 @@
 | Temperance | 節制 |
 | Quick Chant | 快速詠唱 |
 | The Fourth Element | 第四元素 |
+| Undying | 不滅 |
 
 ## 遗物（10）
 
