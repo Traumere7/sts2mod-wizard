@@ -6337,3 +6337,54 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 - pck 核验：4 张新卡图 + Ember 图 + 新文案 + `WIZARD-TO_SPARK` 均在；`FlameSpark` 旧图/旧键已清除。
 - ⚠️ `zht` / `jpn` 的 `WIZARD-EMBER` 重命名是在团队**未提交的翻译改动**之上做的，
   提交时把那些待提交的翻译一并带上了（内容无误，仅提醒）。
+
+---
+
+## 59. 2026-11-28（二）置换改版 + 新卡「不灭 / Undying」
+
+### 59.1 置换 `Displacement`
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 移除格挡 | **全部** | **一半**（`block / 2`，向下取整） |
+| 转换比例 | 每 4(3) 点格挡 → 1 层法术增益 | 每 **3(2)** 点 → 1 层 |
+| 层数计算 | `block / per` | `removed / per`（只按"实际移除的那一半"算） |
+
+文案同步：`移除你当前一半的格挡。每移除{PerBlock:diff()}点格挡，获得1层法术增益。`
+
+### 59.2 不灭 `Undying`（1(0) 费 · 罕见 · 技能）
+
+**卡**：打出 → 给玩家 1 层 `UndyingPower`；升级只降费 1→0。
+**能力**：`下个回合开始时，获得 x 点能量 n 次`（n = 层数，x = 本回合生成的牌数）。
+
+实现（`Powers/UndyingPower.cs` + `Spells/GenerationTally.cs` + `Patches/GenerationTallyPatches.cs`）：
+
+1. **x 的来源 = 常驻累加器** `GenerationTally`（按 `Player.NetId` 分开计数）：
+   - `GenerationTallyCountPatch`：`Hook.AfterCardGeneratedForCombat` 的 **Prefix** 里
+     `creator != null && combatState.CurrentSide == CombatSide.Player` ⇒ +1
+     （Prefix 保证能力在同钩子里读到已加 1 的值）；
+   - `GenerationTallyResetPatch`：`Hook.BeforeSideTurnStart` 的 Prefix 里，玩家回合开始清零。
+2. **"溯前 + 追后"**：能力 `AfterApplied` 抓一次（打出前已生成的算进去）；
+   之后每次生成在 `AfterCardGeneratedForCombat` 再抓一次；值存 `_pendingEnergy` 并同步悬停
+   变量 `{Generated}`。
+3. **回合结束锁定**：`AfterSideTurnEnd`（玩家侧）置 `_locked = true`，
+   之后不再改写 ⇒ 不会让"下一回合开始阶段"的生成把上一回合的终值覆盖。
+4. **结算**：`AfterSideTurnStart`（玩家侧）：先 `PowerCmd.Remove(this)`，
+   再 `for i in 0..Amount: PlayerCmd.GainEnergy(_pendingEnergy, player)`；
+   **不管多少层，一次全部结算并清除**（Amount = 打出张数，Counter 叠加）。
+5. 悬停：卡挂能量悬停（`base.EnergyHoverTip`）；能力挂 `StaticHoverTip.Energy`。
+
+### 59.3 资产 / 文案
+
+- 卡图与能力图标用户未提供 ⇒ 生成占位（`images/cards/Undying.png` 250×190、
+  `images/powers/undying_power.png` 64 + `_big.png` 128，生成脚本 `reference/tools/make_undying_assets.py`，不入库）。
+- 文案只加 `zhs` / `eng`（`zht` / `jpn` 回退英文，等团队补）。
+- README 数量：卡牌 90、能力 38。
+
+### 59.4 自检
+
+- `dotnet build` 0 错误；部署成功（pck `824ED211` / dll `92D19C7A`）。
+- 启动自检：**22/22 补丁**（新增 `GenerationTallyCountPatch` / `GenerationTallyResetPatch` 均已应用）、无异常、无缺失文案。
+- pck 核验：不灭卡图/图标/文案、置换新文案均在包内。
+- 待实机验证：打出前/后生成牌的数量是否都计入 x；两张「不灭」是否结算两次；
+  结算后能力是否消失；置换只移除一半格挡且按 3(2) 换算。

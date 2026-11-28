@@ -112,5 +112,8 @@
   "WIZARD-TEMPORARY_SPELL_POWER_POWER.title": "Quick Chant",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.description": "At the start of your turn, add an [gold]Aether Arrow[/gold] into your hand.",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "At the start of your turn, add [blue]{Amount}[/blue] [gold]Aether Arrow[/gold] into your [gold]Hand[/gold].",
-  "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "The Fourth Element"
+  "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "The Fourth Element",
+  "WIZARD-UNDYING_POWER.description": "At the start of next turn, gain Energy equal to the number of cards you created this turn.",
+  "WIZARD-UNDYING_POWER.smartDescription": "At the start of next turn, gain [blue]{Generated}[/blue] [gold]Energy[/gold], resolved [blue]{Amount}[/blue] {Amount:plural:time|times}.",
+  "WIZARD-UNDYING_POWER.title": "Undying"
 }

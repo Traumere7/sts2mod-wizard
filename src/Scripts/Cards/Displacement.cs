@@ -22,12 +22,12 @@ namespace Wizard.Scripts.Cards;
 /// </para>
 ///
 /// <para>
-/// <b>除不尽的部分直接舍去</b>：7 点格挡 / 每 4 点 ⇒ 1 层（不是 1.75 层）。
-/// 用整数除法即可，与设计文档「每移除 4 点获得 1 层」的直读一致。
+/// <b>除不尽的部分直接舍去</b>：例如 7 点格挡 ⇒ 移除一半 3 点 ⇒ 3 / 3 = 1 层。
+/// 用整数除法即可，与设计文档「每移除 3 点获得 1 层」的直读一致。
 /// </para>
 ///
 /// <para>
-/// <b>升级</b>：每 4 点 → 每 3 点（<see cref="PerBlockKey"/> 数值 -1）。
+/// <b>升级</b>：每 3 点 → 每 2 点（<see cref="PerBlockKey"/> 数值 -1）。
 /// </para>
 /// </summary>
 [Pool(typeof(WizardCardPool))]
@@ -38,8 +38,8 @@ public class Displacement : WizardCardModel
     /// <summary>"每多少点格挡换 1 层"的变量名（卡面文案写 <c>{PerBlock:diff()}</c>）。</summary>
     private const string PerBlockKey = "PerBlock";
 
-    /// <summary>未升级：每 4 点格挡换 1 层。</summary>
-    private const decimal PerBlock = 4m;
+    /// <summary>未升级：每 3 点格挡换 1 层。</summary>
+    private const decimal PerBlock = 3m;
 
     /// <summary>升级后减少的量（4 → 3）。</summary>
     private const decimal PerBlockUpgrade = -1m;
@@ -72,20 +72,22 @@ public class Displacement : WizardCardModel
         // ① 先读格挡（LoseBlock 之后就读不到了）。
         int block = self.Block;   // Creature.Block 本身就是 int，不需要取整
 
-        // ② 移除全部格挡。
-        if (block > 0)
+        // ② 只移除**一半**格挡（向下取整；2026-11-28 用户改版）。
+        int removed = block / 2;
+
+        if (removed > 0)
         {
-            await CreatureCmd.LoseBlock(choiceContext, self, block, self);
+            await CreatureCmd.LoseBlock(choiceContext, self, removed, self);
         }
 
-        // ③ 每满 per 点换 1 层法术增益（向下取整）。
+        // ③ 每满 per 点被移除的格挡换 1 层法术增益（向下取整）。
         int per = (int)DynamicVars[PerBlockKey].BaseValue;
-        if (per <= 0 || block <= 0)
+        if (per <= 0 || removed <= 0)
         {
             return;
         }
 
-        int stacks = block / per;
+        int stacks = removed / per;
         if (stacks <= 0)
         {
             return;
