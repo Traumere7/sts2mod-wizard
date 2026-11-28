@@ -6501,3 +6501,33 @@ await Hook.AfterCardGeneratedForCombat(cardAdded.CombatState, cardAdded, cardAdd
 
 自检：0 编译错误；部署成功；启动补丁数不变、无异常。
 待实机验证：白夜给寒冷后，弃牌堆里的弹射应返回手牌（每回合仍限 1 次）。
+
+---
+
+## 63. 2026-11-28（五）弹射：两段伤害共享同一份「活力」
+
+**现象**（用户报告）：「弹射」`DoubleRicochet` 吃「活力」<c>VigorPower</c> 时只有第一段（火焰）加伤，
+第二段（雷电）吃不到。
+
+**根因**：原版活力按 <c>AttackCommand</c> 记账 ——
+<list type="number">
+  <item><c>BeforeAttack</c> 记住第一条符合条件的攻击命令与当时的 <c>Amount</c>；</item>
+  <item><c>ModifyDamageAdditive</c> 只对 <c>cardSource == tracked.ModelSource</c> 的伤害加算；</item>
+  <item><c>AfterAttack</c> 在**该命令结束时**立刻 <c>PowerCmd.ModifyAmount(-amountWhenAttackStarted)</c> 清空。</item>
+</list>
+本牌是两次独立的 <c>DamageCmd</c>（火焰段/雷电段，各自带不同 <c>ValueProp</c>），
+⇒ 第一段结束就把活力扣光，第二段自然是 0。
+
+**修法（本牌局部）**：
+<list type="number">
+  <item>出牌开始时 <c>int vigor = Owner.Creature.GetPowerAmount&lt;VigorPower&gt;()</c> 记下当前活力；</item>
+  <item>火焰段照常（自然吃、被引擎扣）；</item>
+  <item>雷电段 <c>DamageCmd.Attack(LightningVar.BaseValue + vigor)</c> —— 手动把同一份加回去。</item>
+</list>
+这样保持原版"一次攻击只吃一次"的记账不变，只让本牌两段共享同一份加成
+（用户口径：两段不同类型的伤害都属于"这一张卡的伤害处理"）。
+
+⚠️ 其它"多段但不同 <c>DamageCmd</c>"的牌若以后出现，需要同样的局部处理；
+目前只有本牌是真正两段独立命令（其余多命令卡都是 if/else 分支，同一次出牌只走一条）。
+
+自检：0 编译错误；部署成功。待实机验证：有活力时两段都加算、且只扣一份活力。

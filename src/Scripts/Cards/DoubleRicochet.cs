@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.GameActions.Multiplayer;
 using MegaCrit.Sts2.Core.HoverTips;
 using MegaCrit.Sts2.Core.Localization.DynamicVars;
 using MegaCrit.Sts2.Core.Models;
+using MegaCrit.Sts2.Core.Models.Powers;
 using MegaCrit.Sts2.Core.ValueProps;
 using Wizard.Scripts.Pools;
 using Wizard.Scripts.Powers;
@@ -41,6 +42,18 @@ namespace Wizard.Scripts.Cards;
 /// <b>伤害分两段、且各自带自己的法术流派</b>（火焰一段、雷电一段）：
 /// 这样「寒冷」只加成火焰段、「超导」只加成雷电段，
 /// 各自按自己的流派规则结算 —— 用两次独立的 <c>DamageCmd.Attack</c> 实现。
+/// </para>
+///
+/// <para>
+/// ══════════════════════════════════════════════════════════════════
+/// 「活力」<c>VigorPower</c>：两段吃**同一份**
+/// ══════════════════════════════════════════════════════════════════
+/// 原版活力按 <c>AttackCommand</c> 记账：第一次攻击结束（<c>AfterAttack</c>）就把
+/// <c>Amount</c> 扣掉。本牌有两段**独立的** <c>DamageCmd</c>（火焰 / 雷电），
+/// 若不管，第二段永远吃不到（用户 2026-11-28 报告）。
+/// 设计要求"这两段都是这一张卡的伤害处理" ⇒ 本牌在出牌开始时记下当前活力值，
+/// 第一段照常吃（并被引擎扣掉），第二段的伤害里**手动加回同一份**。
+/// 这样既保持原版活力的"一次攻击只吃一次"记账，又满足本牌两段同享。
 /// </para>
 ///
 /// <para>
@@ -133,7 +146,11 @@ public class DoubleRicochet : WizardSpellCard
     {
         ArgumentNullException.ThrowIfNull(cardPlay.Target, nameof(cardPlay.Target));
 
-        // ① 火焰段（吃「寒冷」加成）。
+        // ⓪ 先记下本卡的活力加成 —— 活力会在**第一段攻击结束**时被引擎扣掉，
+        //    第二段要"再吃同一份"（见类注释）。
+        int vigor = Owner.Creature.GetPowerAmount<VigorPower>();
+
+        // ① 火焰段（吃「寒冷」加成，也会自然吃「活力」）。
         await DamageCmd.Attack(DynamicVars.Damage.BaseValue)
             .WithValueProp(ValueProp.Move | SpellProps.For(SpellSchool.Fire))
             .FromCard(this, cardPlay)
@@ -142,7 +159,9 @@ public class DoubleRicochet : WizardSpellCard
             .Execute(choiceContext);
 
         // ② 雷电段（吃「超导」加成，不吃「寒冷」；与火焰段属同一张多段牌，不再重复播攻击动画）。
-        await DamageCmd.Attack(LightningVar.BaseValue)
+        //    ⚠️ 手动补上同一份活力：第一段的 AfterAttack 已经把活力扣掉了，
+        //    第二段若只吃引擎的自动加算会是 0（用户 2026-11-28 要求两段同享）。
+        await DamageCmd.Attack(LightningVar.BaseValue + vigor)
             .WithValueProp(ValueProp.Move | SpellProps.For(SpellSchool.Lightning))
             .FromCard(this, cardPlay)
             .WithNoAttackerAnim()
