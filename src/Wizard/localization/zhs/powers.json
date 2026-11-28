@@ -114,6 +114,6 @@
   "WIZARD-THE_FOURTH_ELEMENT_POWER.smartDescription": "在你的回合开始时，将[blue]{Amount}[/blue]张[gold]以太箭[/gold]加入你的[gold]手牌[/gold]。",
   "WIZARD-THE_FOURTH_ELEMENT_POWER.title": "第四元素",
   "WIZARD-UNDYING_POWER.description": "下个回合开始时，获得等同于你在本回合生成卡牌数量的能量。",
-  "WIZARD-UNDYING_POWER.smartDescription": "下个回合开始时，获得[blue]{Generated}[/blue]点[gold]能量[/gold]，结算[blue]{Amount}[/blue]次。",
+  "WIZARD-UNDYING_POWER.smartDescription": "下个回合开始时，获得[blue]{Generated}[/blue]点[gold]能量[/gold][blue]{Amount}[/blue]次。",
   "WIZARD-UNDYING_POWER.title": "不灭"
 }
