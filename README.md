@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **创意工坊** | [巫师 / Wizard（id 3807136195）](https://steamcommunity.com/sharedfiles/filedetails/?id=3807136195) |
-| **当前版本** | `0.6.2` |
+| **当前版本** | `0.6.3` |
 | **游戏版本** | 0.113.1（`min_game_version` 0.107.1） |
 | **依赖** | BaseLib **≥ 3.4.8** |
 | **语言** | 简体中文 / English |
