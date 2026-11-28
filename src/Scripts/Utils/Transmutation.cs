@@ -266,10 +266,16 @@ public static class Transmutation
     }
 
     /// <summary>
-    /// 把替代牌登记为"生成"：写 <c>CardGenerated</c> 历史 + 发 <c>AfterCardGeneratedForCombat</c>。
+    /// 把一张"由其它效果凭空造出来的牌"登记为**生成**：
+    /// 写 <c>CardGenerated</c> 历史 + 发 <c>AfterCardGeneratedForCombat</c>。
     /// （与 <c>CardPileCmd.AddGeneratedCardsToCombat</c> 的顺序一致。）
+    ///
+    /// <para>
+    /// 供"变化/替换成某张特定牌"的效果复用（例如「点灯」把手牌变成「火花」）——
+    /// 这类效果走的是 <c>CardCmd.Transform</c> 的指定替代路径，引擎不会自动记生成。
+    /// </para>
     /// </summary>
-    private static async Task RegisterAsGenerated(CardModel replacement)
+    public static async Task RegisterAsGenerated(CardModel replacement)
     {
         ICombatState? combatState = replacement.CombatState;
         if (combatState == null)

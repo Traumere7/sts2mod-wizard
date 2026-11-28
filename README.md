@@ -18,7 +18,7 @@
 
 | 项 | 数量 |
 |---|---|
-| 卡牌 | **85** 张（含初始「打击」「防御」、衍生牌与状态牌） |
+| 卡牌 | **89** 张（含初始「打击」「防御」、衍生牌与状态牌） |
 | 能力 | **37** 个 |
 | 遗物 | **10** 个 |
 | 药水 | 3 瓶 |
@@ -108,7 +108,7 @@ Slay the Spire 2\mods\Wizard\
     ├── icon.svg
     ├── Scripts/              C# 源码
     │   ├── Entry.cs          mod 入口（[ModInitializer]）
-    │   ├── Cards/            85 张卡牌
+    │   ├── Cards/            89 张卡牌
     │   ├── Powers/           37 个能力
     │   ├── Relics/ Potions/ 遗物与药水
     │   ├── Events/           事件

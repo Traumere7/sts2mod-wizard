@@ -6299,3 +6299,41 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 
 - 工坊条目已含 B 版美术，`content\` 里的 `WizardAlt.pck` 每次上传都要保留。
 - GitHub Release 的 zip 仍不含 B 包（B 包只走工坊）。
+
+---
+
+## 58. 2026-11-28 新增 4 张卡（点灯 / 煅烧 / 烟花 / 火花）+ 火苗改名 Ember
+
+### 58.1 火苗 `FlameSpark` → `Ember`（全链路改名）
+
+| 项 | 旧 | 新 |
+|---|---|---|
+| 类 | `Cards/FlameSpark.cs` / `FlameSpark` | `Cards/Ember.cs` / `Ember` |
+| 卡图（A 版） | `images/cards/FlameSpark.png` | `Ember.png`（`.import` 重新生成） |
+| 卡图（B 版） | `art_alt/.../FlameSpark.png` | `Ember.png`（B 包已重建，MD5 `C93E67DE`） |
+| 本地化键 | `WIZARD-FLAME_SPARK.*` | `WIZARD-EMBER.*`（**四语言**都改） |
+| 英文名 | Flame Spark | **Ember** |
+
+⚠️ `src/.godot/imported/` 里的陈旧 `FlameSpark.png-*.ctex` 会被打进 pck（第一次打包时验证过），
+必须手动删除再重打 —— 已在构建后核验 pck 内不再含 `FlameSpark`。
+
+### 58.2 四张新卡（英文名取自卡图素材文件名）
+
+| 卡 | 费 / 稀有 / 类型 | 实现要点 |
+|---|---|---|
+| 火花 `Spark` | 0 / 衍生 / 攻击（火焰） | `TokenCardPool`；2(4) 火焰伤害；`CanonicalKeywords = [Exhaust]` |
+| 点灯 `LightTheLamp` | 1 / 普通 / 技能 | 6(8) 格挡；**选 1 张手牌变化为火花**：`CardCmd.Transform` 指定替代（`CardTransformation(picked, spark)`），再 `Transmutation.RegisterAsGenerated` 补"生成"；候选按 `CanTransmute` 过滤，无候选不弹界面 |
+| 煅烧 `Calcination` | 1 / 普通 / 攻击（火焰） | 8(11) 火焰伤害；**升级手牌中所有"本场战斗临时加入"的牌**：查 `CardGeneratedEntry` 引用相等 + `IsUpgradable` + **排除 `CardType.Status`**；`CardCmd.Upgrade` 只升战斗实例（照抄「军备」Armaments）⇒ 天然本场有效 |
+| 烟花 `Fireworks` | 1 / 罕见 / 技能 | 添加 3(4) 张火花到手牌：`CreateCard<Spark>` × N → `AddGeneratedCardsToCombat(Hand)`（自动记生成）→ 飞牌演出 |
+
+- 新文案 `WIZARD-*` 只加了 `zhs` / `eng`（`zht` / `jpn` 仍是团队范围，会回退英文）。
+- 点灯的选牌提示新增 `card_selection` 键 `WIZARD-TO_SPARK`（zhs/eng）。
+- `Transmutation.RegisterAsGenerated` 从 private 改为 **public**，供"变化成指定牌"的效果复用。
+
+### 58.3 自检
+
+- `dotnet build` 0 错误；完整构建（含 B 包）部署成功：pck `F2327635` / dll `1BAD89CB`。
+- 启动自检：20/20 补丁、无异常、无缺失文案。
+- pck 核验：4 张新卡图 + Ember 图 + 新文案 + `WIZARD-TO_SPARK` 均在；`FlameSpark` 旧图/旧键已清除。
+- ⚠️ `zht` / `jpn` 的 `WIZARD-EMBER` 重命名是在团队**未提交的翻译改动**之上做的，
+  提交时把那些待提交的翻译一并带上了（内容无误，仅提醒）。

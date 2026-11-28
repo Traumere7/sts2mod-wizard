@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhyvstiypbxmy"
-path="res://.godot/imported/FlameSpark.png-5798720aa6dcc77cfa16c2b2ebfd20aa.ctex"
+uid="uid://b2pkdf631s64o"
+path="res://.godot/imported/Calcination.png-d18dba3e5567171ff8971f8c33349a4c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Wizard/images/cards/FlameSpark.png"
-dest_files=["res://.godot/imported/FlameSpark.png-5798720aa6dcc77cfa16c2b2ebfd20aa.ctex"]
+source_file="res://Wizard/images/cards/Calcination.png"
+dest_files=["res://.godot/imported/Calcination.png-d18dba3e5567171ff8971f8c33349a4c.ctex"]
 
 [params]
 

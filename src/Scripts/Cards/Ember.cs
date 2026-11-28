@@ -14,11 +14,11 @@ using Wizard.Scripts.Utils;
 namespace Wizard.Scripts.Cards;
 
 /// <summary>
-/// 火苗 - 0 费 - 攻击 - 普通
+/// 火苗 / Ember - 0 费 - 攻击 - 普通
 /// 造成 6(9) 点火焰伤害，给予 1 层燃烧。
 /// </summary>
 [Pool(typeof(WizardCardPool))]
-public class FlameSpark : WizardSpellCard
+public class Ember : WizardSpellCard
 {
     private const int Cost = 0;
 
@@ -38,7 +38,7 @@ public class FlameSpark : WizardSpellCard
         new PowerVar<BurnPower>(1m),
     ];
 
-    public FlameSpark()
+    public Ember()
         : base(Cost, CardType.Attack, CardRarity.Common, TargetType.AnyEnemy)
     {
     }
