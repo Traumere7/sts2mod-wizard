@@ -105,6 +105,11 @@
 | Aqua Heart | 水蓝之心 | 水藍之心 | アクアハート | — |
 | Unknown Sea | 未知海洋 | 未知海洋 | 未知の海 | — |
 | Nightmare | 梦魇 | 夢魘 | 悪夢 | 与原版 Silent 卡同名 |
+| Electric Arc | 电弧 | 電弧 | 電弧 | — |
+| Flicker | 灵光 | 靈光 | **明滅** | — |
+| Kindling | 薪柴 | 薪柴 | **焚き付け** | — |
+| White Night | 白夜 | 白夜 | 白夜 | — |
+| Wildfire | 流火 | 流火 | **野火** | — |
 
 ## 四、命名冲突与处理
 

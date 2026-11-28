@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：招式/专名用片假名，概念/状态用汉字；与原版撞名一律改名。
 
-## 卡牌（82）
+## 卡牌（87）
 
 | 英文 | jpn | 备注 |
 |---|---|---|
@@ -32,6 +32,7 @@
 | Displacement | 置換 | — |
 | Divination | 占い | — |
 | Double Ricochet | ダブルリコシェ | 避让 RICOCHET「跳弾」 |
+| Electric Arc | 電弧 | — |
 | Electromagnetic Wave | 電磁波 | — |
 | Embrittlement | 脆化 | — |
 | Endnote | エンドノート | — |
@@ -40,6 +41,7 @@
 | Fireball | ファイアボール | — |
 | Flame Spark | 火の粉 | — |
 | Flashburst | 閃光爆発 | — |
+| Flicker | 明滅 | — |
 | Forget-me-not | 勿忘草 | — |
 | Great Library | 大図書館 | — |
 | Healing Spell | ヒーリング | — |
@@ -50,6 +52,7 @@
 | Ignite | 着火 | 避让 INFLAME「発火」 |
 | Inspiration | ひらめき | — |
 | Intimidate | 威嚇 | 避让 DOMINATE「威圧」 |
+| Kindling | 焚き付け | — |
 | Lightning Bolt | ライトニングボルト | — |
 | Lightning Fall | 落雷 | — |
 | Magical Index | 禁書目録 | — |
@@ -88,8 +91,10 @@
 | Transmogrify | 変質 | 避让 METAMORPHOSIS「羽化」 |
 | Truth Party | 真実の宴 | — |
 | Watch Fire | 見張り火 | 避让 PYRE「かがり火」 |
+| White Night | 白夜 | — |
+| Wildfire | 野火 | — |
 
-## 能力（37）
+## 能力（38）
 
 | 英文 | jpn |
 |---|---|
@@ -112,6 +117,7 @@
 | Freeze | 凍結 |
 | Free This Turn | このターン無料 |
 | Great Library | 大図書館 |
+| Kindling | 焚き付け |
 | Ice Wall | アイスウォール |
 | Mana Condense | マナ凝縮 |
 | Magus Robe | マグス・ローブ |

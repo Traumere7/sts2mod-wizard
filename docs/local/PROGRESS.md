@@ -5,8 +5,8 @@
 | 文件 | 状态 | 备注 |
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
-| powers.json | ✅ 完成 | 111 条；37 个能力 |
-| cards.json | ✅ 完成 | 171 条；82 张卡 |
+| powers.json | ✅ 完成 | 114 条；38 个能力 |
+| cards.json | ✅ 完成 | 181 条；87 张卡 |
 | card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
 | enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
 | card_selection.json | ✅ 完成 | 1 条 |
@@ -24,8 +24,8 @@
 | 文件 | 状态 | 备注 |
 |---|---|---|
 | characters.json | ✅ 完成 | 15 条 |
-| powers.json | ✅ 完成 | 111 条；37 个能力 |
-| cards.json | ✅ 完成 | 171 条；82 张卡 |
+| powers.json | ✅ 完成 | 114 条；38 个能力 |
+| cards.json | ✅ 完成 | 181 条；87 张卡 |
 | card_keywords.json | ✅ 完成 | 2 条；1 个关键词 |
 | enchantments.json | ✅ 完成 | 4 条；2 个附魔 |
 | card_selection.json | ✅ 完成 | 1 条 |
@@ -48,6 +48,7 @@
 - [x] Temperance / Magus Robe 版本新增 2 卡 + 2 能力已补 zht/jpn
 - [x] Unknown Sea / Nightmare / Aqua Heart / Immortal 已补 zht/jpn（含 card_keywords、enchantments 新文件）
 - [x] Transmute（嬗變 / 変成）机制及 Animism / Quickening / Transmogrify 已同步
+- [x] Electric Arc / Flicker / Kindling / White Night / Wildfire 及 Kindling 能力已补；Skyfire Rampage 改为触发 2 次
 - [ ] zht / jpn 全量自动 JSON 解析 / 标签逐 key diff（建议在 CI 或本地脚本跑）
 - [ ] zht / jpn 术语一致性抽查
 - [ ] 确认 `Burn` 能力改名「焚燒」后的文本一致性（zht）
@@ -78,3 +79,5 @@
 - `Quickening` 的 `selectionScreenPrompt` 在 eng/zhs 仍写 Transform，已改为 Transmute / 嬗变；zht/jpn 同步为嬗變 / 変成。
 - `Magus Robe` 卡面改为 `{MagusRobePower:diff()}` 变量；zht/jpn 已补占位符。
 - `Magnum Opus`（杰作）：当前 eng/zhs 效果文本与 zht/jpn 一致，未发现可见文本 diff；本次未改其文案。
+- 新增 5 卡：Electric Arc（電弧）、Flicker（靈光 / 明滅）、Kindling（薪柴 / 焚き付け）、White Night（白夜）、Wildfire（流火 / 野火）；新增 `KINDLING_POWER`（薪柴 / 焚き付け）。
+- `SKYFIRE_RAMPAGE`（天火浩蕩 / 天火暴走）：立刻触发 1 次 → **2 次**，zht/jpn 已同步。

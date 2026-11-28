@@ -7,8 +7,8 @@
 
 | 语言 | 状态 | 说明 |
 |---|---|---|
-| zht（繁體中文） | **首轮完成** | 14 个文件已落盘；已补 Aether、Cauda Pavonis、Eternal Echo / Mercury、Temperance / Magus Robe、Unknown Sea / Nightmare / Aqua Heart / Immortal、Transmute 新内容，待全量校验 |
-| jpn（日本語） | **首轮完成** | 14 个文件已落盘；已补 Aether、Cauda Pavonis、Eternal Echo / Mercury、Temperance / Magus Robe、Unknown Sea / Nightmare / Aqua Heart / Immortal、Transmute 新内容，待全量校验 |
+| zht（繁體中文） | **首轮完成** | 14 个文件已落盘；已补 Aether、Cauda Pavonis、Eternal Echo / Mercury、Temperance / Magus Robe、Unknown Sea / Nightmare / Aqua Heart / Immortal、Transmute、Electric Arc / Flicker / Kindling / White Night / Wildfire 新内容，待全量校验 |
+| jpn（日本語） | **首轮完成** | 14 个文件已落盘；已补 Aether、Cauda Pavonis、Eternal Echo / Mercury、Temperance / Magus Robe、Unknown Sea / Nightmare / Aqua Heart / Immortal、Transmute、Electric Arc / Flicker / Kindling / White Night / Wildfire 新内容，待全量校验 |
 
 ## 权威顺序（重要）
 

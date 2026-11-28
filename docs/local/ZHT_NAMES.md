@@ -2,7 +2,7 @@
 
 > 初稿，供团队复核。原则：2–4 字为主；法术牌可用「術」；与原版撞名一律改名。
 
-## 卡牌（82）
+## 卡牌（87）
 
 | 英文 | zht | 备注 |
 |---|---|---|
@@ -32,6 +32,7 @@
 | Displacement | 置換 | — |
 | Divination | 占卜 | — |
 | Double Ricochet | 雙重彈射 | 避让「彈射」 |
+| Electric Arc | 電弧 | — |
 | Electromagnetic Wave | 電磁波 | — |
 | Embrittlement | 脆化 | — |
 | Endnote | 尾註 | — |
@@ -40,6 +41,7 @@
 | Fireball | 火球術 | — |
 | Flame Spark | 火苗 | — |
 | Flashburst | 閃爆 | — |
+| Flicker | 靈光 | — |
 | Forget-me-not | 勿忘我 | — |
 | Great Library | 大圖書館 | — |
 | Healing Spell | 治療術 | — |
@@ -50,6 +52,7 @@
 | Ignite | 引燃 | — |
 | Inspiration | 啟示 | — |
 | Intimidate | 震懾 | — |
+| Kindling | 薪柴 | — |
 | Lightning Bolt | 雷光 | — |
 | Lightning Fall | 降雷 | — |
 | Magical Index | 禁書目錄 | — |
@@ -88,8 +91,10 @@
 | Transmogrify | 幻化 | — |
 | Truth Party | 真理派對 | — |
 | Watch Fire | 觀火 | — |
+| White Night | 白夜 | — |
+| Wildfire | 流火 | — |
 
-## 能力（37）
+## 能力（38）
 
 | 英文 | zht |
 |---|---|
@@ -112,6 +117,7 @@
 | Freeze | 凍結 |
 | Free This Turn | 本回合免費 |
 | Great Library | 大圖書館 |
+| Kindling | 薪柴 |
 | Ice Wall | 冰牆 |
 | Mana Condense | 魔力凝聚 |
 | Magus Robe | 偉大法袍 |
