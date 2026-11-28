@@ -53,10 +53,12 @@ namespace Wizard.Scripts.Utils;
 /// </para>
 ///
 /// <para>
-/// ⚠️ <b>"算作生成"</b>：design 明确要求嬗变被视作"生成卡牌"。
-/// 原版 <c>CardFactory.CreateRandomCardForTransform</c> 走的是 <c>CardScope.CreateCard</c>，
-/// <b>不会</b>记 <c>CardGenerated</c> 历史、也不发 <c>AfterCardGeneratedForCombat</c>；
-/// 所以我们在变换完成后补上这两件事（「催化」「孔雀之尾」「结晶」都会因此响应）。
+/// ⚠️ <b>"算作生成"由引擎负责</b>：<c>CardCmd.Transform</c> 自己就会
+/// ① 写 <c>History.CardGenerated</c>；② 在末尾对战斗内替代牌发
+/// <c>Hook.AfterCardGeneratedForCombat</c>（<c>CardCmd.cs:541</c>）。
+/// 所以「催化」「孔雀之尾」「结晶」「不灭」都会自然响应。
+/// <b>2026-11-28 修正</b>：早前以为它不发、手动又补了一次 ⇒ 每个替代牌被数两次
+/// （表现为「不灭」用 1 张「创生」嬗变 3 张却 +6），现已删除手动补发。
 /// </para>
 ///
 /// <para>
@@ -121,13 +123,13 @@ public static class Transmutation
         }
 
         // 引擎负责移除/落位/历史/演出。
+        //
+        // ⚠️ 2026-11-28 修正：CardCmd.Transform **本身**就会
+        //   ① 写 History.CardGenerated；② 在末尾对战斗内替代牌发
+        //   Hook.AfterCardGeneratedForCombat（CardCmd.cs:541）。
+        // 早前以为它不发、于是手动补了一次 => 每个替代牌被**数两次**
+        // （「不灭」的生成计数、催化、孔雀之尾、结晶都受影响）。
         await CardCmd.Transform(transformations, rng, style);
-
-        // 设计口径：嬗变也算"生成卡牌" ⇒ 补上历史与钩子。
-        foreach (CardModel replacement in created)
-        {
-            await RegisterAsGenerated(replacement);
-        }
 
         return created;
     }
@@ -265,26 +267,4 @@ public static class Transmutation
             : owner.RunState.CreateCard(canonical, owner);
     }
 
-    /// <summary>
-    /// 把一张"由其它效果凭空造出来的牌"登记为**生成**：
-    /// 写 <c>CardGenerated</c> 历史 + 发 <c>AfterCardGeneratedForCombat</c>。
-    /// （与 <c>CardPileCmd.AddGeneratedCardsToCombat</c> 的顺序一致。）
-    ///
-    /// <para>
-    /// 供"变化/替换成某张特定牌"的效果复用（例如「点灯」把手牌变成「火花」）——
-    /// 这类效果走的是 <c>CardCmd.Transform</c> 的指定替代路径，引擎不会自动记生成。
-    /// </para>
-    /// </summary>
-    public static async Task RegisterAsGenerated(CardModel replacement)
-    {
-        ICombatState? combatState = replacement.CombatState;
-        if (combatState == null)
-        {
-            return;
-        }
-
-        Player? creator = replacement.Owner;
-        CombatManager.Instance.History.CardGenerated(combatState, replacement, creator);
-        await Hook.AfterCardGeneratedForCombat(combatState, replacement, creator);
-    }
 }

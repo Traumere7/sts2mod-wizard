@@ -182,7 +182,7 @@
   "WIZARD-TRANSMOGRIFY.title": "幻化",
   "WIZARD-TRUTH_PARTY.description": "给予{BurnPower:diff()}层[gold]燃烧[/gold]。\n依照场上最高的[gold]燃烧[/gold]层数的一半抽牌，选最多那个数量的牌[gold]消耗[/gold]。",
   "WIZARD-TRUTH_PARTY.title": "真理派对",
-  "WIZARD-UNDYING.description": "下回合获得等同于你在本回合生成卡牌数量的[gold]能量[/gold]。",
+  "WIZARD-UNDYING.description": "下回合获得等同于你在本回合生成卡牌数量的[gold]能量[/gold]。{InCombat:\n（本回合已生成{GeneratedCards:diff()}张牌）|}",
   "WIZARD-UNDYING.title": "不灭",
   "WIZARD-WATCH_FIRE.description": "获得{Block:diff()}点[gold]格挡[/gold]。\n给予所有敌人{BurnPower:diff()}层[gold]燃烧[/gold]。",
   "WIZARD-WATCH_FIRE.title": "观火",

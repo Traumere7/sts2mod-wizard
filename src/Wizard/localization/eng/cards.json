@@ -182,7 +182,7 @@
   "WIZARD-TRANSMOGRIFY.title": "Transmogrify",
   "WIZARD-TRUTH_PARTY.description": "Apply {BurnPower:diff()} [gold]Burn[/gold].\nDraw cards equal to half the highest [gold]Burn[/gold] on the field, then [gold]Exhaust[/gold] up to that many cards.",
   "WIZARD-TRUTH_PARTY.title": "Truth Party",
-  "WIZARD-UNDYING.description": "Next turn, gain [gold]Energy[/gold] equal to the number of cards you created this turn.",
+  "WIZARD-UNDYING.description": "Next turn, gain [gold]Energy[/gold] equal to the number of cards you created this turn.{InCombat:\n(You have created {GeneratedCards:diff()} {GeneratedCards:plural:card|cards} this turn.)|}",
   "WIZARD-UNDYING.title": "Undying",
   "WIZARD-WATCH_FIRE.description": "Gain {Block:diff()} [gold]Block[/gold]. Apply {BurnPower:diff()} [gold]Burn[/gold] to ALL enemies.",
   "WIZARD-WATCH_FIRE.title": "Watch Fire",

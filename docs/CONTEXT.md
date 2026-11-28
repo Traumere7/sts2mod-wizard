@@ -6388,3 +6388,62 @@ design.md 这轮有两处是**把文档同步到现状**，不是新改动：
 - pck 核验：不灭卡图/图标/文案、置换新文案均在包内。
 - 待实机验证：打出前/后生成牌的数量是否都计入 x；两张「不灭」是否结算两次；
   结算后能力是否消失；置换只移除一半格挡且按 3(2) 换算。
+
+---
+
+## 60. 2026-11-28（三）嬗变"生成"双倍计数修复 + 不灭卡面加实时计数行
+
+### 60.1 ⚠️ 修正：`CardCmd.Transform` 其实**自带**生成语义
+
+用户报告：打出「不灭」后用「创生」嬗变 3 张，计数加了 **6**（双倍）。
+
+根因（重新核对反编译源码）：
+
+```csharp
+// CardCmd.cs — Transform(IEnumerable<CardTransformation>, ...)
+...
+CombatManager.Instance.History.CardGenerated(combatState, replacement, replacement.Owner);
+await Hook.AfterCardEnteredCombat(combatState, replacement);
+...
+// 方法末尾（CardCmd.cs:536-542）
+await Hook.AfterCardGeneratedForCombat(cardAdded.CombatState, cardAdded, cardAdded.Owner);
+```
+
+⇒ Transform **既写 `CardGenerated` 历史、也发 `AfterCardGeneratedForCombat`**。
+而 `Transmutation.TransmuteMany` 在 2026-11-22 实装时误以为它不发，额外调了
+`RegisterAsGenerated(...)` 又补了一遍 —— 于是每个替代牌被数两次。
+（§45 里"原版 CreateRandomCardForTransform 不记历史"的说法只对 `CardFactory` 那条旧路径成立，
+对**我们实际使用的指定替代**路径不成立。）
+
+**修复**：
+- 删除 `Transmutation.RegisterAsGenerated`（及其调用）；
+- 「点灯」不再手动补生成；
+- 影响范围：嬗变类卡（幻化/创生/泛灵论）的生成计数恢复正常，
+  「催化」「孔雀之尾」「结晶」「不灭」对嬗变牌的计数不再翻倍。
+
+### 60.2 不灭：卡面新增「（本回合已生成 x 张牌）」
+
+- 文案（zhs/eng）：在效果描述后追加
+  `{InCombat:
+（本回合已生成{GeneratedCards:diff()}张牌）|}`
+  —— 与「降雷」「魔力汲取」同款"仅战斗内显示"的写法。
+- 变量：`Undying.CanonicalVars` 加
+  ```csharp
+  new CalculationBaseVar(0m),
+  new CalculationExtraVar(1m),
+  new CalculatedVar("GeneratedCards")
+      .WithMultiplier(static (card, _) => GenerationTally.Get(card.Owner)),
+  ```
+  （Base + Extra × 倍率；Base=0、Extra=1 ⇒ 值就是本回合生成数。）
+- 实时刷新：`Undying.AfterCardGeneratedForCombat`（creator == Owner）与
+  `AfterSideTurnStart`（玩家侧）里调 `RefreshDisplay()`：
+  `NCard.FindOnTable(this, PileType.Hand)?.UpdateVisuals(PileType.Hand, CardPreviewMode.Normal)`。
+  找不到节点/不在手牌时静默跳过。
+
+### 60.3 自检
+
+- `dotnet build` 0 错误；部署 pck `7FB7D909` / dll `1A2CC5A6`。
+- 启动自检：22/22 补丁、无异常、无缺失文案。
+- pck 核验：新文案与 `GeneratedCards` 均在包内；`RegisterAsGenerated` 字样已消失。
+- 待实机验证：用「创生」嬗变 3 张后不灭计数应为 3（不再 6）；
+  卡面第二行数字随生成实时增长、下回合开始归零。

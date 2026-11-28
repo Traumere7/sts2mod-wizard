@@ -26,9 +26,9 @@ namespace Wizard.Scripts.Cards;
 /// <code>
 /// CardTransformation(picked, spark)   // spark 是 CombatState.CreateCard&lt;Spark&gt;(Owner) 新建的战斗实例
 /// </code>
-/// 变换完成后手动调 <see cref="Transmutation.RegisterAsGenerated"/> 补"生成"语义
-/// （<c>CardCmd.Transform</c> 本身不写 <c>CardGenerated</c> 历史、也不发
-/// <c>AfterCardGeneratedForCombat</c>）。
+/// **生成语义由引擎负责**：<c>CardCmd.Transform</c> 会写 <c>CardGenerated</c> 历史，
+/// 并在末尾对战斗内替代牌发 <c>AfterCardGeneratedForCombat</c>（<c>CardCmd.cs:541</c>），
+/// 不要再手动补一次（2026-11-28 修正：那会双倍计数）。
 /// </para>
 ///
 /// <para>
@@ -97,12 +97,11 @@ public class LightTheLamp : WizardCardModel
 
         // ③ 变化成火花（新建战斗实例，指定替代）。
         Spark spark = combatState.CreateCard<Spark>(Owner);
+        // CardCmd.Transform 自带 History.CardGenerated + AfterCardGeneratedForCombat
+        // （CardCmd.cs:541），不需要再手动补"生成"——补了会双倍计数。
         await CardCmd.Transform(
             [new CardTransformation(picked, spark)],
             Owner.RunState.Rng.CombatCardSelection);
-
-        // ④ 补"生成"语义（催化/孔雀之尾/结晶等应能响应）。
-        await Transmutation.RegisterAsGenerated(spark);
     }
 
     /// <summary>升级：格挡 6 → 8。</summary>
