@@ -6531,3 +6531,36 @@ await Hook.AfterCardGeneratedForCombat(cardAdded.CombatState, cardAdded, cardAdd
 目前只有本牌是真正两段独立命令（其余多命令卡都是 if/else 分支，同一次出牌只走一条）。
 
 自检：0 编译错误；部署成功。待实机验证：有活力时两段都加算、且只扣一份活力。
+
+---
+
+## 64. 2026-11-28 发布 v0.6.4（问题修复）
+
+### 64.1 产物
+
+| 项 | 值 |
+|---|---|
+| 版本 | `src/Wizard.json` → `0.6.4` |
+| `Wizard.dll` | MD5 `482B7D17`（387,072 B） |
+| `Wizard.pck` | MD5 `7F06D11B`（179,777,668 B） |
+| `Wizard.json` | MD5 `AFBDF972` |
+| `WizardAlt.pck` | MD5 `0E2B7376`（沿用，随条目上传） |
+| 工坊 | item 3807136195，23:40 更新，file_size 317,469,195 B（≈302.8 MB，含 B 包） |
+| 简介 | **7,879 B** / 8000 |
+| GitHub Release | v0.6.4（zip 仅 dll/json/pck） |
+
+### 64.2 简介改动
+
+- 「问题修复」追加两条（中英）：
+  1. 白夜给予寒冷时无法触发弹射回到手牌；
+  2. 弹射只有第一段伤害享受活力加成。
+- 为控字数删掉「新增卡牌」最旧的一对（灵光）——该节现在正好是 v0.6.3 的 5 张新卡。
+- 顺手修正简介开头「燃烧」机制说明：旧文案写着"且不享受任何其他加成"，
+  与 v0.6.2 的"无来源火焰伤害、会受易伤/寒冷影响"矛盾，已改为新口径。
+- `changeNote` → `v0.6.4 — 问题修复。`
+- 备份：`WizardWorkspace/workshop.json.v064`
+
+### 64.3 本版代码改动（详见 §62 / §63）
+
+- 白夜寒冷改走 `SpellCmd.ApplyChill`（发 `WizardEvents.ChillApplied`，弹射可响应）；
+- 弹射雷电段手动加回同一份活力（两段同享）。
